@@ -1,0 +1,620 @@
+{
+  "_comment": "Acquisition data for Ghost Companion. Keyed by item NAME (matches any reissue a player scans). itemHash is the verified current hash (from the Manifest) for reference. sourceActivityHashes lists Standard + Master activity hashes so auto-tracking fires on any difficulty. Drop rates are community estimates and vary by patch. Users can add/override entries in-app (stored by itemHash); see scripts/lookup.mjs to find hashes. GAME RULE (as of the Sept 2025 update + the MoT update): every raid/dungeon EXOTIC is now farmable on a single character with NO weekly lockout — so exotic drops use farmable:true / weeklyLimitPerCharacter:null. One-time quest exotics (dropRate 1.0) and per-week secret chests are the exceptions. Legendary raid/dungeon weapons still follow per-character weekly encounter drops. Verify with scripts/audit-data.mjs.",
+  "_schema": {
+    "acquisitionPaths[]": {
+      "id": "stable id within the item",
+      "method": "short label",
+      "pathType": "secret_chest | encounter_drop | boss_drop | craftable | vendor | quest | other",
+      "location": "activity / where",
+      "sourceActivityHashes": "array of activity hashes that count as a run for this path (auto-track)",
+      "dropRate": "0..1 chance per run",
+      "farmable": "true = repeatable, false = weekly-locked",
+      "weeklyLimitPerCharacter": "number or null",
+      "estimatedMinutesPerRun": "rough minutes",
+      "description": "how to access",
+      "notes": "caveats or null"
+    }
+  },
+
+  "Hierarchy of Needs": {
+    "itemHash": 4174431791,
+    "acquisitionPaths": [
+      {
+        "id": "final_boss",
+        "method": "Final Boss — Persys",
+        "pathType": "boss_drop",
+        "location": "Spire of the Watcher",
+        "sourceActivityHashes": [1262462921, 1801496203, 2296818662],
+        "dropRate": 0.12,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 28,
+        "description": "Exotic bow. Drops from the final encounter — farmable on a single character with no weekly lockout.",
+        "notes": null
+      },
+      {
+        "id": "secret_chest",
+        "method": "Secret Chest",
+        "pathType": "secret_chest",
+        "location": "Spire of the Watcher — between encounters",
+        "sourceActivityHashes": [1262462921, 1801496203, 2296818662],
+        "dropRate": 0.05,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 1,
+        "estimatedMinutesPerRun": 8,
+        "description": "Hidden chests can also award the bow.",
+        "notes": "Two secret chests exist in the dungeon."
+      }
+    ]
+  },
+
+  "Long Arm": {
+    "itemHash": 3418719964,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Spire of the Watcher",
+        "sourceActivityHashes": [1262462921, 1801496203, 2296818662],
+        "dropRate": 0.16,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 22,
+        "description": "Adaptive Scout Rifle from Spire encounters.",
+        "notes": "Master mode can drop Adept versions."
+      }
+    ]
+  },
+
+  "Heartshadow": {
+    "itemHash": 3664831848,
+    "acquisitionPaths": [
+      {
+        "id": "final_boss",
+        "method": "Final Boss — Caiatl",
+        "pathType": "boss_drop",
+        "location": "Duality",
+        "sourceActivityHashes": [2823159265, 1668217731, 3012587626],
+        "dropRate": 0.13,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 30,
+        "description": "Exotic invisibility sword. Final-encounter drop — farmable on a single character with no weekly lockout.",
+        "notes": null
+      }
+    ]
+  },
+
+  "Unforgiven": {
+    "itemHash": 3000847393,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Duality",
+        "sourceActivityHashes": [2823159265, 1668217731, 3012587626],
+        "dropRate": 0.15,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 25,
+        "description": "Aggressive SMG, a top Duality chase weapon.",
+        "notes": null
+      }
+    ]
+  },
+
+  "Gjallarhorn": {
+    "itemHash": 1363886209,
+    "acquisitionPaths": [
+      {
+        "id": "quest",
+        "method": "Exotic Quest — And Out Fly the Wolves",
+        "pathType": "quest",
+        "location": "Grasp of Avarice",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 1,
+        "estimatedMinutesPerRun": 40,
+        "description": "Guaranteed from the exotic quest; complete Grasp of Avarice then the quest steps.",
+        "notes": "One-time quest — no farming needed once obtained."
+      }
+    ]
+  },
+
+  "1000 Yard Stare": {
+    "itemHash": 4120127195,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Grasp of Avarice",
+        "sourceActivityHashes": [4078656646, 3774021532, 1112917203],
+        "dropRate": 0.14,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 24,
+        "description": "Classic 140 sniper from Grasp of Avarice.",
+        "notes": null
+      }
+    ]
+  },
+
+  "Eyasluna": {
+    "itemHash": 235827225,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Grasp of Avarice",
+        "sourceActivityHashes": [4078656646, 3774021532, 1112917203],
+        "dropRate": 0.14,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 24,
+        "description": "140 Hand Cannon, a premier PvP roll chase.",
+        "notes": null
+      }
+    ]
+  },
+
+  "Touch of Malice": {
+    "itemHash": 1802135586,
+    "acquisitionPaths": [
+      {
+        "id": "raid_drop",
+        "method": "Raid Drop — King's Fall",
+        "pathType": "boss_drop",
+        "location": "King's Fall",
+        "sourceActivityHashes": [1374392663, 2897223272, 2964135793, 3257594522],
+        "dropRate": 0.1,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 45,
+        "description": "Exotic scout. Random drop from King's Fall — now farmable on a single character with no weekly lockout.",
+        "notes": "May also be redeemable with an exotic redemption token after Pantheon encounters."
+      }
+    ]
+  },
+
+  "Zaouli's Bane": {
+    "itemHash": 2654424424,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops / Red Borders",
+        "pathType": "encounter_drop",
+        "location": "King's Fall",
+        "sourceActivityHashes": [1374392663, 2897223272, 2964135793, 3257594522],
+        "dropRate": 0.13,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 40,
+        "description": "120 Hand Cannon, one of the best in the game. Craftable via red borders.",
+        "notes": null
+      }
+    ]
+  },
+
+  "Conditional Finality": {
+    "itemHash": 3371017761,
+    "acquisitionPaths": [
+      {
+        "id": "final_boss",
+        "method": "Final Boss — Nezarec",
+        "pathType": "boss_drop",
+        "location": "Root of Nightmares",
+        "sourceActivityHashes": [2381413764, 2918919505],
+        "dropRate": 0.1,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 50,
+        "description": "Exotic Stasis/Solar shotgun. Final-encounter drop — farmable on a single character with no weekly lockout.",
+        "notes": null
+      }
+    ]
+  },
+
+  "Collective Obligation": {
+    "itemHash": 3505113722,
+    "acquisitionPaths": [
+      {
+        "id": "final_boss",
+        "method": "Final Boss — Rhulk",
+        "pathType": "boss_drop",
+        "location": "Vow of the Disciple",
+        "sourceActivityHashes": [1441982566, 2906950631, 4217492330, 3889634515],
+        "dropRate": 0.09,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 55,
+        "description": "Exotic pulse rifle. Drops from Rhulk — farmable on a single character with no weekly lockout.",
+        "notes": null
+      }
+    ]
+  },
+
+  "Apex Predator": {
+    "itemHash": 2545083870,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Last Wish",
+        "sourceActivityHashes": [2122313384, 1661734046],
+        "dropRate": 0.16,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 45,
+        "description": "Top-tier legendary rocket launcher from Last Wish.",
+        "notes": "Wish-wall farming can let you target encounters."
+      }
+    ]
+  },
+
+  "One Thousand Voices": {
+    "itemHash": 2069224589,
+    "acquisitionPaths": [
+      {
+        "id": "final_chest",
+        "method": "Final Chest — Riven",
+        "pathType": "boss_drop",
+        "location": "Last Wish",
+        "sourceActivityHashes": [2122313384, 1661734046],
+        "dropRate": 0.05,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 15,
+        "description": "Exotic fusion. Drops from the chest after Riven (Queenswalk).",
+        "notes": "Can be farmed via the Riven cheese / repeated final chest each week per character."
+      }
+    ]
+  },
+
+  "Eyes of Tomorrow": {
+    "itemHash": 2399110176,
+    "acquisitionPaths": [
+      {
+        "id": "final_boss",
+        "method": "Final Boss — Taniks",
+        "pathType": "boss_drop",
+        "location": "Deep Stone Crypt",
+        "sourceActivityHashes": [910380154, 3976949817],
+        "dropRate": 0.05,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 50,
+        "description": "Exotic rocket launcher. Low-chance drop from Taniks — farmable on a single character with no weekly lockout.",
+        "notes": "One of the rarer raid-exotic drop rates — but now repeatable, so keep running."
+      }
+    ]
+  },
+
+  "Buried Bloodline": {
+    "itemHash": 3886719505,
+    "acquisitionPaths": [
+      {
+        "id": "final_chest",
+        "method": "Final Chest",
+        "pathType": "boss_drop",
+        "location": "Warlord's Ruin",
+        "sourceActivityHashes": [2004855007, 2534833093],
+        "dropRate": 0.1,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 45,
+        "description": "Exotic sidearm. Chance from the final chest of Warlord's Ruin (Manifest source: \"Warlord's Ruin\" Dungeon) — farmable on a single character with no weekly lockout.",
+        "notes": null
+      }
+    ]
+  },
+
+  "Vexcalibur": {
+    "itemHash": 3118061005,
+    "acquisitionPaths": [
+      {
+        "id": "quest",
+        "method": "Exotic Quest — Reclaiming the Past",
+        "pathType": "quest",
+        "location": "Avalon (Node.Ovrd.Avalon)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 1,
+        "estimatedMinutesPerRun": 30,
+        "description": "Exotic glaive, guaranteed from the Avalon exotic mission quest.",
+        "notes": "One-time quest."
+      }
+    ]
+  },
+
+  "Vex Mythoclast": {
+    "itemHash": 4289226715,
+    "acquisitionPaths": [
+      {
+        "id": "final_boss",
+        "method": "Final Boss — Atheon",
+        "pathType": "boss_drop",
+        "location": "Vault of Glass",
+        "sourceActivityHashes": [3711931140, 3881495763, 1681562271, 3022541210, 1485585878],
+        "dropRate": 0.1,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 45,
+        "description": "Exotic fusion rifle. Drops from Atheon, the final encounter — farmable on a single character with no weekly lockout.",
+        "notes": "Master mode does not raise the Mythoclast rate."
+      }
+    ]
+  },
+
+  "Fatebringer": {
+    "itemHash": 2171478765,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Vault of Glass",
+        "sourceActivityHashes": [3711931140, 3881495763, 1681562271, 3022541210, 1485585878],
+        "dropRate": 0.15,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 40,
+        "description": "Iconic 140 Hand Cannon with the Firefly origin trait. Drops across VoG encounters.",
+        "notes": "Master mode can award Timelost (Adept) rolls."
+      }
+    ]
+  },
+
+  "Vision of Confluence": {
+    "itemHash": 2374669498,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Vault of Glass",
+        "sourceActivityHashes": [3711931140, 3881495763, 1681562271, 3022541210, 1485585878],
+        "dropRate": 0.15,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 40,
+        "description": "Solar Scout Rifle, a strong all-rounder. Drops across VoG encounters.",
+        "notes": "Timelost version available from Master."
+      }
+    ]
+  },
+
+  "Hezen Vengeance": {
+    "itemHash": 2265407516,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Vault of Glass",
+        "sourceActivityHashes": [3711931140, 3881495763, 1681562271, 3022541210, 1485585878],
+        "dropRate": 0.15,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 40,
+        "description": "Legendary Rocket Launcher from Vault of Glass.",
+        "notes": "Timelost version available from Master."
+      }
+    ]
+  },
+
+  "Corrective Measure": {
+    "itemHash": 3654744298,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Vault of Glass",
+        "sourceActivityHashes": [3711931140, 3881495763, 1681562271, 3022541210, 1485585878],
+        "dropRate": 0.15,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 40,
+        "description": "Void Machine Gun from Vault of Glass.",
+        "notes": "Timelost version available from Master."
+      }
+    ]
+  },
+
+  "Found Verdict": {
+    "itemHash": 2151181823,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Vault of Glass",
+        "sourceActivityHashes": [3711931140, 3881495763, 1681562271, 3022541210, 1485585878],
+        "dropRate": 0.15,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 40,
+        "description": "Aggressive-frame Shotgun from Vault of Glass.",
+        "notes": "Timelost version available from Master."
+      }
+    ]
+  },
+
+  "Praedyth's Revenge": {
+    "itemHash": 3653573172,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Vault of Glass",
+        "sourceActivityHashes": [3711931140, 3881495763, 1681562271, 3022541210, 1485585878],
+        "dropRate": 0.15,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 40,
+        "description": "Rapid-fire Sniper Rifle from Vault of Glass.",
+        "notes": "Timelost version available from Master."
+      }
+    ]
+  },
+
+  "Necrochasm": {
+    "itemHash": 1034055198,
+    "acquisitionPaths": [
+      {
+        "id": "husk_drop",
+        "method": "Husk of the Pit → upgrade",
+        "pathType": "boss_drop",
+        "location": "Crota's End",
+        "sourceActivityHashes": [4179289725, 107319834, 1566480315, 156253568, 1507509200],
+        "dropRate": 0.1,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 45,
+        "description": "Exotic Auto Rifle. Get the rare Husk of the Pit from raid encounters, then complete the upgrade quest with Eris Morn. Husk farming has no weekly lockout.",
+        "notes": "The Husk is the RNG gate; once you have it the upgrade is deterministic."
+      }
+    ]
+  },
+
+  "Euphony": {
+    "itemHash": 3284383335,
+    "acquisitionPaths": [
+      {
+        "id": "final_boss",
+        "method": "Final Boss — The Witness",
+        "pathType": "boss_drop",
+        "location": "Salvation's Edge",
+        "sourceActivityHashes": [2192826039, 940375169, 1541433876, 4129614942],
+        "dropRate": 0.1,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 60,
+        "description": "Exotic Linear Fusion Rifle. Drops from the final encounter — farmable on a single character with no weekly lockout.",
+        "notes": "Salvation's Edge exotics became farmable after the MoT update."
+      }
+    ]
+  },
+
+  "Ice Breaker": {
+    "itemHash": 1111334348,
+    "acquisitionPaths": [
+      {
+        "id": "final_boss",
+        "method": "Final Boss Drop",
+        "pathType": "boss_drop",
+        "location": "Vesper's Host",
+        "sourceActivityHashes": [3492566689, 1915770060, 300092127, 4293676253],
+        "dropRate": 0.13,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 45,
+        "description": "Exotic Sniper Rifle. Random drop from the final boss of Vesper's Host — farmable on a single character with no weekly lockout.",
+        "notes": null
+      }
+    ]
+  },
+
+  "Divinity": {
+    "itemHash": 4103414242,
+    "acquisitionPaths": [
+      {
+        "id": "quest",
+        "method": "Exotic Quest — Divine Fragmentation",
+        "pathType": "quest",
+        "location": "Garden of Salvation",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 1,
+        "estimatedMinutesPerRun": 60,
+        "description": "Exotic Trace Rifle, guaranteed from the Divine Fragmentation quest completed inside Garden of Salvation.",
+        "notes": "One-time quest; requires solving the in-raid puzzles."
+      }
+    ]
+  },
+
+  "Wish-Keeper": {
+    "itemHash": 2910326942,
+    "acquisitionPaths": [
+      {
+        "id": "quest",
+        "method": "Starcrossed Exotic Mission",
+        "pathType": "quest",
+        "location": "Starcrossed (Exotic Mission)",
+        "sourceActivityHashes": [896748846, 3214480871, 1013336498],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 1,
+        "estimatedMinutesPerRun": 40,
+        "description": "Exotic Combat Bow, earned through the Starcrossed exotic mission (Manifest source: \"Starcrossed\" Mission).",
+        "notes": "One-time acquisition; completing the mission progresses the catalyst."
+      }
+    ]
+  },
+
+  "The Navigator": {
+    "itemHash": 1441805468,
+    "acquisitionPaths": [
+      {
+        "id": "quest",
+        "method": "Hidden Quest (Ghosts of the Deep)",
+        "pathType": "quest",
+        "location": "Ghosts of the Deep",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 1,
+        "estimatedMinutesPerRun": 45,
+        "description": "Exotic Trace Rifle, guaranteed from the hidden quest started inside Ghosts of the Deep.",
+        "notes": "One-time quest."
+      }
+    ]
+  },
+
+  "Whirling Ovation": {
+    "itemHash": 1202007252,
+    "acquisitionPaths": [
+      {
+        "id": "final_boss",
+        "method": "Final Boss Drop",
+        "pathType": "boss_drop",
+        "location": "The Desert Perpetual",
+        "sourceActivityHashes": [1044919065, 3817322389],
+        "dropRate": 0.1,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 60,
+        "description": "Exotic Rocket Launcher from The Desert Perpetual raid. Random drop, farmable on a single character with no weekly lockout (after the MoT update).",
+        "notes": "Newest raid exotic as of June 2026. Epic mode rewards higher-tier loot."
+      }
+    ]
+  },
+
+  "Heirloom": {
+    "itemHash": 1685137410,
+    "acquisitionPaths": [
+      {
+        "id": "final_boss",
+        "method": "Final Boss Drop",
+        "pathType": "boss_drop",
+        "location": "Equilibrium",
+        "sourceActivityHashes": [2727361621],
+        "dropRate": 0.13,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 40,
+        "description": "Exotic Combat Bow from the Equilibrium dungeon. Random drop, farmable on a single character with no weekly lockout (after the MoT update).",
+        "notes": "Newest dungeon exotic as of June 2026."
+      }
+    ]
+  }
+}

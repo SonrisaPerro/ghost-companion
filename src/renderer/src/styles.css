@@ -1,0 +1,143 @@
+/* =============================================================================
+   Ghost Companion overlay styles.
+   The body is intentionally transparent so the main-process window opacity
+   (0.92) lets the game show through. The .app surface provides the dark glass.
+   ============================================================================= */
+:root {
+  --bg: rgba(18, 20, 28, 0.96);
+  --bg-soft: rgba(32, 36, 48, 0.9);
+  --line: rgba(255, 255, 255, 0.08);
+  --text: #e8eaf0;
+  --text-dim: #9aa0b0;
+  --accent: #7c4dff;
+  --accent-soft: rgba(124, 77, 255, 0.18);
+  --good: #4caf78;
+  --warn: #e0a93b;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  user-select: none;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg);
+  border-left: 1px solid var(--line);
+}
+
+/* The header is the draggable region of the frameless window. Interactive
+   controls inside it opt back out with -webkit-app-region: no-drag. */
+.header {
+  -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-soft);
+}
+
+.header .title {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  flex: 1;
+}
+
+.header .ghost {
+  color: var(--accent);
+}
+
+.header button,
+.btn {
+  -webkit-app-region: no-drag;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 5px 9px;
+  font-size: 12px;
+}
+
+.btn.primary {
+  background: var(--accent);
+  border-color: transparent;
+  color: white;
+}
+
+.btn.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.search input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  color: var(--text);
+  outline: none;
+}
+
+.section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-dim);
+  margin: 14px 0 6px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 14px;
+  left: 12px;
+  right: 12px;
+  background: var(--good);
+  color: #06210f;
+  font-weight: 600;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-align: center;
+  animation: slideup 0.25s ease;
+}
+
+@keyframes slideup {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}

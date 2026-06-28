@@ -1,0 +1,36 @@
+{
+  "name": "ghost-companion",
+  "version": "1.0.0",
+  "description": "Ghost Companion — an always-on-top Destiny 2 loot-farming overlay that auto-tracks activity completions via the Bungie API.",
+  "main": "./out/main/index.js",
+  "author": "Ghost Companion",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "start": "electron-vite preview",
+    "postinstall": "electron-builder install-app-deps",
+    "dist": "electron-vite build && electron-builder",
+    "lookup": "node scripts/lookup.mjs",
+    "audit": "node scripts/audit-data.mjs"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.17",
+    "better-sqlite3": "^11.3.0",
+    "dotenv": "^16.4.5",
+    "electron-store": "^8.2.0",
+    "node-fetch": "^3.3.2",
+    "selfsigned": "^2.4.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "electron": "^31.3.0",
+    "electron-builder": "^24.13.3",
+    "electron-vite": "^2.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^5.4.0"
+  }
+}
