@@ -616,5 +616,24 @@
         "notes": "Newest dungeon exotic as of June 2026."
       }
     ]
+  },
+
+  "Speedloader Slacks": {
+    "itemHash": 1793346751,
+    "acquisitionPaths": [
+      {
+        "id": "focusing",
+        "method": "Exotic Armor Focusing — Rahool",
+        "pathType": "vendor",
+        "location": "The Tower (Rahool)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Hunter Leg Armor. Once you've collected it once, focus it directly at Rahool with an Exotic engram + materials (Manifest source: \"Exotic Armor Focusing\"). Re-focus to chase better stat rolls / higher armor tiers.",
+        "notes": "Not auto-trackable (no activity) — it's a targeted vendor focus, not a drop. Until unlocked it can also come at random from world Exotic engrams."
+      }
+    ]
   }
 }
