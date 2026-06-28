@@ -78,9 +78,9 @@ app.get('/paths', (req, res) => {
   res.json(pathsCache || {})
 })
 
-app.get('/debug/xur', async (_req, res) => {
+app.get('/debug/xur', async (req, res) => {
   try {
-    res.json(await debugXur())
+    res.json(await debugXur(req.query.v ? Number(req.query.v) : undefined))
   } catch (e) {
     res.status(502).json({ error: e.message })
   }

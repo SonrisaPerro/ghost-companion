@@ -61,10 +61,10 @@ async function xurStock(accessToken, character) {
 
 // TEMP DEBUG: dump every Xûr sale item with its tier + categories so we can see
 // why a known exotic (e.g. an exotic hand cannon) isn't being classified.
-export async function debugXur() {
+export async function debugXur(vendorHash = XUR_VENDOR_HASH) {
   const { access_token } = await refreshAccessToken()
   const character = await getPrimaryCharacter(access_token)
-  const hashes = await getVendorSaleHashes(access_token, character, XUR_VENDOR_HASH)
+  const hashes = await getVendorSaleHashes(access_token, character, vendorHash)
   const items = []
   for (const h of hashes) {
     let def
@@ -83,7 +83,7 @@ export async function debugXur() {
       cats: def?.itemCategoryHashes || []
     })
   }
-  return { vendorHash: XUR_VENDOR_HASH, count: hashes.length, items }
+  return { vendorHash, count: hashes.length, items }
 }
 
 export async function resolveRotation() {
