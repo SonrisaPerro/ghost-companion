@@ -16,7 +16,6 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { resolveRotation } from './src/rotation.js'
-import { refreshAccessToken, getPrimaryCharacter, getVendorRaw, getItemDef } from './src/bungie.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -77,43 +76,6 @@ app.get('/paths', (req, res) => {
   if (req.query.reload === '1') loadPaths()
   res.set('Cache-Control', 'public, max-age=3600')
   res.json(pathsCache || {})
-})
-
-// --- TEMPORARY debug route: dump a vendor's full sales breakdown -------------
-// e.g. /debug/vendor/2190858386 (Xûr), /debug/vendor/69482069 (Zavala).
-// Remove this route + getVendorRaw once the rotation reads are fixed.
-app.get('/debug/vendor/:hash', async (req, res) => {
-  try {
-    const { access_token } = await refreshAccessToken()
-    const character = await getPrimaryCharacter(access_token)
-    const raw = await getVendorRaw(access_token, character, req.params.hash)
-    const sales = raw?.sales?.data || {}
-    const items = []
-    for (const [index, s] of Object.entries(sales)) {
-      let def = null
-      try {
-        def = await getItemDef(s.itemHash)
-      } catch {
-        /* leave null */
-      }
-      items.push({
-        index: Number(index),
-        itemHash: s.itemHash,
-        name: def?.displayProperties?.name || '?',
-        itemType: def?.itemType,
-        itemTypeDisplayName: def?.itemTypeDisplayName || '',
-        tier: def?.inventory?.tierTypeName || '',
-        categoryHashes: def?.itemCategoryHashes || []
-      })
-    }
-    const categories = (raw?.categories?.data?.categories || []).map((c) => ({
-      displayCategoryIndex: c.displayCategoryIndex,
-      itemIndexes: c.itemIndexes
-    }))
-    res.json({ vendorHash: Number(req.params.hash), salesCount: items.length, categories, items })
-  } catch (e) {
-    res.status(502).json({ error: e.message })
-  }
 })
 
 app.get('/', (_req, res) => {

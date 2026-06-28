@@ -611,8 +611,8 @@ function AddPathForm({ onSave, onCancel }) {
    data API can't resolve the weapon it shows "check the in-game vendor" and
    still tracks completions via the activity-hash pool. */
 const RITUAL_SLOTS = [
-  { slot:"nightfall", dropRate:0.20, color:C.purple, bg:C.purpleLo },
-  { slot:"trials",    dropRate:0.15, color:C.gold,   bg:C.goldLo   },
+  { slot:"nightfall", color:C.purple, bg:C.purpleLo },
+  { slot:"trials",    color:C.gold,   bg:C.goldLo   },
 ];
 
 function RitualRow({ slot, conf, data, state, onToggle, onAdd, onSub }) {
@@ -620,25 +620,22 @@ function RitualRow({ slot, conf, data, state, onToggle, onAdd, onSub }) {
   const runs    = state?.runs || 0;
   return (
     <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:12, marginTop:12 }}>
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:9, minWidth:0 }}>
-          {data.weapon?.icon ? (
-            <img src={data.weapon.icon} alt="" width={34} height={34}
-              style={{ border:`1px solid ${conf.color}`, flexShrink:0 }}/>
-          ) : (
-            <div style={{ width:34, height:34, flexShrink:0, background:conf.bg,
-              border:`1px solid ${conf.color}`, display:"flex", alignItems:"center",
-              justifyContent:"center", color:conf.color, fontSize:14 }}>◆</div>
-          )}
+      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:8 }}>
+        <div style={{ display:"flex", alignItems:"flex-start", gap:9, minWidth:0 }}>
+          <div style={{ width:34, height:34, flexShrink:0, background:conf.bg,
+            border:`1px solid ${conf.color}`, display:"flex", alignItems:"center",
+            justifyContent:"center", color:conf.color, fontSize:14 }}>◆</div>
           <div style={{ minWidth:0 }}>
             <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, fontWeight:700,
               color:conf.color, letterSpacing:"0.06em", textTransform:"uppercase", lineHeight:1.1 }}>
               {data.label}
             </div>
-            <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, color:C.text,
-              letterSpacing:"0.04em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", marginTop:1 }}>
-              {data.weapon?.name || "Featured weapon — check the in-game vendor"}
-            </div>
+            {data.note && (
+              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, color:C.sub,
+                letterSpacing:"0.02em", lineHeight:1.3, marginTop:3 }}>
+                {data.note}
+              </div>
+            )}
           </div>
         </div>
         <button onClick={onToggle} style={{ flexShrink:0, padding:"6px 10px",
@@ -663,7 +660,6 @@ function RitualRow({ slot, conf, data, state, onToggle, onAdd, onSub }) {
               color:conf.color, fontSize:18, cursor:"pointer", fontFamily:"'Barlow Condensed',sans-serif",
               display:"flex", alignItems:"center", justifyContent:"center" }}>+</button>
           </div>
-          <MiniProb runs={runs} dropRate={conf.dropRate}/>
         </div>
       )}
     </div>
@@ -721,14 +717,14 @@ function XurSection({ xur, onScan }) {
 
 function RitualsPanel({ rotation, ritualState, onToggle, onAdd, onSub, onScan }) {
   if (!rotation) return null;
-  const live = rotation.source === "vendor" || rotation.source === "override";
+  const xurLive = rotation.source === "live";
   const week = rotation.weekOf ? new Date(rotation.weekOf).toLocaleDateString() : null;
   return (
     <Panel bc={C.purple} style={{ marginBottom:14 }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <Lbl color={C.purple} mb={0}>Weekly Rituals</Lbl>
-        <Badge label={live ? "LIVE ROTATION" : "ROTATION POOL"}
-          color={live ? C.green : C.gold} bg={live ? C.greenLo : C.goldLo}/>
+        <Badge label={xurLive ? "XÛR LIVE" : "XÛR OFFLINE"}
+          color={xurLive ? C.green : C.gold} bg={xurLive ? C.greenLo : C.goldLo}/>
       </div>
       {RITUAL_SLOTS.map(conf => {
         const data = rotation[conf.slot];
@@ -745,7 +741,7 @@ function RitualsPanel({ rotation, ritualState, onToggle, onAdd, onSub, onScan })
       {week && (
         <div style={{ textAlign:"center", fontFamily:"'Barlow Condensed',sans-serif",
           fontSize:9, color:C.muted, letterSpacing:"0.14em", marginTop:12 }}>
-          WEEK OF {week} · {live ? "RESOLVED FROM VENDOR" : "VENDOR LOCKED — POOL ONLY"}
+          WEEK OF {week} · {xurLive ? "XÛR STOCK LIVE" : "XÛR STOCK UNAVAILABLE"}
         </div>
       )}
     </Panel>
@@ -1017,8 +1013,9 @@ export default function GhostCompanion() {
   }, [rotation]);
 
   // Register/unregister a ritual slot for auto-tracking. The descriptor key is a
-  // stable "ritual:<slot>" so run counts persist as the featured weapon rotates;
-  // the activity-hash pool is what the tracker matches completions against.
+  // stable "ritual:<slot>" so run counts persist week to week; the activity-hash
+  // pool is what the tracker matches completions against. There's no targetable
+  // weapon in the Edge of Fate model, so the tracked item is the ritual itself.
   const toggleRitual = useCallback(async (slot) => {
     const r = rotation?.[slot];
     if (!r) return;
@@ -1029,9 +1026,9 @@ export default function GhostCompanion() {
       ? list.filter(t => t.key !== k)
       : [...list, {
           key: k,
-          itemHash: r.weapon?.itemHash || 0,
-          name: r.weapon?.name || r.label,
-          icon: r.weapon?.icon || null,
+          itemHash: 0,
+          name: r.label,
+          icon: null,
           paths: [{
             id: "ritual",
             method: r.label,
