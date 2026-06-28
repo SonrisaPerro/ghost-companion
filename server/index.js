@@ -15,7 +15,7 @@ import express from 'express'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { resolveRotation } from './src/rotation.js'
+import { resolveRotation, debugXur } from './src/rotation.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -76,6 +76,14 @@ app.get('/paths', (req, res) => {
   if (req.query.reload === '1') loadPaths()
   res.set('Cache-Control', 'public, max-age=3600')
   res.json(pathsCache || {})
+})
+
+app.get('/debug/xur', async (_req, res) => {
+  try {
+    res.json(await debugXur())
+  } catch (e) {
+    res.status(502).json({ error: e.message })
+  }
 })
 
 app.get('/', (_req, res) => {
