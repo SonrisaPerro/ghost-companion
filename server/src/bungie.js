@@ -94,3 +94,13 @@ export async function getVendorSaleHashes(accessToken, { membershipType, members
 export async function getItemDef(itemHash) {
   return get(`/Destiny2/Manifest/DestinyInventoryItemDefinition/${itemHash}/`)
 }
+
+/** DEBUG ONLY: returns a vendor's raw categories + sales (components 400/401/402)
+ *  so we can inspect exactly what's on offer. Remove with its /debug route. */
+export async function getVendorRaw(accessToken, { membershipType, membershipId, characterId }, vendorHash) {
+  return get(
+    `/Destiny2/${membershipType}/Profile/${membershipId}/Character/${characterId}` +
+      `/Vendors/${vendorHash}/?components=400,401,402`,
+    accessToken
+  )
+}
