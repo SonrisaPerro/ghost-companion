@@ -196,6 +196,19 @@
         "estimatedMinutesPerRun": 40,
         "description": "120 Hand Cannon, one of the best in the game. Craftable via red borders.",
         "notes": null
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn’s Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Unlock the pattern by extracting Deepsight Resonance from red-border (Deepsight) copies that drop in King’s Fall, then shape it at the Enclave and re-shape later for enhanced perks.",
+        "notes": "Raid weapon patterns typically need 5 red-border (Deepsight) extractions to unlock. Once unlocked, crafting is guaranteed and fully reshapeable — not RNG."
       }
     ]
   },
@@ -253,6 +266,19 @@
         "estimatedMinutesPerRun": 45,
         "description": "Top-tier legendary rocket launcher from Last Wish.",
         "notes": "Wish-wall farming can let you target encounters."
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn’s Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Unlock the pattern by extracting Deepsight Resonance from red-border (Deepsight) copies that drop in Last Wish (target encounters via the wish-wall), then shape it at the Enclave and re-shape later for enhanced perks.",
+        "notes": "Raid weapon patterns typically need 5 red-border (Deepsight) extractions to unlock. Once unlocked, crafting is guaranteed and fully reshapeable — not RNG."
       }
     ]
   },
@@ -367,6 +393,19 @@
         "estimatedMinutesPerRun": 40,
         "description": "Iconic 140 Hand Cannon with the Firefly origin trait. Drops across VoG encounters.",
         "notes": "Master mode can award Timelost (Adept) rolls."
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn’s Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Unlock the pattern by extracting Deepsight Resonance from red-border (Deepsight) copies that drop in Vault of Glass, then shape it at the Enclave and re-shape later for enhanced perks.",
+        "notes": "Raid weapon patterns typically need 5 red-border (Deepsight) extractions to unlock. Once unlocked, crafting is guaranteed and fully reshapeable — not RNG."
       }
     ]
   },
@@ -386,6 +425,19 @@
         "estimatedMinutesPerRun": 40,
         "description": "Solar Scout Rifle, a strong all-rounder. Drops across VoG encounters.",
         "notes": "Timelost version available from Master."
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn’s Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Unlock the pattern by extracting Deepsight Resonance from red-border (Deepsight) copies that drop in Vault of Glass, then shape it at the Enclave and re-shape later for enhanced perks.",
+        "notes": "Raid weapon patterns typically need 5 red-border (Deepsight) extractions to unlock. Once unlocked, crafting is guaranteed and fully reshapeable — not RNG."
       }
     ]
   },
@@ -405,6 +457,19 @@
         "estimatedMinutesPerRun": 40,
         "description": "Legendary Rocket Launcher from Vault of Glass.",
         "notes": "Timelost version available from Master."
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn’s Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Unlock the pattern by extracting Deepsight Resonance from red-border (Deepsight) copies that drop in Vault of Glass, then shape it at the Enclave and re-shape later for enhanced perks.",
+        "notes": "Raid weapon patterns typically need 5 red-border (Deepsight) extractions to unlock. Once unlocked, crafting is guaranteed and fully reshapeable — not RNG."
       }
     ]
   },
@@ -424,6 +489,19 @@
         "estimatedMinutesPerRun": 40,
         "description": "Void Machine Gun from Vault of Glass.",
         "notes": "Timelost version available from Master."
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn’s Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Unlock the pattern by extracting Deepsight Resonance from red-border (Deepsight) copies that drop in Vault of Glass, then shape it at the Enclave and re-shape later for enhanced perks.",
+        "notes": "Raid weapon patterns typically need 5 red-border (Deepsight) extractions to unlock. Once unlocked, crafting is guaranteed and fully reshapeable — not RNG."
       }
     ]
   },
@@ -443,6 +521,19 @@
         "estimatedMinutesPerRun": 40,
         "description": "Aggressive-frame Shotgun from Vault of Glass.",
         "notes": "Timelost version available from Master."
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn’s Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Unlock the pattern by extracting Deepsight Resonance from red-border (Deepsight) copies that drop in Vault of Glass, then shape it at the Enclave and re-shape later for enhanced perks.",
+        "notes": "Raid weapon patterns typically need 5 red-border (Deepsight) extractions to unlock. Once unlocked, crafting is guaranteed and fully reshapeable — not RNG."
       }
     ]
   },
@@ -462,6 +553,19 @@
         "estimatedMinutesPerRun": 40,
         "description": "Rapid-fire Sniper Rifle from Vault of Glass.",
         "notes": "Timelost version available from Master."
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn’s Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Unlock the pattern by extracting Deepsight Resonance from red-border (Deepsight) copies that drop in Vault of Glass, then shape it at the Enclave and re-shape later for enhanced perks.",
+        "notes": "Raid weapon patterns typically need 5 red-border (Deepsight) extractions to unlock. Once unlocked, crafting is guaranteed and fully reshapeable — not RNG."
       }
     ]
   },
@@ -633,6 +737,44 @@
         "estimatedMinutesPerRun": 1,
         "description": "Exotic Hunter Leg Armor (Manifest source: \"Exotic Armor Focusing\"). Bring an Exotic Cipher + an Exotic engram, then talk to Rahool and open his SECOND page → Novel Decryption to pull it directly. Re-decrypt to chase better stat rolls / higher armor tiers.",
         "notes": "Not auto-trackable (no activity) — it's a targeted Rahool decryption, not a drop. Cost: 1 Exotic Cipher + 1 Exotic engram. Best ways to farm Exotic engrams: Master Lost Sectors and Portal weekly rewards."
+      }
+    ]
+  },
+
+  "Vanguard Tactician Armor": {
+    "itemHash": 4252280581,
+    "acquisitionPaths": [
+      {
+        "id": "zavala_focus",
+        "method": "Focus at Commander Zavala",
+        "pathType": "vendor",
+        "location": "The Tower (Commander Zavala)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Current Vanguard ritual ARMOR set (Edge of Fate). Play Vanguard Ops / Nightfalls to rank up and earn Vanguard Engrams, then focus the set at Commander Zavala in the Tower. Verified live at Zavala 2026-06-28 — this replaces the old Vigil of Heroes ritual set.",
+        "notes": "Set-level entry. Bungie's API does not expose the individual armor-piece names (the focus list renders client-side), so a scanned individual piece may not match this name. Focus costs Vanguard Engrams + materials (e.g. Enhancement Cores)."
+      }
+    ]
+  },
+
+  "Vanguard Tactician Arsenal": {
+    "itemHash": 1616736576,
+    "acquisitionPaths": [
+      {
+        "id": "zavala_focus",
+        "method": "Focus at Commander Zavala",
+        "pathType": "vendor",
+        "location": "The Tower (Commander Zavala)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Current Vanguard ritual WEAPON set (Edge of Fate). Play Vanguard Ops / Nightfalls to rank up and earn Vanguard Engrams, then focus weapons at Commander Zavala in the Tower. Verified live at Zavala 2026-06-28.",
+        "notes": "Set-level entry. Bungie's API does not expose the individual weapon names (the focus list renders client-side), so a scanned individual weapon may not match this name. Focus costs Vanguard Engrams + materials."
       }
     ]
   }

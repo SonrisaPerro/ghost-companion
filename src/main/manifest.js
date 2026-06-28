@@ -275,7 +275,9 @@ function resolveSources(collectibleHash) {
       .prepare(`SELECT json FROM DestinyCollectibleDefinition WHERE id = ?`)
       .get(signed)
     const def = parseRow(row)
-    const sourceString = def?.sourceString
+    // Bungie's sourceString usually starts with "Source:" — strip it so the UI's
+    // own "SOURCE:" label doesn't render "SOURCE: Source: …".
+    const sourceString = (def?.sourceString || '').replace(/^\s*source:\s*/i, '').trim()
     return sourceString ? [sourceString] : []
   } catch {
     return []
