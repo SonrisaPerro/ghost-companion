@@ -410,10 +410,41 @@ function CombinedSummary({ paths, pathRuns, acquired, onAcquired }) {
   );
 }
 
+/* ── Novel Decryption fallback ────────────────────────────────────────
+   Every Exotic armor piece (incl. class items) is focusable at Rahool's
+   "Novel Decryption" page once unlocked, for an Exotic Cipher + Exotic engram.
+   We don't enumerate the ~141 of them as data; instead any Exotic armor with
+   no curated entry gets this synthetic path. */
+const ARMOR_TYPE_RE = /^(Helmet|Gauntlets|Chest Armor|Leg Armor|Class Armor|Hunter Cloak|Warlock Bond|Titan Mark)$/i;
+function isExoticArmor(hit) {
+  return (
+    (hit.tierTypeName || "").toLowerCase() === "exotic" &&
+    ARMOR_TYPE_RE.test((hit.itemType || "").trim())
+  );
+}
+function novelDecryptionPath() {
+  return {
+    id: "novel_decryption",
+    method: "Novel Decryption — Rahool",
+    pathType: "vendor",
+    location: "The Tower (Rahool)",
+    sourceActivityHashes: [],
+    dropRate: 1.0,
+    farmable: true,
+    weeklyLimitPerCharacter: null,
+    estimatedMinutesPerRun: 1,
+    description:
+      "Exotic armor. Once you've collected it once, focus it at Rahool's SECOND page → Novel Decryption with an Exotic Cipher + an Exotic engram. Re-decrypt to chase better stat rolls / higher armor tiers.",
+    notes:
+      "Targeted vendor pull, not a farmable drop. Cost: 1 Exotic Cipher + 1 Exotic engram. Best ways to farm Exotic engrams: Master Lost Sectors and Portal weekly rewards.",
+  };
+}
+
 /* ── Helpers: build itemData from a Manifest hit + acquisition data ───
-   Resolution order: user-authored (by itemHash) → community (remote) → bundled.
-   Earlier sources win, so personal entries override community, which override
-   the data shipped in the app. */
+   Resolution order: user-authored (by itemHash) → community (remote) → bundled
+   → Novel Decryption fallback (Exotic armor only). Earlier sources win, so
+   personal entries override community, which override the data shipped in the
+   app, which overrides the generic Rahool fallback. */
 function buildItemData(hit, userRates = {}, communityRates = {}) {
   const entry =
     userRates[String(hit.itemHash)] ||
@@ -422,10 +453,26 @@ function buildItemData(hit, userRates = {}, communityRates = {}) {
     dropRates[String(hit.itemHash)] ||
     dropRates[hit.name] ||
     null;
-  const paths = (entry?.acquisitionPaths || []).map((p, i) => ({
+  let paths = (entry?.acquisitionPaths || []).map((p, i) => ({
     ...p,
     id: p.id || `path_${i}`,
   }));
+  // No curated data, but it's an Exotic armor piece → it's a Rahool focus.
+  if (!paths.length && isExoticArmor(hit)) paths = [novelDecryptionPath()];
+
+  // A path is auto-trackable only if it has a source activity to watch.
+  const trackable = paths.some((p) => (p.sourceActivityHashes || []).length > 0);
+  let tips;
+  if (!paths.length) {
+    tips = [
+      "No farming data for this item yet.",
+      "Use “+ ADD PATH” above to attach a source activity and drop rate, then enable auto-track.",
+    ];
+  } else if (trackable) {
+    tips = ["Counts auto-increment when the Ghost detects a matching activity completion."];
+  } else {
+    tips = ["Targeted vendor pull — no activity to auto-track."];
+  }
 
   return {
     itemHash: hit.itemHash,
@@ -436,12 +483,7 @@ function buildItemData(hit, userRates = {}, communityRates = {}) {
     icon: hit.icon || null,
     prerequisites: [],
     acquisitionPaths: paths,
-    tips: paths.length
-      ? ["Counts auto-increment when the Ghost detects a matching activity completion."]
-      : [
-          "No farming data for this item yet.",
-          "Use “+ ADD PATH” above to attach a source activity and drop rate, then enable auto-track.",
-        ],
+    tips,
     sourceActivity: hit.sources?.[0] || paths[0]?.location || "",
     lastVerified: "Manifest",
   };
