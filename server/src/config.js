@@ -14,10 +14,16 @@
 // =============================================================================
 
 // Xûr is the one ritual-adjacent vendor whose stock IS targetable (you buy
-// specific exotic armor from him), so we still read his live sales. The hash
-// below is the offering with the "Exotic Weapons" sale category (verified via
-// `npm run lookup -- --vendors "xur"`).
-export const XUR_VENDOR_HASH = 2190858386 // Xûr — Agent of the Nine
+// specific exotic gear from him), so we read his live sales. His inventory is
+// split across multiple vendor "screens": the main offering carries exotic
+// armor + the Xûrfboard + engrams, while "Strange Gear Offers" carries his
+// rotating exotic AND legendary WEAPONS (e.g. Hawkmoon). We read both and merge.
+// Verified via the live vendor dumps + `npm run lookup -- --vendors "nine"`.
+export const XUR_VENDOR_HASH = 2190858386 // Xûr — Agent of the Nine (main screen)
+export const XUR_VENDOR_HASHES = [
+  2190858386, // main: exotic armor, Xûrfboard, exotic engram
+  3751514131 // "Strange Gear Offers": exotic + legendary weapons, legendary armor set
+]
 
 // Per-ritual display label + accurate acquisition note (no weapon targeting).
 export const RITUALS = {
