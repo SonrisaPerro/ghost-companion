@@ -59,7 +59,6 @@ async function monumentCatalog(accessToken, character) {
   const armor = []
   const costCache = new Map()
   const seen = new Set()
-  const diag = { containers: sales.length, candidates: 0, resolved: 0, failed: 0, exotic: 0, unclassified: 0, withCost: 0 }
 
   for (const container of sales) {
     let cDef
@@ -71,7 +70,9 @@ async function monumentCatalog(accessToken, character) {
     const preview = cDef?.preview
     if (!preview) continue
 
-    // Costs from the live sub-vendor, keyed by the exotic's itemHash.
+    // Costs from the live sub-vendor, keyed by the exotic's itemHash. The preview
+    // sub-vendors often aren't character-readable, in which case costs stay blank
+    // and we still surface the catalog from derivedItemCategories.
     const costByItem = new Map()
     if (preview.previewVendorHash) {
       try {
@@ -86,30 +87,21 @@ async function monumentCatalog(accessToken, character) {
     for (const { itemHash } of derived) {
       if (!itemHash || seen.has(itemHash)) continue
       seen.add(itemHash)
-      diag.candidates++
       let def
       try {
         def = await getItemDef(itemHash)
-        diag.resolved++
       } catch {
-        diag.failed++
         continue
       }
       if (def?.inventory?.tierTypeName !== 'Exotic') continue
-      diag.exotic++
       const kind = classifyGear(def)
-      if (!kind) {
-        diag.unclassified++
-        continue
-      }
-      const costs = await resolveCosts(costByItem.get(itemHash) || [], costCache)
-      if (costs.length) diag.withCost++
-      const item = { ...shapeItem(def), costs }
+      if (!kind) continue
+      const item = { ...shapeItem(def), costs: await resolveCosts(costByItem.get(itemHash) || [], costCache) }
       if (kind === 'weapon') weapons.push(item)
       else armor.push(item)
     }
   }
-  return { present, weapons, armor, diag }
+  return { present, weapons, armor }
 }
 
 export async function resolveMonument() {
@@ -130,7 +122,6 @@ export async function resolveMonument() {
     const character = await getPrimaryCharacter(access_token)
     const cat = await monumentCatalog(access_token, character)
     result.vendor = { ...result.vendor, present: cat.present, weapons: cat.weapons, armor: cat.armor }
-    result.diag = cat.diag // temporary: read counts to diagnose empty catalogs
     result.source = 'live'
   } catch (err) {
     result.error = err.message // token/network failure → catalog unknown
