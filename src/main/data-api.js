@@ -12,7 +12,7 @@
 import fetch from 'node-fetch'
 
 const TTL_MS = 60 * 60 * 1000 // cache remote data for an hour
-const cache = { xur: null, xurAt: 0, paths: null, pathsAt: 0 }
+const cache = { xur: null, xurAt: 0, paths: null, pathsAt: 0, eververse: null, eververseAt: 0 }
 
 function baseUrl(store) {
   let url = (process.env.GHOST_DATA_API_URL || store.get('dataApiUrl') || '').trim()
@@ -40,6 +40,25 @@ export async function getXur(store, { force = false } = {}) {
     if (!cache.xur) return null // nothing cached to fall back on
   }
   return cache.xur
+}
+
+/**
+ * Returns the cached Eververse ornament-shop payload, fetching if stale.
+ * Shape mirrors the server's /eververse: { source, vendor, anyInShop, inShop[],
+ * notInShop[], ... }. null if no URL / unreachable — the panel just stays hidden.
+ */
+export async function getEververse(store, { force = false } = {}) {
+  const url = baseUrl(store)
+  if (!url) return null
+  if (!force && cache.eververse && Date.now() - cache.eververseAt < TTL_MS) return cache.eververse
+  try {
+    cache.eververse = await getJson(`${url}/eververse`)
+    cache.eververseAt = Date.now()
+  } catch (err) {
+    console.error('[data-api] eververse fetch failed:', err.message)
+    if (!cache.eververse) return null // nothing cached to fall back on
+  }
+  return cache.eververse
 }
 
 /** Returns community paths (keyed by item name), or {} if unavailable. */

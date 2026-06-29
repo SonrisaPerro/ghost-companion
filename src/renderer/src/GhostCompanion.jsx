@@ -718,6 +718,86 @@ function XurPanel({ data, onScan }) {
   );
 }
 
+/* ── Eververse panel ──────────────────────────────────────────────────
+   Surfaces tracked weapon ornaments that are FOR SALE in Tess Everis' shop
+   right now, so the user can go buy them before they rotate out. Mirrors the
+   XurPanel discipline: render ONLY on an authoritative live read with at least
+   one tracked ornament actually in stock — never on a fallback/unknown read. */
+
+// A cost line ({name, quantity, kind}) → colour by currency. Bright Dust is
+// grindable (blue), Silver is real money (gold), Glimmer is trivial (green).
+function costColor(kind) {
+  return kind === "silver" ? C.gold : kind === "glimmer" ? C.green : C.blue;
+}
+function formatQty(n) {
+  return typeof n === "number" ? n.toLocaleString() : n;
+}
+
+function EververseSection({ items, onScan }) {
+  return (
+    <div>
+      {items.map((o) => {
+        const cost = (o.cost || [])[0]; // ornaments cost a single currency
+        const col = costColor(cost?.kind);
+        return (
+          <div key={o.itemHash} onClick={() => onScan?.(o.weapon)} title={`Scan ${o.weapon}`}
+            style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 0", cursor:"pointer",
+              borderBottom:`1px solid ${C.muted}` }}
+            onMouseEnter={e => e.currentTarget.style.opacity = 0.8}
+            onMouseLeave={e => e.currentTarget.style.opacity = 1}>
+            <div style={{ width:26, height:26, background:C.purpleLo, border:`1px solid ${C.purple}`,
+              display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0,
+              fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, color:C.purple }}>◈</div>
+            <div style={{ minWidth:0, flex:1 }}>
+              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:14, fontWeight:700,
+                color:C.text, letterSpacing:"0.04em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                {o.name}
+              </div>
+              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.1em" }}>
+                {(o.weapon || "ORNAMENT").toUpperCase()} · ORNAMENT
+              </div>
+            </div>
+            {cost && (
+              <div style={{ textAlign:"right", flexShrink:0 }}>
+                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:14, fontWeight:700, color:col, lineHeight:1 }}>
+                  {formatQty(cost.quantity)}
+                </div>
+                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:8, color:col, letterSpacing:"0.1em" }}>
+                  {(cost.name || "").toUpperCase()}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function EverversePanel({ data, onScan }) {
+  // Only surface on an AUTHORITATIVE live read with at least one tracked ornament
+  // actually in stock. Fallback / nothing-in-shop → render nothing at all.
+  if (!data || data.source !== "live" || !data.anyInShop || !data.inShop?.length) return null;
+  const n = data.inShop.length;
+  return (
+    <Panel bc={C.purple} style={{ marginBottom:14 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
+        <Lbl color={C.purple} mb={0}>🛒 Eververse · Tracked Ornament{n !== 1 ? "s" : ""} In Stock</Lbl>
+        <Badge label="IN SHOP · LIVE" color={C.green} bg={C.greenLo}/>
+      </div>
+      <div style={{ fontSize:11, color:C.sub, lineHeight:1.5, marginBottom:8 }}>
+        {n === 1 ? "A tracked ornament is" : `${n} tracked ornaments are`} for sale at Tess Everis right now —
+        grab {n === 1 ? "it" : "them"} before the shop rotates.
+      </div>
+      <EververseSection items={data.inShop} onScan={onScan}/>
+      <div style={{ textAlign:"center", fontFamily:"'Barlow Condensed',sans-serif",
+        fontSize:9, color:C.muted, letterSpacing:"0.14em", marginTop:10 }}>
+        {(data.vendor?.location || "THE TOWER").toUpperCase()} · VERIFIED LIVE
+      </div>
+    </Panel>
+  );
+}
+
 /* ── Main App ─────────────────────────────────────────────────────── */
 export default function GhostCompanion() {
   const [query,       setQuery]       = useState("");
@@ -741,6 +821,7 @@ export default function GhostCompanion() {
   // Remote data (from the Railway data API): community paths + Xûr live stock.
   const [communityRates, setCommunityRates] = useState({});
   const [xurData,        setXurData]        = useState(null);
+  const [eververseData,  setEververseData]  = useState(null);
   const [apiUrl,         setApiUrl]         = useState("");
 
   // Keep a ref to the current item so the IPC event listener (registered once)
@@ -759,6 +840,7 @@ export default function GhostCompanion() {
   // Load remote data (no-ops gracefully if no data API URL is configured).
   useEffect(() => { window.api?.getCommunityPaths?.().then(setCommunityRates).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getXur?.().then(setXurData).catch(()=>{}); }, []);
+  useEffect(() => { window.api?.getEververse?.().then(setEververseData).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getDataApiUrl?.().then(v => setApiUrl(v || "")).catch(()=>{}); }, []);
 
   // Refresh whether a given itemHash is currently in the tracked list.
@@ -957,6 +1039,7 @@ export default function GhostCompanion() {
     setApiUrl(saved || "");
     window.api.getCommunityPaths?.({ force: true }).then(setCommunityRates).catch(()=>{});
     window.api.getXur?.({ force: true }).then(setXurData).catch(()=>{});
+    window.api.getEververse?.({ force: true }).then(setEververseData).catch(()=>{});
   }, []);
 
   const best    = itemData ? bestPathId(itemData.acquisitionPaths) : null;
@@ -1014,6 +1097,9 @@ export default function GhostCompanion() {
 
       {/* ── Xûr (live exotic stock from the data API; only shown when present) ── */}
       <XurPanel data={xurData} onScan={(name) => scan(name)}/>
+
+      {/* ── Eververse (tracked ornaments for sale right now; only when in stock) ── */}
+      <EverversePanel data={eververseData} onScan={(name) => scan(name)}/>
 
       {/* ── Path type legend ── */}
       <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:14 }}>

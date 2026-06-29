@@ -1,5 +1,5 @@
 {
-  "_comment": "Tracked weapon ornaments whose ONLY source is Eververse (Tess Everis). These can't be 'earned' from an activity, so we don't list a static acquisition path for them; instead the /eververse live read checks whether each is currently for sale in the shop and, if so, surfaces it (with its Bright Dust / Silver cost) so the user can go buy it before it rotates out. Keyed by itemHash; verified against the Manifest collectible sourceString 'Source: Eververse'. Keep this file byte-identical with src/data/ornaments.json.",
+  "_comment": "Tracked weapon ornaments whose ONLY source is Eververse (Tess Everis). These can't be 'earned' from an activity, so we don't list a static acquisition path for them; instead the /eververse live read checks whether each is currently for sale in the shop and, if so, surfaces it (with its Bright Dust / Silver cost) so the user can go buy it before it rotates out. Keyed by itemHash; itemHash + weapon association verified by walking each exotic weapon's WEAPON COSMETICS socket plug set in the Manifest, filtered to collectible sourceString 'Source: Eververse'. Curated to an iconic exotic-weapon set. Keep this file byte-identical with src/data/ornaments.json.",
   "trackedOrnaments": [
     {
       "name": "Laconic",
@@ -32,6 +32,614 @@
       "weaponHash": 1364093401,
       "source": "Eververse",
       "plugCategory": "v410_repackage_hand_cannon0_skins"
+    },
+    {
+      "name": "Wishes of Sorrow",
+      "itemHash": 3426600741,
+      "weapon": "Thorn",
+      "weaponHash": 3973202132,
+      "source": "Eververse",
+      "plugCategory": "v420_repackage_hand_cannon0_skins"
+    },
+    {
+      "name": "Heretic Robe",
+      "itemHash": 3432171457,
+      "weapon": "Thorn",
+      "weaponHash": 3973202132,
+      "source": "Eververse",
+      "plugCategory": "v420_repackage_hand_cannon0_skins"
+    },
+    {
+      "name": "For the King",
+      "itemHash": 1532753063,
+      "weapon": "Thorn",
+      "weaponHash": 3973202132,
+      "source": "Eververse",
+      "plugCategory": "v420_repackage_hand_cannon0_skins"
+    },
+    {
+      "name": "Essentialism",
+      "itemHash": 3575125069,
+      "weapon": "Thorn",
+      "weaponHash": 3973202132,
+      "source": "Eververse",
+      "plugCategory": "v420_repackage_hand_cannon0_skins"
+    },
+    {
+      "name": "Last Hand",
+      "itemHash": 2243729317,
+      "weapon": "Ace of Spades",
+      "weaponHash": 347366834,
+      "source": "Eververse",
+      "plugCategory": "v400_repackage_hand_cannon0_skins"
+    },
+    {
+      "name": "Salute to the Colonel",
+      "itemHash": 1570516124,
+      "weapon": "Ace of Spades",
+      "weaponHash": 347366834,
+      "source": "Eververse",
+      "plugCategory": "v400_repackage_hand_cannon0_skins"
+    },
+    {
+      "name": "On Ashen Wings",
+      "itemHash": 3170445301,
+      "weapon": "Hawkmoon",
+      "weaponHash": 3856705927,
+      "source": "Eververse",
+      "plugCategory": "v500_repackage_hand_cannon0_skins"
+    },
+    {
+      "name": "Feeling Lucky",
+      "itemHash": 3170445300,
+      "weapon": "Hawkmoon",
+      "weaponHash": 3856705927,
+      "source": "Eververse",
+      "plugCategory": "v500_repackage_hand_cannon0_skins"
+    },
+    {
+      "name": "Austroraptor",
+      "itemHash": 2468053986,
+      "weapon": "Hawkmoon",
+      "weaponHash": 3856705927,
+      "source": "Eververse",
+      "plugCategory": "v500_repackage_hand_cannon0_skins"
+    },
+    {
+      "name": "Bound Hammer",
+      "itemHash": 1906359097,
+      "weapon": "Whisper of the Worm",
+      "weaponHash": 1891561814,
+      "source": "Eververse",
+      "plugCategory": "v320_repackage_sniper_rifle0_skins"
+    },
+    {
+      "name": "Between Breaths",
+      "itemHash": 1906359096,
+      "weapon": "Whisper of the Worm",
+      "weaponHash": 1891561814,
+      "source": "Eververse",
+      "plugCategory": "v320_repackage_sniper_rifle0_skins"
+    },
+    {
+      "name": "Roar of the Wyrm",
+      "itemHash": 3855774718,
+      "weapon": "Whisper of the Worm",
+      "weaponHash": 1891561814,
+      "source": "Eververse",
+      "plugCategory": "v320_repackage_sniper_rifle0_skins"
+    },
+    {
+      "name": "Gilded Cage",
+      "itemHash": 4175323631,
+      "weapon": "Whisper of the Worm",
+      "weaponHash": 1891561814,
+      "source": "Eververse",
+      "plugCategory": "v320_repackage_sniper_rifle0_skins"
+    },
+    {
+      "name": "Hypnopompic",
+      "itemHash": 2409312095,
+      "weapon": "Sleeper Simulant",
+      "weaponHash": 4036115577,
+      "source": "Eververse",
+      "plugCategory": "v320_repackage_fusion_rifle0_skins"
+    },
+    {
+      "name": "Baikonur",
+      "itemHash": 2257492093,
+      "weapon": "Sleeper Simulant",
+      "weaponHash": 4036115577,
+      "source": "Eververse",
+      "plugCategory": "v320_repackage_fusion_rifle0_skins"
+    },
+    {
+      "name": "Braytech Verisimilitude",
+      "itemHash": 2215010466,
+      "weapon": "Sleeper Simulant",
+      "weaponHash": 4036115577,
+      "source": "Eververse",
+      "plugCategory": "v320_repackage_fusion_rifle0_skins"
+    },
+    {
+      "name": "The Untold Tale",
+      "itemHash": 314669087,
+      "weapon": "Vex Mythoclast",
+      "weaponHash": 4289226715,
+      "source": "Eververse",
+      "plugCategory": "v520_repackage_fusion_rifle0_skins"
+    },
+    {
+      "name": "Clast of Its Own",
+      "itemHash": 4294938474,
+      "weapon": "Vex Mythoclast",
+      "weaponHash": 4289226715,
+      "source": "Eververse",
+      "plugCategory": "v520_repackage_fusion_rifle0_skins"
+    },
+    {
+      "name": "Infinite Gift",
+      "itemHash": 1871823355,
+      "weapon": "Vex Mythoclast",
+      "weaponHash": 4289226715,
+      "source": "Eververse",
+      "plugCategory": "v520_repackage_fusion_rifle0_skins"
+    },
+    {
+      "name": "Time's Inlay",
+      "itemHash": 2539359118,
+      "weapon": "Vex Mythoclast",
+      "weaponHash": 4289226715,
+      "source": "Eververse",
+      "plugCategory": "v520_repackage_fusion_rifle0_skins"
+    },
+    {
+      "name": "Patient Zero",
+      "itemHash": 1871253230,
+      "weapon": "Outbreak Perfected",
+      "weaponHash": 3824673936,
+      "source": "Eververse",
+      "plugCategory": "v420_repackage_pulse_rifle0_skins"
+    },
+    {
+      "name": "Pandemic",
+      "itemHash": 1871253231,
+      "weapon": "Outbreak Perfected",
+      "weaponHash": 3824673936,
+      "source": "Eververse",
+      "plugCategory": "v420_repackage_pulse_rifle0_skins"
+    },
+    {
+      "name": "Mercurial Affliction",
+      "itemHash": 1513177792,
+      "weapon": "Outbreak Perfected",
+      "weaponHash": 3824673936,
+      "source": "Eververse",
+      "plugCategory": "v420_repackage_pulse_rifle0_skins"
+    },
+    {
+      "name": "Matterscourge",
+      "itemHash": 3038888553,
+      "weapon": "Outbreak Perfected",
+      "weaponHash": 3824673936,
+      "source": "Eververse",
+      "plugCategory": "v420_repackage_pulse_rifle0_skins"
+    },
+    {
+      "name": "Archon Prime",
+      "itemHash": 1763562841,
+      "weapon": "Outbreak Perfected",
+      "weaponHash": 3824673936,
+      "source": "Eververse",
+      "plugCategory": "v420_repackage_pulse_rifle0_skins"
+    },
+    {
+      "name": "Overgrown",
+      "itemHash": 2779903514,
+      "weapon": "Outbreak Perfected",
+      "weaponHash": 3824673936,
+      "source": "Eververse",
+      "plugCategory": "v420_repackage_pulse_rifle0_skins"
+    },
+    {
+      "name": "What If",
+      "itemHash": 519687404,
+      "weapon": "Monte Carlo",
+      "weaponHash": 4068264807,
+      "source": "Eververse",
+      "plugCategory": "v460_repackage_auto_rifle0_skins"
+    },
+    {
+      "name": "Merry Maker",
+      "itemHash": 1981661519,
+      "weapon": "Monte Carlo",
+      "weaponHash": 4068264807,
+      "source": "Eververse",
+      "plugCategory": "v460_repackage_auto_rifle0_skins"
+    },
+    {
+      "name": "Western Front",
+      "itemHash": 1180846762,
+      "weapon": "Monte Carlo",
+      "weaponHash": 4068264807,
+      "source": "Eververse",
+      "plugCategory": "v460_repackage_auto_rifle0_skins"
+    },
+    {
+      "name": "Dreaming Clarity",
+      "itemHash": 4073089126,
+      "weapon": "Monte Carlo",
+      "weaponHash": 4068264807,
+      "source": "Eververse",
+      "plugCategory": "v460_repackage_auto_rifle0_skins"
+    },
+    {
+      "name": "Chainripper",
+      "itemHash": 2609637836,
+      "weapon": "Monte Carlo",
+      "weaponHash": 4068264807,
+      "source": "Eververse",
+      "plugCategory": "v460_repackage_auto_rifle0_skins"
+    },
+    {
+      "name": "Tangled Outrider",
+      "itemHash": 3977461550,
+      "weapon": "Trinity Ghoul",
+      "weaponHash": 814876685,
+      "source": "Eververse",
+      "plugCategory": "v400_new_bow1_skins"
+    },
+    {
+      "name": "Tertiary Objective",
+      "itemHash": 287295296,
+      "weapon": "Trinity Ghoul",
+      "weaponHash": 814876685,
+      "source": "Eververse",
+      "plugCategory": "v400_new_bow1_skins"
+    },
+    {
+      "name": "Spark from Bone",
+      "itemHash": 3046205073,
+      "weapon": "Trinity Ghoul",
+      "weaponHash": 814876685,
+      "source": "Eververse",
+      "plugCategory": "v400_new_bow1_skins"
+    },
+    {
+      "name": "Three Glowing Dawns",
+      "itemHash": 2972088291,
+      "weapon": "Trinity Ghoul",
+      "weaponHash": 814876685,
+      "source": "Eververse",
+      "plugCategory": "v400_new_bow1_skins"
+    },
+    {
+      "name": "Threatening Breath",
+      "itemHash": 3066440557,
+      "weapon": "Touch of Malice",
+      "weaponHash": 1802135586,
+      "source": "Eververse",
+      "plugCategory": "v620_repackage_scout_rifle0_skins"
+    },
+    {
+      "name": "Ancient Hunger",
+      "itemHash": 757170832,
+      "weapon": "Touch of Malice",
+      "weaponHash": 1802135586,
+      "source": "Eververse",
+      "plugCategory": "v620_repackage_scout_rifle0_skins"
+    },
+    {
+      "name": "A Better Specimen",
+      "itemHash": 4159445096,
+      "weapon": "Xenophage",
+      "weaponHash": 1395261499,
+      "source": "Eververse",
+      "plugCategory": "v460_new_machinegun0_skins"
+    },
+    {
+      "name": "Glee Barrage",
+      "itemHash": 116918307,
+      "weapon": "Xenophage",
+      "weaponHash": 1395261499,
+      "source": "Eververse",
+      "plugCategory": "v460_new_machinegun0_skins"
+    },
+    {
+      "name": "Homesteader",
+      "itemHash": 3205431489,
+      "weapon": "Xenophage",
+      "weaponHash": 1395261499,
+      "source": "Eververse",
+      "plugCategory": "v460_new_machinegun0_skins"
+    },
+    {
+      "name": "You Think You're Big Time?",
+      "itemHash": 2991424415,
+      "weapon": "Xenophage",
+      "weaponHash": 1395261499,
+      "source": "Eververse",
+      "plugCategory": "v460_new_machinegun0_skins"
+    },
+    {
+      "name": "Lethe's Mercy",
+      "itemHash": 396425346,
+      "weapon": "The Lament",
+      "weaponHash": 3487253372,
+      "source": "Eververse",
+      "plugCategory": "v500_new_sword0_skins"
+    },
+    {
+      "name": "Internal Combustion",
+      "itemHash": 2321971501,
+      "weapon": "The Lament",
+      "weaponHash": 3487253372,
+      "source": "Eververse",
+      "plugCategory": "v500_new_sword0_skins"
+    },
+    {
+      "name": "The Logic",
+      "itemHash": 1141818699,
+      "weapon": "The Lament",
+      "weaponHash": 3487253372,
+      "source": "Eververse",
+      "plugCategory": "v500_new_sword0_skins"
+    },
+    {
+      "name": "The Knight's Elegy",
+      "itemHash": 1138782604,
+      "weapon": "The Lament",
+      "weaponHash": 3487253372,
+      "source": "Eververse",
+      "plugCategory": "v500_new_sword0_skins"
+    },
+    {
+      "name": "The Cleaver",
+      "itemHash": 3803099167,
+      "weapon": "The Lament",
+      "weaponHash": 3487253372,
+      "source": "Eververse",
+      "plugCategory": "v500_new_sword0_skins"
+    },
+    {
+      "name": "Poison Wings Spread",
+      "itemHash": 296103153,
+      "weapon": "Le Monarque",
+      "weaponHash": 3588934839,
+      "source": "Eververse",
+      "plugCategory": "v410_new_bow0_skins"
+    },
+    {
+      "name": "Calyptra",
+      "itemHash": 3287498059,
+      "weapon": "Le Monarque",
+      "weaponHash": 3588934839,
+      "source": "Eververse",
+      "plugCategory": "v410_new_bow0_skins"
+    },
+    {
+      "name": "Infinite Quiver",
+      "itemHash": 3804935529,
+      "weapon": "Le Monarque",
+      "weaponHash": 3588934839,
+      "source": "Eververse",
+      "plugCategory": "v410_new_bow0_skins"
+    },
+    {
+      "name": "Red Dwarf",
+      "itemHash": 1630611952,
+      "weapon": "Sunshot",
+      "weaponHash": 2907129557,
+      "source": "Eververse",
+      "plugCategory": "exotic_new_hand_cannon1_skins"
+    },
+    {
+      "name": "Quark Star",
+      "itemHash": 3686084858,
+      "weapon": "Sunshot",
+      "weaponHash": 2907129557,
+      "source": "Eververse",
+      "plugCategory": "exotic_new_hand_cannon1_skins"
+    },
+    {
+      "name": "Burning Red",
+      "itemHash": 1409366784,
+      "weapon": "Sunshot",
+      "weaponHash": 2907129557,
+      "source": "Eververse",
+      "plugCategory": "exotic_new_hand_cannon1_skins"
+    },
+    {
+      "name": "Vexplosion",
+      "itemHash": 683481680,
+      "weapon": "Sunshot",
+      "weaponHash": 2907129557,
+      "source": "Eververse",
+      "plugCategory": "exotic_new_hand_cannon1_skins"
+    },
+    {
+      "name": "Breakshot",
+      "itemHash": 1960441750,
+      "weapon": "Sunshot",
+      "weaponHash": 2907129557,
+      "source": "Eververse",
+      "plugCategory": "exotic_new_hand_cannon1_skins"
+    },
+    {
+      "name": "Summer Storm",
+      "itemHash": 3520552272,
+      "weapon": "Riskrunner",
+      "weaponHash": 3089417789,
+      "source": "Eververse",
+      "plugCategory": "exotic_new_submachinegun1_skins"
+    },
+    {
+      "name": "Electric Violet",
+      "itemHash": 1445854248,
+      "weapon": "Riskrunner",
+      "weaponHash": 3089417789,
+      "source": "Eververse",
+      "plugCategory": "exotic_new_submachinegun1_skins"
+    },
+    {
+      "name": "Third Rail",
+      "itemHash": 2744195002,
+      "weapon": "Riskrunner",
+      "weaponHash": 3089417789,
+      "source": "Eververse",
+      "plugCategory": "exotic_new_submachinegun1_skins"
+    },
+    {
+      "name": "Cheerspreader",
+      "itemHash": 301177215,
+      "weapon": "Riskrunner",
+      "weaponHash": 3089417789,
+      "source": "Eververse",
+      "plugCategory": "exotic_new_submachinegun1_skins"
+    },
+    {
+      "name": "Leporine Jubilation",
+      "itemHash": 109428985,
+      "weapon": "Riskrunner",
+      "weaponHash": 3089417789,
+      "source": "Eververse",
+      "plugCategory": "exotic_new_submachinegun1_skins"
+    },
+    {
+      "name": "Titanium Alloy",
+      "itemHash": 1135501644,
+      "weapon": "MIDA Multi-Tool",
+      "weaponHash": 1331482397,
+      "source": "Eververse",
+      "plugCategory": "exotic_repackage_scout_rifle0_skins"
+    },
+    {
+      "name": "MIDA Tactical",
+      "itemHash": 2195305504,
+      "weapon": "MIDA Multi-Tool",
+      "weaponHash": 1331482397,
+      "source": "Eververse",
+      "plugCategory": "exotic_repackage_scout_rifle0_skins"
+    },
+    {
+      "name": "Desert Camo",
+      "itemHash": 2005782761,
+      "weapon": "MIDA Multi-Tool",
+      "weaponHash": 1331482397,
+      "source": "Eververse",
+      "plugCategory": "exotic_repackage_scout_rifle0_skins"
+    },
+    {
+      "name": "Digital Ops",
+      "itemHash": 3807808621,
+      "weapon": "MIDA Multi-Tool",
+      "weaponHash": 1331482397,
+      "source": "Eververse",
+      "plugCategory": "exotic_repackage_scout_rifle0_skins"
+    },
+    {
+      "name": "MARA Multi-Tool",
+      "itemHash": 467730932,
+      "weapon": "MIDA Multi-Tool",
+      "weaponHash": 1331482397,
+      "source": "Eververse",
+      "plugCategory": "exotic_repackage_scout_rifle0_skins"
+    },
+    {
+      "name": "Modern MIDA Multi-Tool",
+      "itemHash": 433219358,
+      "weapon": "MIDA Multi-Tool",
+      "weaponHash": 1331482397,
+      "source": "Eververse",
+      "plugCategory": "exotic_repackage_scout_rifle0_skins"
+    },
+    {
+      "name": "One Terrible Scream",
+      "itemHash": 476682455,
+      "weapon": "One Thousand Voices",
+      "weaponHash": 2069224589,
+      "source": "Eververse",
+      "plugCategory": "v400_new_fusion_rifle0_skins"
+    },
+    {
+      "name": "Scrimshander's Song",
+      "itemHash": 568877018,
+      "weapon": "One Thousand Voices",
+      "weaponHash": 2069224589,
+      "source": "Eververse",
+      "plugCategory": "v400_new_fusion_rifle0_skins"
+    },
+    {
+      "name": "Extravagant Wishcraft",
+      "itemHash": 1503941894,
+      "weapon": "One Thousand Voices",
+      "weaponHash": 2069224589,
+      "source": "Eververse",
+      "plugCategory": "v400_new_fusion_rifle0_skins"
+    },
+    {
+      "name": "Drowned in Strife",
+      "itemHash": 899855954,
+      "weapon": "Witherhoard",
+      "weaponHash": 2357297366,
+      "source": "Eververse",
+      "plugCategory": "v490_new_grenade_launcher0_skins"
+    },
+    {
+      "name": "Cedar and Ash",
+      "itemHash": 2109129768,
+      "weapon": "Witherhoard",
+      "weaponHash": 2357297366,
+      "source": "Eververse",
+      "plugCategory": "v490_new_grenade_launcher0_skins"
+    },
+    {
+      "name": "Splendid Vidua",
+      "itemHash": 3620946736,
+      "weapon": "Witherhoard",
+      "weaponHash": 2357297366,
+      "source": "Eververse",
+      "plugCategory": "v490_new_grenade_launcher0_skins"
+    },
+    {
+      "name": "Aldrovanda",
+      "itemHash": 2877175449,
+      "weapon": "Witherhoard",
+      "weaponHash": 2357297366,
+      "source": "Eververse",
+      "plugCategory": "v490_new_grenade_launcher0_skins"
+    },
+    {
+      "name": "Particle Accelerator",
+      "itemHash": 1856805547,
+      "weapon": "Graviton Lance",
+      "weaponHash": 3628991658,
+      "source": "Eververse",
+      "plugCategory": "exotic_new_pulse_rifle1_skins"
+    },
+    {
+      "name": "Carina Nebula",
+      "itemHash": 2433900295,
+      "weapon": "Graviton Lance",
+      "weaponHash": 3628991658,
+      "source": "Eververse",
+      "plugCategory": "exotic_new_pulse_rifle1_skins"
+    },
+    {
+      "name": "General Relativity",
+      "itemHash": 4133608609,
+      "weapon": "Graviton Lance",
+      "weaponHash": 3628991658,
+      "source": "Eververse",
+      "plugCategory": "exotic_new_pulse_rifle1_skins"
+    },
+    {
+      "name": "Collapse Dynamic",
+      "itemHash": 67652813,
+      "weapon": "Graviton Lance",
+      "weaponHash": 3628991658,
+      "source": "Eververse",
+      "plugCategory": "exotic_new_pulse_rifle1_skins"
     }
   ]
 }

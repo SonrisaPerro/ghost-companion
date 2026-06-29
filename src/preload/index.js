@@ -27,6 +27,7 @@ const api = {
 
   // --- Data API (Xûr live stock + community paths) -----------------------
   getXur: (opts) => ipcRenderer.invoke('get-xur', opts || {}),
+  getEververse: (opts) => ipcRenderer.invoke('get-eververse', opts || {}),
   getCommunityPaths: (opts) => ipcRenderer.invoke('get-community-paths', opts || {}),
   getDataApiUrl: () => ipcRenderer.invoke('get-data-api-url'),
   setDataApiUrl: (url) => ipcRenderer.invoke('set-data-api-url', url),

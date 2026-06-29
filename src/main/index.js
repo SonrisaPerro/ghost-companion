@@ -233,6 +233,7 @@ function registerIpc() {
 
   // --- Data API (Xûr live stock + community paths) ------------------------
   ipcMain.handle('get-xur', async (_e, { force } = {}) => dataApi.getXur(store, { force }))
+  ipcMain.handle('get-eververse', async (_e, { force } = {}) => dataApi.getEververse(store, { force }))
   ipcMain.handle('get-community-paths', async (_e, { force } = {}) =>
     dataApi.getCommunityPaths(store, { force })
   )
