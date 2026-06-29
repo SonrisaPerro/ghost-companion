@@ -43,9 +43,15 @@ async function resolveCosts(costs, cache) {
 }
 
 /**
- * Reads the Monument's live sales and splits the EXOTIC weapons/armor (engrams,
- * materials and any legendary filler are dropped by tier + classifyGear). Each
- * item carries its purchase cost.
+ * Reads the Monument's live catalog. The top-level vendor sells 3 CATEGORY
+ * containers ("Light and Dark Saga Exotics", "Fate Saga Exotics", "Legacy
+ * Gear"), each itemType-0 with a `preview` block: `previewVendorHash` points at
+ * the sub-vendor that actually sells the exotics, and `derivedItemCategories`
+ * lists the child item hashes. We follow each container:
+ *   - read the sub-vendor's live sales → real purchase costs, keyed by itemHash
+ *   - enumerate the container's derivedItemCategories items → the catalog itself
+ * then filter to EXOTIC weapons/armor and attach the cost (if the sub-vendor
+ * exposed one). Costs may be empty if a sub-vendor isn't character-readable.
  */
 async function monumentCatalog(accessToken, character) {
   const { present, sales } = await getVendorSales(accessToken, character, MONUMENT_VENDOR_HASH)
@@ -53,40 +59,55 @@ async function monumentCatalog(accessToken, character) {
   const armor = []
   const costCache = new Map()
   const seen = new Set()
-  const diag = { sales: sales.length, resolved: 0, failed: 0, exotic: 0, unclassified: 0, sampleTiers: {}, samples: [] }
+  const diag = { containers: sales.length, candidates: 0, resolved: 0, failed: 0, exotic: 0, unclassified: 0, withCost: 0 }
 
-  for (const sale of sales) {
-    if (seen.has(sale.itemHash)) continue
-    seen.add(sale.itemHash)
-    let def
+  for (const container of sales) {
+    let cDef
     try {
-      def = await getItemDef(sale.itemHash)
-      diag.resolved++
+      cDef = await getItemDef(container.itemHash)
     } catch {
-      diag.failed++
       continue
     }
-    const tier = def?.inventory?.tierTypeName || '?'
-    diag.sampleTiers[tier] = (diag.sampleTiers[tier] || 0) + 1
-    if (diag.samples.length < 25) {
-      diag.samples.push({
-        hash: def?.hash,
-        name: def?.displayProperties?.name || '',
-        itemType: def?.itemType,
-        typeName: def?.itemTypeDisplayName || '',
-        tier
-      })
+    const preview = cDef?.preview
+    if (!preview) continue
+
+    // Costs from the live sub-vendor, keyed by the exotic's itemHash.
+    const costByItem = new Map()
+    if (preview.previewVendorHash) {
+      try {
+        const sub = await getVendorSales(accessToken, character, preview.previewVendorHash)
+        for (const s of sub.sales) costByItem.set(s.itemHash, s.costs)
+      } catch {
+        /* sub-vendor not character-readable → catalog still listed, costs blank */
+      }
     }
-    if (tier !== 'Exotic') continue
-    diag.exotic++
-    const kind = classifyGear(def)
-    if (!kind) {
-      diag.unclassified++
-      continue
+
+    const derived = (preview.derivedItemCategories || []).flatMap((c) => c.items || [])
+    for (const { itemHash } of derived) {
+      if (!itemHash || seen.has(itemHash)) continue
+      seen.add(itemHash)
+      diag.candidates++
+      let def
+      try {
+        def = await getItemDef(itemHash)
+        diag.resolved++
+      } catch {
+        diag.failed++
+        continue
+      }
+      if (def?.inventory?.tierTypeName !== 'Exotic') continue
+      diag.exotic++
+      const kind = classifyGear(def)
+      if (!kind) {
+        diag.unclassified++
+        continue
+      }
+      const costs = await resolveCosts(costByItem.get(itemHash) || [], costCache)
+      if (costs.length) diag.withCost++
+      const item = { ...shapeItem(def), costs }
+      if (kind === 'weapon') weapons.push(item)
+      else armor.push(item)
     }
-    const item = { ...shapeItem(def), costs: await resolveCosts(sale.costs, costCache) }
-    if (kind === 'weapon') weapons.push(item)
-    else armor.push(item)
   }
   return { present, weapons, armor, diag }
 }
