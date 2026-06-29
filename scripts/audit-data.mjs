@@ -97,10 +97,15 @@ for (const [name, entry] of Object.entries(data)) {
     const liveName = def.displayProperties?.name || ''
     if (liveName !== name) note(`name mismatch: JSON "${name}" vs Manifest "${liveName}"`)
     const craftableNow = isCraftable(def)
+    const hasCraftablePath = (entry.acquisitionPaths || []).some((p) => p.pathType === 'craftable')
     for (const p of entry.acquisitionPaths || []) {
       if (p.pathType === 'craftable' && !craftableNow) {
         note(`path "${p.id}" is marked craftable, but Manifest shows no recipe (changed?)`)
       }
+    }
+    // Inverse gap: Manifest says this item is craftable but no craftable path is listed.
+    if (craftableNow && !hasCraftablePath) {
+      note(`Manifest shows this item is CRAFTABLE but no craftable path is listed (missing path?)`)
     }
     console.log(`    ✓ ${liveName} — ${def.inventory?.tierTypeName || '?'} ${def.itemTypeDisplayName || ''}${craftableNow ? ' [craftable]' : ''}`)
   }
