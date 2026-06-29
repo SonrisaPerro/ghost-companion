@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 // Community acquisition data (drop rates, paths, steps). The Manifest gives us
 // the canonical item identity; dropRates.json supplies the farming metadata.
 import dropRates from "../../data/dropRates.json";
@@ -774,11 +774,12 @@ function EververseSection({ items, onScan }) {
   );
 }
 
-function EverversePanel({ data, onScan }) {
-  // Only surface on an AUTHORITATIVE live read with at least one tracked ornament
-  // actually in stock. Fallback / nothing-in-shop → render nothing at all.
-  if (!data || data.source !== "live" || !data.anyInShop || !data.inShop?.length) return null;
-  const n = data.inShop.length;
+function EverversePanel({ items, location, onScan }) {
+  // `items` is the already-merged in-shop list (curated registry + the user's own
+  // tracked ornaments matched against the live sales). The parent only builds it
+  // from an AUTHORITATIVE live read, so an empty list here means nothing to show.
+  if (!items?.length) return null;
+  const n = items.length;
   return (
     <Panel bc={C.purple} style={{ marginBottom:14 }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
@@ -789,11 +790,80 @@ function EverversePanel({ data, onScan }) {
         {n === 1 ? "A tracked ornament is" : `${n} tracked ornaments are`} for sale at Tess Everis right now —
         grab {n === 1 ? "it" : "them"} before the shop rotates.
       </div>
-      <EververseSection items={data.inShop} onScan={onScan}/>
+      <EververseSection items={items} onScan={onScan}/>
       <div style={{ textAlign:"center", fontFamily:"'Barlow Condensed',sans-serif",
         fontSize:9, color:C.muted, letterSpacing:"0.14em", marginTop:10 }}>
-        {(data.vendor?.location || "THE TOWER").toUpperCase()} · VERIFIED LIVE
+        {(location || "THE TOWER").toUpperCase()} · VERIFIED LIVE
       </div>
+    </Panel>
+  );
+}
+
+/* ── Ornaments-on-card panel ──────────────────────────────────────────
+   On a scanned weapon, lists its Eververse-sourced ornaments with a "track
+   any?" checklist. Tracking an ornament persists it locally (electron-store)
+   so it lights up the Eververse panel whenever it rotates into Tess' shop.
+   Self-hides when the weapon has no Eververse ornaments (incl. non-weapons). */
+function OrnamentsPanel({ ornaments, trackedSet, shopCostByHash, live, onToggle }) {
+  const evv = (ornaments || []).filter((o) => o.eververse);
+  if (!evv.length) return null;
+  return (
+    <Panel bc={C.purple} style={{ marginBottom:10 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
+        <Lbl color={C.purple} mb={0}>Eververse Ornaments · Track For Shop Alerts</Lbl>
+        <Badge label={`${evv.length}`} color={C.purple} bg={C.purpleLo}/>
+      </div>
+      <div style={{ fontSize:11, color:C.sub, lineHeight:1.5, marginBottom:10 }}>
+        These ornaments only sell at Eververse. Track any and the Ghost will surface them
+        at the top whenever they're in Tess' shop.
+      </div>
+      {evv.map((o) => {
+        const tracked = trackedSet.has(o.itemHash);
+        const cost = live ? shopCostByHash.get(o.itemHash) : null;
+        const inShop = !!cost;
+        const c0 = (cost || [])[0];
+        const col = costColor(c0?.kind);
+        return (
+          <div key={o.itemHash} onClick={() => onToggle(o)} title={tracked ? "Stop tracking" : "Track this ornament"}
+            style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 0", cursor:"pointer",
+              borderBottom:`1px solid ${C.muted}` }}
+            onMouseEnter={e => e.currentTarget.style.opacity = 0.8}
+            onMouseLeave={e => e.currentTarget.style.opacity = 1}>
+            <div style={{ width:20, height:20, flexShrink:0,
+              background: tracked ? C.purpleLo : C.muted,
+              border:`1px solid ${tracked ? C.purple : C.border}`,
+              color:C.purple, fontFamily:"'Barlow Condensed',sans-serif", fontSize:12,
+              display:"flex", alignItems:"center", justifyContent:"center" }}>
+              {tracked ? "✓" : ""}
+            </div>
+            {o.icon
+              ? <img src={o.icon} alt="" width={26} height={26} style={{ border:`1px solid ${C.purple}`, flexShrink:0 }}/>
+              : <div style={{ width:26, height:26, background:C.purpleLo, border:`1px solid ${C.purple}`, flexShrink:0,
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, color:C.purple }}>◈</div>}
+            <div style={{ minWidth:0, flex:1 }}>
+              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:14, fontWeight:700,
+                color:C.text, letterSpacing:"0.04em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                {o.name}
+              </div>
+              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.1em" }}>
+                {tracked ? "TRACKED" : "TAP TO TRACK"} · EVERVERSE
+              </div>
+            </div>
+            {inShop && (
+              <div style={{ textAlign:"right", flexShrink:0 }}>
+                <Badge label="IN SHOP" color={C.green} bg={C.greenLo}/>
+                {c0 && (
+                  <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, fontWeight:700,
+                    color:col, letterSpacing:"0.06em", marginTop:3 }}>
+                    {formatQty(c0.quantity)} {(c0.name || "").toUpperCase()}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </Panel>
   );
 }
@@ -812,11 +882,19 @@ export default function GhostCompanion() {
   const [authBusy,    setAuthBusy]    = useState(false);
   const [showAccount, setShowAccount] = useState(false);
 
+  // Overlay window controls (frameless window — its own pin/tray buttons).
+  const [alwaysOnTop, setAlwaysOnTop] = useState(true);
+
   // User-authored acquisition data (merged over bundled dropRates.json) and
   // whether the on-screen item is registered for auto-tracking.
   const [userRates,   setUserRates]   = useState({});
   const [isTracked,   setIsTracked]   = useState(false);
   const [showAdd,     setShowAdd]     = useState(false);
+
+  // Eververse ornaments: the on-screen weapon's ornaments (fetched per scan) and
+  // the user's persisted set of tracked ornaments (drives the shop-alert merge).
+  const [weaponOrnaments,  setWeaponOrnaments]  = useState([]);
+  const [trackedOrnaments, setTrackedOrnaments] = useState([]);
 
   // Remote data (from the Railway data API): community paths + Xûr live stock.
   const [communityRates, setCommunityRates] = useState({});
@@ -842,6 +920,34 @@ export default function GhostCompanion() {
   useEffect(() => { window.api?.getXur?.().then(setXurData).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getEververse?.().then(setEververseData).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getDataApiUrl?.().then(v => setApiUrl(v || "")).catch(()=>{}); }, []);
+  useEffect(() => { window.api?.getAlwaysOnTop?.().then(v => setAlwaysOnTop(v !== false)).catch(()=>{}); }, []);
+  useEffect(() => { window.api?.getTrackedOrnaments?.().then(v => setTrackedOrnaments(v || [])).catch(()=>{}); }, []);
+
+  // Flip always-on-top (main persists it; reflect the authoritative new value).
+  const togglePin = useCallback(async () => {
+    try { setAlwaysOnTop(await window.api.toggleAlwaysOnTop()); } catch {/* ignore */}
+  }, []);
+
+  // Add/remove an Eververse ornament from the persisted tracked set. We store a
+  // small descriptor (not just the hash) so the Eververse merge can render the
+  // ornament's name/weapon even when its weapon card isn't currently on screen.
+  const toggleOrnamentTrack = useCallback(async (orn) => {
+    const cur = itemRef.current;
+    const list = (await window.api.getTrackedOrnaments()) || [];
+    const exists = list.some(t => t.itemHash === orn.itemHash);
+    const next = exists
+      ? list.filter(t => t.itemHash !== orn.itemHash)
+      : [...list, {
+          itemHash: orn.itemHash,
+          name: orn.name,
+          icon: orn.icon || null,
+          weapon: cur?.itemName || null,
+          weaponHash: cur?.itemHash || null,
+          source: orn.source || "Eververse",
+          plugCategory: orn.plugCategory || null,
+        }];
+    setTrackedOrnaments(await window.api.setTrackedOrnaments(next));
+  }, []);
 
   // Refresh whether a given itemHash is currently in the tracked list.
   const refreshTracked = useCallback(async (itemHash) => {
@@ -907,6 +1013,7 @@ export default function GhostCompanion() {
     setPathRuns({});
     setAcquired(false);
     setShowAdd(false);
+    setWeaponOrnaments([]);
 
     try {
       const term = raw.trim();
@@ -934,6 +1041,11 @@ export default function GhostCompanion() {
       const data = buildItemData(hit, ratesRef.current.user, ratesRef.current.community);
       setItemData(data);
       refreshTracked(hit.itemHash);
+
+      // Walk the weapon's Eververse ornaments (empty for non-weapons → panel hides).
+      window.api?.getWeaponOrnaments?.(hit.itemHash)
+        .then(o => setWeaponOrnaments(o || []))
+        .catch(() => setWeaponOrnaments([]));
 
       // Hydrate any previously-logged (or auto-tracked) run counts from store.
       const counts = (await window.api.getRunCounts?.()) || {};
@@ -1042,6 +1154,35 @@ export default function GhostCompanion() {
     window.api.getEververse?.({ force: true }).then(setEververseData).catch(()=>{});
   }, []);
 
+  // Live shop state derived once from the Eververse payload. `shopCostByHash` maps
+  // EVERY current sale (server's additive `shopSales`) to its cost, so we can match
+  // the user's own tracked ornaments — not just the curated registry — against the
+  // shop. Falls back to the curated `inShop` costs if an older server omits shopSales.
+  const eververseLive = eververseData?.source === "live";
+  const shopCostByHash = useMemo(() => {
+    const m = new Map();
+    for (const s of eververseData?.shopSales || []) m.set(s.itemHash, s.cost);
+    for (const o of eververseData?.inShop || []) if (!m.has(o.itemHash)) m.set(o.itemHash, o.cost);
+    return m;
+  }, [eververseData]);
+
+  // The list the Eververse panel renders: server-curated in-shop ornaments merged
+  // with the user's tracked ornaments that match a live sale (dedupe by itemHash).
+  const eververseInShop = useMemo(() => {
+    if (!eververseLive) return [];
+    const map = new Map();
+    for (const o of eververseData?.inShop || []) map.set(o.itemHash, o);
+    for (const t of trackedOrnaments) {
+      if (map.has(t.itemHash)) continue;
+      const cost = shopCostByHash.get(t.itemHash);
+      if (cost) map.set(t.itemHash, { ...t, cost });
+    }
+    return [...map.values()];
+  }, [eververseLive, eververseData, trackedOrnaments, shopCostByHash]);
+
+  const trackedOrnamentSet = useMemo(
+    () => new Set(trackedOrnaments.map(t => t.itemHash)), [trackedOrnaments]);
+
   const best    = itemData ? bestPathId(itemData.acquisitionPaths) : null;
   const itemRar = rar(itemData?.rarity);
 
@@ -1078,6 +1219,22 @@ export default function GhostCompanion() {
               {auth.loggedIn ? "ONLINE" : "OFFLINE"}
             </span>
           </div>
+          {/* Always-on-top pin toggle (keeps the overlay above the game). */}
+          <button onClick={togglePin} title={alwaysOnTop ? "Unpin (allow other windows on top)" : "Pin always-on-top"} style={{
+            background:"none", border:`1px solid ${alwaysOnTop ? C.gold : C.muted}`,
+            color: alwaysOnTop ? C.gold : C.muted, padding:"3px 8px", cursor:"pointer",
+            fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700, letterSpacing:"0.14em",
+            WebkitAppRegion:"no-drag" }}>
+            {alwaysOnTop ? "PIN ◆" : "PIN ○"}
+          </button>
+          {/* Hide the overlay to the system tray (tray icon / menu restores it). */}
+          <button onClick={() => window.api?.hideWindow?.()} title="Hide to tray" style={{
+            background:"none", border:`1px solid ${C.muted}`,
+            color:C.muted, padding:"3px 8px", cursor:"pointer",
+            fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700, letterSpacing:"0.14em",
+            WebkitAppRegion:"no-drag" }}>
+            TRAY ▾
+          </button>
           {/* Account toggle (was the API-key button) */}
           <button onClick={() => setShowAccount(s => !s)} style={{
             background:"none", border:`1px solid ${showAccount ? C.orange : C.muted}`,
@@ -1099,7 +1256,7 @@ export default function GhostCompanion() {
       <XurPanel data={xurData} onScan={(name) => scan(name)}/>
 
       {/* ── Eververse (tracked ornaments for sale right now; only when in stock) ── */}
-      <EverversePanel data={eververseData} onScan={(name) => scan(name)}/>
+      <EverversePanel items={eververseInShop} location={eververseData?.vendor?.location} onScan={(name) => scan(name)}/>
 
       {/* ── Path type legend ── */}
       <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:14 }}>
@@ -1223,6 +1380,15 @@ export default function GhostCompanion() {
           {showAdd && (
             <AddPathForm onSave={saveCustomPath} onCancel={() => setShowAdd(false)}/>
           )}
+
+          {/* Eververse ornaments for this weapon — "track any?" checklist */}
+          <OrnamentsPanel
+            ornaments={weaponOrnaments}
+            trackedSet={trackedOrnamentSet}
+            shopCostByHash={shopCostByHash}
+            live={eververseLive}
+            onToggle={toggleOrnamentTrack}
+          />
 
           {/* Prerequisites */}
           {itemData.prerequisites?.length > 0 && (

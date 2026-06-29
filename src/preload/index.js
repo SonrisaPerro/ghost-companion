@@ -19,6 +19,7 @@ const api = {
   searchManifest: (query) => ipcRenderer.invoke('search-manifest', query),
   getItemByHash: (itemHash) => ipcRenderer.invoke('get-item-by-hash', itemHash),
   searchActivities: (query) => ipcRenderer.invoke('search-activities', query),
+  getWeaponOrnaments: (weaponHash) => ipcRenderer.invoke('get-weapon-ornaments', weaponHash),
 
   // --- User-authored acquisition data ------------------------------------
   getUserDropRates: () => ipcRenderer.invoke('get-user-drop-rates'),
@@ -38,6 +39,8 @@ const api = {
   // --- Tracked items + run counts ----------------------------------------
   getTrackedItems: () => ipcRenderer.invoke('get-tracked-items'),
   setTrackedItems: (items) => ipcRenderer.invoke('set-tracked-items', items),
+  getTrackedOrnaments: () => ipcRenderer.invoke('get-tracked-ornaments'),
+  setTrackedOrnaments: (list) => ipcRenderer.invoke('set-tracked-ornaments', list),
   getRunCounts: () => ipcRenderer.invoke('get-run-counts'),
   setRunCount: (payload) => ipcRenderer.invoke('set-run-count', payload),
 

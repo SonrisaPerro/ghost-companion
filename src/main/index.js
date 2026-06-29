@@ -34,6 +34,7 @@ const store = new Store({
     [TRACKER_STORE_KEYS.tracked]: [],
     runCounts: {}, // { "<itemKey>::<pathId>": number }
     userDropRates: {}, // user-authored acquisition data, keyed by itemHash
+    trackedOrnaments: [], // user-tracked Eververse ornaments (drives the shop alert panel)
     dataApiUrl: '' // base URL of the Ghost Companion data API (Railway); empty = off
   }
 })
@@ -214,6 +215,12 @@ function registerIpc() {
     return manifest.searchActivities(query)
   })
 
+  // Eververse ornaments available on a scanned weapon (walked from its sockets),
+  // so the renderer can offer "track any of these?" on the weapon card.
+  ipcMain.handle('get-weapon-ornaments', async (_e, weaponHash) => {
+    return manifest.getWeaponOrnaments(Number(weaponHash))
+  })
+
   // --- User-authored acquisition data (keyed by itemHash) -----------------
   ipcMain.handle('get-user-drop-rates', async () => store.get('userDropRates') || {})
 
@@ -257,6 +264,14 @@ function registerIpc() {
   ipcMain.handle('set-tracked-items', async (_e, items) => {
     store.set(TRACKER_STORE_KEYS.tracked, items || [])
     return store.get(TRACKER_STORE_KEYS.tracked)
+  })
+
+  // User-tracked Eververse ornaments (drives the Eververse shop-alert panel).
+  ipcMain.handle('get-tracked-ornaments', async () => store.get('trackedOrnaments') || [])
+
+  ipcMain.handle('set-tracked-ornaments', async (_e, list) => {
+    store.set('trackedOrnaments', list || [])
+    return store.get('trackedOrnaments')
   })
 
   // Run counts (auto-incremented by the tracker, also editable by the user).

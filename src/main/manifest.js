@@ -292,3 +292,63 @@ export function getItemByHash(itemHash) {
   const row = getDb().prepare(`SELECT json FROM ${ITEM_TABLE} WHERE id = ?`).get(signed)
   return parseRow(row)
 }
+
+/**
+ * Returns the weapon ornaments available for a given weapon, by walking its
+ * "WEAPON COSMETICS" socket → reusable plug set → plug items, keeping only real
+ * weapon ornaments (`traitIds` includes `item.ornament.weapon`).
+ *
+ * This is the same socket walk that was Manifest-verified for the Eververse
+ * tracker (it reproduces The Last Word's four ornaments exactly). Returns [] for
+ * non-weapons or weapons with no cosmetic socket, so the renderer panel self-hides.
+ *
+ * Each entry: { itemHash, name, icon, plugCategory, source, eververse }.
+ * `source` is the collectible sourceString (e.g. "Eververse"); `eververse` is a
+ * convenience flag for the ones the Eververse shop tracker can alert on.
+ */
+export function getWeaponOrnaments(weaponHash) {
+  const weapon = getItemByHash(weaponHash)
+  if (!weapon?.sockets) return []
+
+  // Resolve which socket indexes belong to the "WEAPON COSMETICS" category.
+  const db = getDb()
+  const cosmeticIdx = new Set()
+  for (const sc of weapon.sockets.socketCategories || []) {
+    const catRow = db
+      .prepare(`SELECT json FROM DestinySocketCategoryDefinition WHERE id = ?`)
+      .get(sc.socketCategoryHash | 0)
+    const cat = parseRow(catRow)
+    if ((cat?.displayProperties?.name || '').toUpperCase() === 'WEAPON COSMETICS') {
+      for (const i of sc.socketIndexes || []) cosmeticIdx.add(i)
+    }
+  }
+  if (cosmeticIdx.size === 0) return []
+
+  const entries = weapon.sockets.socketEntries || []
+  const out = []
+  const seen = new Set()
+  for (const idx of cosmeticIdx) {
+    const entry = entries[idx]
+    if (!entry?.reusablePlugSetHash) continue
+    const psRow = db
+      .prepare(`SELECT json FROM DestinyPlugSetDefinition WHERE id = ?`)
+      .get(entry.reusablePlugSetHash | 0)
+    const plugSet = parseRow(psRow)
+    for (const p of plugSet?.reusablePlugItems || []) {
+      const def = getItemByHash(p.plugItemHash)
+      if (!(def?.traitIds || []).includes('item.ornament.weapon')) continue
+      if (seen.has(def.hash)) continue
+      seen.add(def.hash)
+      const source = def.collectibleHash ? resolveSources(def.collectibleHash)[0] || '' : ''
+      out.push({
+        itemHash: def.hash,
+        name: def.displayProperties?.name || '',
+        icon: def.displayProperties?.icon ? `${BUNGIE_ROOT}${def.displayProperties.icon}` : null,
+        plugCategory: def.plug?.plugCategoryIdentifier || null,
+        source,
+        eververse: /eververse/i.test(source)
+      })
+    }
+  }
+  return out
+}

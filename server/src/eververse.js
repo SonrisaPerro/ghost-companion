@@ -109,6 +109,8 @@ export async function resolveEververse() {
     anyInShop: false,
     inShop: [], // tracked ornaments buyable right now (with cost)
     notInShop: [], // tracked ornaments not currently offered
+    shopSales: [], // ALL current sale items { itemHash, cost } — lets the client match
+    //               user-tracked ornaments (not just the curated registry) against the shop
     diagnostics: { trackedCount: tracked.length }
   }
 
@@ -129,6 +131,14 @@ export async function resolveEververse() {
       }
     }
     result.anyInShop = result.inShop.length > 0
+
+    // Every current sale with its resolved cost, so the client can match its own
+    // user-tracked ornaments (which the server doesn't know about) against the live
+    // shop. Currencies are the 3 known ones (no def lookups), so this stays cheap.
+    for (const [itemHash, hit] of byItem) {
+      const cost = await resolveCosts(hit.costs || [], costCache)
+      result.shopSales.push({ itemHash, cost })
+    }
     result.vendor.present = vendorsSeen.some((v) => v.present)
     result.source = 'live'
     result.diagnostics.vendors = vendorsSeen
