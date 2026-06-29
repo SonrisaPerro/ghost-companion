@@ -20,12 +20,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import {
-  refreshAccessToken,
-  getPrimaryCharacter,
-  getVendorSales,
-  getItemDef
-} from './bungie.js'
+import { refreshAccessToken, getPrimaryCharacter, getVendorSales, getItemDef } from './bungie.js'
 import { EVERVERSE_VENDOR_HASHES } from './config.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -76,42 +71,32 @@ async function resolveCosts(costs, cache) {
 }
 
 /**
- * Reads all Eververse screens and builds a map: itemHash → { costs, vendorHash }.
- * Eververse can list a cosmetic directly as a sale item; if a "sale" is actually a
- * category container (itemType 0 with a preview, like the Monument), we also follow
- * its previewVendorHash sub-vendor and fold those sales in, so a direct itemHash
- * match works either way.
+ * Reads each Eververse screen's live sales and builds a map: itemHash → { costs,
+ * vendorHash }. Verified 2026-06-29: the main Tess screen (3361454721) lists every
+ * cosmetic — ornaments included — directly as sale items (~224 of them), so a plain
+ * itemHash match is enough; no category-container following is needed (unlike the
+ * Monument). Screens that aren't character-readable just fail closed and are noted
+ * in diagnostics.
  */
 async function readShop(accessToken, character) {
   const byItem = new Map()
   const vendorsSeen = []
   let anyReadable = false
 
-  async function fold(vendorHash) {
+  for (const vendorHash of EVERVERSE_VENDOR_HASHES) {
     let res
     try {
       res = await getVendorSales(accessToken, character, vendorHash)
     } catch (e) {
-      vendorsSeen.push({ hash: vendorHash, readable: false, saleCount: 0, error: e.message })
-      return
+      vendorsSeen.push({ hash: vendorHash, readable: false, saleCount: 0 })
+      continue
     }
     anyReadable = true
     vendorsSeen.push({ hash: vendorHash, readable: true, present: res.present, saleCount: res.sales.length })
     for (const s of res.sales) {
       if (!byItem.has(s.itemHash)) byItem.set(s.itemHash, { costs: s.costs, vendorHash })
-      // Follow category containers (preview sub-vendor), mirroring the Monument.
-      let def
-      try {
-        def = await getItemDef(s.itemHash)
-      } catch {
-        continue
-      }
-      const sub = def?.preview?.previewVendorHash
-      if (sub) await fold(sub)
     }
   }
-
-  for (const h of EVERVERSE_VENDOR_HASHES) await fold(h)
   return { byItem, vendorsSeen, anyReadable }
 }
 
