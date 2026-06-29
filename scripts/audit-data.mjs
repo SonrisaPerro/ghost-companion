@@ -48,10 +48,17 @@ const db = new Database(dbPath, { readonly: true, fileMustExist: true })
 
 // Build lookup maps once.
 const items = new Map()
+const byName = new Map() // lowercased name -> [defs], so we can scan all same-named variants
 for (const { json } of db.prepare('SELECT json FROM DestinyInventoryItemDefinition').all()) {
   let def
   try { def = JSON.parse(json) } catch { continue }
   if (def?.hash != null) items.set(def.hash, def)
+  const nm = def?.displayProperties?.name
+  if (nm) {
+    const key = nm.toLowerCase()
+    if (!byName.has(key)) byName.set(key, [])
+    byName.get(key).push(def)
+  }
 }
 const acts = new Map()
 for (const { json } of db.prepare('SELECT json FROM DestinyActivityDefinition').all()) {
@@ -61,9 +68,18 @@ for (const { json } of db.prepare('SELECT json FROM DestinyActivityDefinition').
 }
 db.close()
 
-const isCraftable = (def) =>
-  // A craftable weapon carries an inventory.recipeItemHash pointing at its pattern.
-  !!(def?.inventory?.recipeItemHash && def.inventory.recipeItemHash !== 0)
+// Craftability lives on the itemType-30 "pattern" variant (carries a top-level
+// `crafting` block), NOT the itemType-3 weapon. Some variants instead point back
+// via inventory.recipeItemHash. Checking only the single stored itemHash gives
+// false negatives, so scan ALL same-named variants.
+const isCraftable = (def) => {
+  const variants = byName.get((def?.displayProperties?.name || '').toLowerCase()) || []
+  return variants.some(
+    (v) =>
+      (v?.crafting?.outputItemHash && v.crafting.outputItemHash !== 0) ||
+      (v?.inventory?.recipeItemHash && v.inventory.recipeItemHash !== 0)
+  )
+}
 
 let problems = 0
 const note = (msg) => { problems++; console.log('  ⚠ ' + msg) }
