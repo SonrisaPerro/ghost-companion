@@ -16,7 +16,9 @@ const TTL_MS = 60 * 60 * 1000 // cache remote data for an hour
 const cache = { rotation: null, rotationAt: 0, paths: null, pathsAt: 0 }
 
 function baseUrl(store) {
-  const url = process.env.GHOST_DATA_API_URL || store.get('dataApiUrl') || ''
+  let url = (process.env.GHOST_DATA_API_URL || store.get('dataApiUrl') || '').trim()
+  if (!url) return ''
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url // tolerate a bare host (no scheme)
   return url.replace(/\/+$/, '') // trim trailing slash
 }
 

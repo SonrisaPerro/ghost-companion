@@ -48,17 +48,41 @@ const OPACITY = 0.92
 // ---------------------------------------------------------------------------
 // Window
 // ---------------------------------------------------------------------------
+// True only if `b`'s top strip (the draggable header) is actually reachable on
+// some connected display. Guards against stale saved bounds that land in a
+// monitor gap or on a disconnected display — those leave the window invisible
+// and ungrabbable (the header is the only drag handle).
+function isReachable(b) {
+  if (!b || typeof b.x !== 'number' || typeof b.y !== 'number') return false
+  const HEADER_H = 48 // approx. header height; its top must be on-screen to grab
+  return screen.getAllDisplays().some((d) => {
+    const wa = d.workArea
+    const overlapX = Math.min(b.x + b.width, wa.x + wa.width) - Math.max(b.x, wa.x)
+    const headerTopVisible = b.y >= wa.y && b.y <= wa.y + wa.height - HEADER_H
+    return overlapX >= 100 && headerTopVisible // ≥100px wide and header on-screen
+  })
+}
+
 function createWindow() {
   // Pin to the right edge of the primary display, full height.
   const display = screen.getPrimaryDisplay()
   const { width: screenW, height: screenH, x: screenX, y: screenY } = display.workArea
 
-  const saved = store.get('window.bounds')
-  const bounds = saved || {
+  const defaultBounds = {
     x: screenX + screenW - WINDOW_WIDTH,
     y: screenY,
     width: WINDOW_WIDTH,
     height: screenH
+  }
+
+  const saved = store.get('window.bounds')
+  // Only honor saved bounds if they're still reachable on the current monitor
+  // layout; otherwise reset to the pinned-right default and forget the bad ones.
+  let bounds = defaultBounds
+  if (isReachable(saved)) {
+    bounds = { ...saved, width: WINDOW_WIDTH }
+  } else if (saved) {
+    store.set('window.bounds', null)
   }
 
   mainWindow = new BrowserWindow({
@@ -67,11 +91,16 @@ function createWindow() {
     minWidth: WINDOW_WIDTH,
     maxWidth: WINDOW_WIDTH,
     frame: false, // frameless overlay
-    transparent: true, // allow the 0.92 semi-transparent body to show the game
+    // NOTE: transparent:true is intentionally OFF. On Windows a transparent
+    // window can't be edge-resized and often ignores the -webkit-app-region
+    // drag handle. The see-through effect comes from setOpacity() below, and the
+    // layout fills the window with a solid bg, so transparency added nothing
+    // visible while breaking move/resize.
+    transparent: false,
     resizable: true, // height is adjustable; width is locked above
     skipTaskbar: false,
     alwaysOnTop: store.get('window.alwaysOnTop'),
-    backgroundColor: '#00000000',
+    backgroundColor: '#05080F', // matches the renderer's C.bg (no black gaps)
     icon: trayImage(),
     webPreferences: {
       // electron-vite emits the preload as .mjs because package.json is ESM.
