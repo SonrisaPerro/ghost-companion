@@ -4,6 +4,7 @@
 // Endpoints:
 //   GET /health    — liveness probe
 //   GET /xur       — Xûr's live weekly exotic stock + presence (cached)
+//   GET /monument  — Monument to Lost Lights exotic archive catalog (cached)
 //   GET /paths     — community acquisition-path data (read-only)
 //
 // Designed for Railway: binds to process.env.PORT. Xûr's stock is resolved once
@@ -16,6 +17,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { resolveXur } from './src/xur.js'
+import { resolveMonument } from './src/monument.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -58,14 +60,53 @@ async function getXur(force = false) {
   return xurCache && !force ? xurCache : xurInFlight
 }
 
+// --- /monument : cached live resolve ----------------------------------------
+// The Monument catalog is near-static (changes only when content rotates), so a
+// longer TTL is fine; we still expose ?force=1 for on-demand re-verification.
+const MONUMENT_TTL_MS = 6 * 60 * 60 * 1000 // re-resolve at most every 6h
+let monumentCache = null
+let monumentAt = 0
+let monumentInFlight = null
+
+async function getMonument(force = false) {
+  const fresh = Date.now() - monumentAt < MONUMENT_TTL_MS
+  if (!force && monumentCache && fresh) return monumentCache
+  if (monumentInFlight) return monumentInFlight
+  monumentInFlight = resolveMonument()
+    .then((r) => {
+      monumentCache = r
+      monumentAt = Date.now()
+      return r
+    })
+    .finally(() => {
+      monumentInFlight = null
+    })
+  return monumentCache && !force ? monumentCache : monumentInFlight
+}
+
 app.get('/health', (_req, res) => {
-  res.json({ ok: true, uptime: process.uptime(), xurCachedAt: xurAt || null })
+  res.json({
+    ok: true,
+    uptime: process.uptime(),
+    xurCachedAt: xurAt || null,
+    monumentCachedAt: monumentAt || null
+  })
 })
 
 app.get('/xur', async (req, res) => {
   try {
     const data = await getXur(req.query.force === '1')
     res.set('Cache-Control', 'public, max-age=900') // 15 min edge cache
+    res.json(data)
+  } catch (e) {
+    res.status(502).json({ error: e.message })
+  }
+})
+
+app.get('/monument', async (req, res) => {
+  try {
+    const data = await getMonument(req.query.force === '1')
+    res.set('Cache-Control', 'public, max-age=3600') // 1h edge cache
     res.json(data)
   } catch (e) {
     res.status(502).json({ error: e.message })
@@ -79,7 +120,10 @@ app.get('/paths', (req, res) => {
 })
 
 app.get('/', (_req, res) => {
-  res.json({ service: 'ghost-companion-data-api', endpoints: ['/health', '/xur', '/paths'] })
+  res.json({
+    service: 'ghost-companion-data-api',
+    endpoints: ['/health', '/xur', '/monument', '/paths']
+  })
 })
 
 app.listen(PORT, () => {

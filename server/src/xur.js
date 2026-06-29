@@ -20,40 +20,7 @@ import {
   getItemDef
 } from './bungie.js'
 import { XUR_VENDOR_HASHES, lastResetISO } from './config.js'
-
-const BUNGIE = 'https://www.bungie.net'
-const WEAPON_CATEGORY = 1 // DestinyItemCategory.Weapon
-const ARMOR_CATEGORY = 20 // DestinyItemCategory.Armor
-const ITEM_TYPE_WEAPON = 3 // DestinyItemType.Weapon
-const ITEM_TYPE_ARMOR = 2 // DestinyItemType.Armor
-// Exotic class items (Hunter Cloak / Warlock Bond / Titan Mark) report itemType 0
-// and only carry their class category (e.g. [23] for Hunter) — no Weapon/Armor
-// category and no armor itemType — so we fall back to the type display name.
-const CLASS_ITEM_RE = /\b(Cloak|Bond|Mark)\b/i
-
-/** 'weapon' | 'armor' | null — robust across normal gear and exotic class items. */
-function classifyGear(def) {
-  const cats = def.itemCategoryHashes || []
-  if (def.itemType === ITEM_TYPE_WEAPON || cats.includes(WEAPON_CATEGORY)) return 'weapon'
-  if (
-    def.itemType === ITEM_TYPE_ARMOR ||
-    cats.includes(ARMOR_CATEGORY) ||
-    CLASS_ITEM_RE.test(def.itemTypeDisplayName || '')
-  ) {
-    return 'armor'
-  }
-  return null
-}
-
-function shapeItem(def) {
-  if (!def) return null
-  return {
-    itemHash: def.hash,
-    name: def.displayProperties?.name || '',
-    icon: def.displayProperties?.icon ? `${BUNGIE}${def.displayProperties.icon}` : null,
-    type: def.itemTypeDisplayName || ''
-  }
-}
+import { classifyGear, shapeItem } from './gear.js'
 
 /**
  * Reads Xûr's live state across all his vendor screens and splits out the exotic

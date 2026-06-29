@@ -20,6 +20,12 @@ export const XUR_VENDOR_HASHES = [
   3751514131 // "Strange Gear Offers": exotic + legendary weapons, legendary armor set
 ]
 
+// Monument to Lost Lights — Exotic Archive (the Tower kiosk that sells legacy
+// raid/quest exotics for materials). Always present (not time-gated), but the
+// catalog shifts as old content is added/retired, so we read it live to verify.
+// Hash confirmed from the live Manifest 2026-06-29 (`lookup --vendors monument`).
+export const MONUMENT_VENDOR_HASH = 4230408743
+
 /** ISO timestamp of the most recent weekly reset (Tuesday 17:00 UTC). */
 export function lastResetISO(now = new Date()) {
   const d = new Date(now)

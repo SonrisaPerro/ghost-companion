@@ -119,6 +119,37 @@ export async function getVendorState(accessToken, { membershipType, membershipId
   return { present: enabled && saleHashes.length > 0, away: !enabled, saleHashes }
 }
 
+/**
+ * Like getVendorState, but returns the full sale entries (itemHash + costs) so a
+ * caller can report what each item costs. Used by the Monument resolver, where
+ * the purchase price (Exotic Cipher / Ascendant Shards / Spoils / Glimmer) is the
+ * whole point. Same authoritative presence semantics as getVendorState.
+ *
+ * Returns { present, away, sales: [{ itemHash, costs: [{ itemHash, quantity }] }] }.
+ */
+export async function getVendorSales(accessToken, { membershipType, membershipId, characterId }, vendorHash) {
+  let res
+  try {
+    res = await get(
+      `/Destiny2/${membershipType}/Profile/${membershipId}/Character/${characterId}` +
+        `/Vendors/${vendorHash}/?components=400,402`,
+      accessToken
+    )
+  } catch (e) {
+    if (e.code === ERR_VENDOR_NOT_FOUND) return { present: false, away: true, sales: [] }
+    throw e
+  }
+  const enabled = res?.vendor?.data?.enabled === true
+  const salesData = res?.sales?.data || {}
+  const sales = Object.values(salesData)
+    .filter((s) => s.itemHash)
+    .map((s) => ({
+      itemHash: s.itemHash,
+      costs: (s.costs || []).map((c) => ({ itemHash: c.itemHash, quantity: c.quantity }))
+    }))
+  return { present: enabled && sales.length > 0, away: !enabled, sales }
+}
+
 /** Fetches a single inventory-item definition (API-key only, no auth). */
 export async function getItemDef(itemHash) {
   return get(`/Destiny2/Manifest/DestinyInventoryItemDefinition/${itemHash}/`)

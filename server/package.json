@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node index.js",
     "resolve": "node src/resolve-cli.mjs",
+    "monument": "node src/monument-cli.mjs",
     "mint-token": "node scripts/mint-refresh-token.mjs"
   },
   "dependencies": {
