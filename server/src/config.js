@@ -26,6 +26,15 @@ export const XUR_VENDOR_HASHES = [
 // Hash confirmed from the live Manifest 2026-06-29 (`lookup --vendors monument`).
 export const MONUMENT_VENDOR_HASH = 4230408743
 
+// Eververse (Tess Everis) — the Tower store where weapon/armor ornaments and other
+// cosmetics rotate in and out for Bright Dust (grindable) or Silver (real money).
+// The Manifest exposes THREE Tess "screens" (featured / Bright Dust / Silver), so
+// we read all of them and merge the sales. Hashes confirmed from the live Manifest
+// 2026-06-29 (`npm run lookup -- --vendors "tess"`). We read these live to answer
+// "is this ornament buyable right now, and for how much" — availability rotates and
+// isn't otherwise queryable from the Manifest.
+export const EVERVERSE_VENDOR_HASHES = [3361454721, 3790213143, 788270413]
+
 /** ISO timestamp of the most recent weekly reset (Tuesday 17:00 UTC). */
 export function lastResetISO(now = new Date()) {
   const d = new Date(now)

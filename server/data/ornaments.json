@@ -1,0 +1,37 @@
+{
+  "_comment": "Tracked weapon ornaments whose ONLY source is Eververse (Tess Everis). These can't be 'earned' from an activity, so we don't list a static acquisition path for them; instead the /eververse live read checks whether each is currently for sale in the shop and, if so, surfaces it (with its Bright Dust / Silver cost) so the user can go buy it before it rotates out. Keyed by itemHash; verified against the Manifest collectible sourceString 'Source: Eververse'. Keep this file byte-identical with src/data/ornaments.json.",
+  "trackedOrnaments": [
+    {
+      "name": "Laconic",
+      "itemHash": 1119316141,
+      "weapon": "The Last Word",
+      "weaponHash": 1364093401,
+      "source": "Eververse",
+      "plugCategory": "v410_repackage_hand_cannon0_skins"
+    },
+    {
+      "name": "Heated Exchange",
+      "itemHash": 1606218149,
+      "weapon": "The Last Word",
+      "weaponHash": 1364093401,
+      "source": "Eververse",
+      "plugCategory": "v410_repackage_hand_cannon0_skins"
+    },
+    {
+      "name": "The Stagecoach",
+      "itemHash": 3227439259,
+      "weapon": "The Last Word",
+      "weaponHash": 1364093401,
+      "source": "Eververse",
+      "plugCategory": "v410_repackage_hand_cannon0_skins"
+    },
+    {
+      "name": "End of an Era",
+      "itemHash": 844227660,
+      "weapon": "The Last Word",
+      "weaponHash": 1364093401,
+      "source": "Eververse",
+      "plugCategory": "v410_repackage_hand_cannon0_skins"
+    }
+  ]
+}

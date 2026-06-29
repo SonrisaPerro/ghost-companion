@@ -8,6 +8,7 @@
     "start": "node index.js",
     "resolve": "node src/resolve-cli.mjs",
     "monument": "node src/monument-cli.mjs",
+    "eververse": "node src/eververse-cli.mjs",
     "mint-token": "node scripts/mint-refresh-token.mjs"
   },
   "dependencies": {

@@ -5,6 +5,7 @@
 //   GET /health    — liveness probe
 //   GET /xur       — Xûr's live weekly exotic stock + presence (cached)
 //   GET /monument  — Monument to Lost Lights exotic archive catalog (cached)
+//   GET /eververse — tracked weapon ornaments currently for sale in Eververse (cached)
 //   GET /paths     — community acquisition-path data (read-only)
 //
 // Designed for Railway: binds to process.env.PORT. Xûr's stock is resolved once
@@ -18,6 +19,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { resolveXur } from './src/xur.js'
 import { resolveMonument } from './src/monument.js'
+import { resolveEververse } from './src/eververse.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -84,12 +86,37 @@ async function getMonument(force = false) {
   return monumentCache && !force ? monumentCache : monumentInFlight
 }
 
+// --- /eververse : cached live shop check ------------------------------------
+// Eververse's Bright Dust offerings rotate at the DAILY reset (and the featured
+// set weekly), so we keep the TTL short-ish; ?force=1 re-checks on demand.
+const EVERVERSE_TTL_MS = 60 * 60 * 1000 // re-resolve at most hourly
+let eververseCache = null
+let eververseAt = 0
+let eververseInFlight = null
+
+async function getEververse(force = false) {
+  const fresh = Date.now() - eververseAt < EVERVERSE_TTL_MS
+  if (!force && eververseCache && fresh) return eververseCache
+  if (eververseInFlight) return eververseInFlight
+  eververseInFlight = resolveEververse()
+    .then((r) => {
+      eververseCache = r
+      eververseAt = Date.now()
+      return r
+    })
+    .finally(() => {
+      eververseInFlight = null
+    })
+  return eververseCache && !force ? eververseCache : eververseInFlight
+}
+
 app.get('/health', (_req, res) => {
   res.json({
     ok: true,
     uptime: process.uptime(),
     xurCachedAt: xurAt || null,
-    monumentCachedAt: monumentAt || null
+    monumentCachedAt: monumentAt || null,
+    eververseCachedAt: eververseAt || null
   })
 })
 
@@ -113,6 +140,16 @@ app.get('/monument', async (req, res) => {
   }
 })
 
+app.get('/eververse', async (req, res) => {
+  try {
+    const data = await getEververse(req.query.force === '1')
+    res.set('Cache-Control', 'public, max-age=900') // 15 min edge cache
+    res.json(data)
+  } catch (e) {
+    res.status(502).json({ error: e.message })
+  }
+})
+
 app.get('/paths', (req, res) => {
   if (req.query.reload === '1') loadPaths()
   res.set('Cache-Control', 'public, max-age=3600')
@@ -122,7 +159,7 @@ app.get('/paths', (req, res) => {
 app.get('/', (_req, res) => {
   res.json({
     service: 'ghost-companion-data-api',
-    endpoints: ['/health', '/xur', '/monument', '/paths']
+    endpoints: ['/health', '/xur', '/monument', '/eververse', '/paths']
   })
 })
 
