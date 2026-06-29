@@ -803,5 +803,290 @@
         "notes": "Set-level entry. Bungie's API does not expose the individual weapon names (the focus list renders client-side), so a scanned individual weapon may not match this name. Focus costs Vanguard Engrams + materials."
       }
     ]
+  },
+
+  "Ace of Spades": {
+    "itemHash": 347366834,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Hand Cannon. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally Cayde-6's Forsaken-era questline from Banshee-44 (now vaulted). Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
+  },
+
+  "Thorn": {
+    "itemHash": 3973202132,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Hand Cannon. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally the 'A Man With No Name' exotic quest (now vaulted). Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
+  },
+
+  "The Last Word": {
+    "itemHash": 1364093401,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Hand Cannon. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally the 'The Draw' exotic quest (now vaulted). Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
+  },
+
+  "Witherhoard": {
+    "itemHash": 2357297366,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Grenade Launcher. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally a Season of Arrivals (2020) season-pass reward. Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
+  },
+
+  "Izanagi's Burden": {
+    "itemHash": 3211806999,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Sniper Rifle. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally hidden in the Black Armory Forge questline (now vaulted). Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
+  },
+
+  "Jötunn": {
+    "itemHash": 417164956,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Fusion Rifle. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally a random drop from the Black Armory Volundr Forge (now vaulted). Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
+  },
+
+  "Truth": {
+    "itemHash": 1201830623,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Rocket Launcher. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally the 'Imprecation' exotic quest on the Tangled Shore (now vaulted). Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
+  },
+
+  "Sleeper Simulant": {
+    "itemHash": 4036115577,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Linear Fusion Rifle. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally the Warmind 'Violent Exhumation' questline (now vaulted). Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
+  },
+
+  "Le Monarque": {
+    "itemHash": 3588934839,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Combat Bow. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally a Black Armory Forge drop / catalyst quest (now vaulted). Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
+  },
+
+  "Ticuu's Divination": {
+    "itemHash": 3260753130,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Combat Bow. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally a Season of the Chosen (2021) season-pass reward. Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
+  },
+
+  "Lorentz Driver": {
+    "itemHash": 3761898871,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Linear Fusion Rifle. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally a Season of the Lost (2021) season-pass reward. Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
+  },
+
+  "Lumina": {
+    "itemHash": 3512014804,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Hand Cannon. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally the 'Reaping the Whirlwind' exotic quest (now vaulted). Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
+  },
+
+  "Bad Juju": {
+    "itemHash": 2816212794,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Pulse Rifle. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally the Tribute Hall 'Invitation' quest (now vaulted). Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
+  },
+
+  "Polaris Lance": {
+    "itemHash": 3413074534,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Scout Rifle. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally the Warmind 'Nascent Dawn' questline (now vaulted). Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
+  },
+
+  "Eriana's Vow": {
+    "itemHash": 3524313097,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Buy at the Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
+        "sourceActivityHashes": [],
+        "dropRate": 1,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 2,
+        "description": "Exotic Hand Cannon. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — guaranteed once you pay the material cost. Verified live in the Monument catalog 2026-06-29; the Manifest also lists its source as \"Exotic Archive at the Tower\".",
+        "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally a Season of the Undying (2019) season-pass reward. Not auto-trackable — it's a purchase, not an activity drop."
+      }
+    ]
   }
 }

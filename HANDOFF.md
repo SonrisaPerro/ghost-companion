@@ -19,7 +19,23 @@ An always-on-top Destiny 2 loot-farming overlay.
 - **Deploy server:** `git push origin main` → Railway redeploys (watch uptime
   reset on `/health`). Only `server/**` changes need a deploy.
 - **Verify server:** `GET /health`, `/xur` (hourly cache, `?force=1`),
-  `/paths` (`?reload=1` reloads file server-side), `/`.
+  `/monument` (6h cache, `?force=1`), `/paths` (`?reload=1` reloads file
+  server-side), `/`.
+
+## Monument to Lost Lights (`/monument` live read)
+- Vendor hash **4230408743** ("Exotic Archive"), confirmed via
+  `npm run lookup -- --vendors monument`. **Not** 3990434998 (an old hash).
+- Structure gotcha: the top-level vendor sells **3 itemType-0 category
+  containers** ("Light and Dark Saga Exotics", "Fate Saga Exotics", "Legacy
+  Gear"), NOT the exotics directly. Each container's `preview.previewVendorHash`
+  is a sub-vendor and `preview.derivedItemCategories[].items[]` lists the child
+  exotic hashes. `monument.js` follows the containers, enumerates the derived
+  items, filters to Exotic weapons/armor (`gear.js`), and pulls costs from the
+  sub-vendor when readable (usually it isn't → costs blank).
+- **Finding (2026-06-29):** catalog = **51 non-raid legacy exotic weapons, 0
+  armor**. Raid/dungeon exotics are *absent* (pulled once they became farmable);
+  exotic armor moved to Rahool focusing. So Monument paths apply to NEW legacy
+  exotics, never to our raid/dungeon items.
 
 ## Architecture quick map
 - `src/main/index.js` — Electron main: creates the overlay window, tray, IPC,
@@ -42,7 +58,14 @@ An always-on-top Destiny 2 loot-farming overlay.
 - `server/data/paths.json` — served by the API (`/paths`).
 - Both keyed by item **NAME**, each with `acquisitionPaths[]`. Drop rates are
   community estimates (explicitly disclaimed in the UI).
-- **Current state: 34 items each.** Includes:
+- **Current state: 49 items each.** Includes:
+  - **15 Monument to Lost Lights exotics** (added 2026-06-29) — Ace of Spades,
+    Thorn, The Last Word, Witherhoard, Izanagi's Burden, Jötunn, Truth, Sleeper
+    Simulant, Le Monarque, Ticuu's Divination, Lorentz Driver, Lumina, Bad Juju,
+    Polaris Lance, Eriana's Vow. Each is a single `vendor` path (Exotic Archive),
+    doubly verified: live `/monument` read **and** the Manifest collectible
+    `sourceString` "Source: Exotic Archive at the Tower". Original quests are
+    vaulted (noted in `notes` as historical), so the Monument is the real source.
   - Two set-level vendor entries: **Vanguard Tactician Armor** (hash 4252280581)
     and **Vanguard Tactician Arsenal** (hash 1616736576) — `vendor` path, focus at
     Commander Zavala. Note: the API does **not** expose individual set-piece names
@@ -111,6 +134,9 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
+- _(this session)_ — added **15 Monument exotics** to the data (49 items total);
+  built the **`/monument` live-read endpoint** (resolver + shared `gear.js` +
+  `getVendorSales`). Deployed + verified.
 - `a72bdaf` — audit now flags the inverse craftable gap (Manifest-craftable but
   no `craftable` path). Sweep clean across the 34 (client-only).
 - `c3f1fdc` — added `craftable` paths for Vexcalibur + Wish-Keeper (deployed; both
