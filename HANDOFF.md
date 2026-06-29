@@ -47,9 +47,16 @@ An always-on-top Destiny 2 loot-farming overlay.
     and **Vanguard Tactician Arsenal** (hash 1616736576) — `vendor` path, focus at
     Commander Zavala. Note: the API does **not** expose individual set-piece names
     (see Investigations), so these are set-level with an honest caveat in `notes`.
-  - **8 verified-craftable weapons** with a `craftable` path (Enclave): Zaouli's
+  - **10 verified-craftable weapons** with a `craftable` path (Enclave): Zaouli's
     Bane, Apex Predator, Fatebringer, Vision of Confluence, Hezen Vengeance,
-    Corrective Measure, Found Verdict, Praedyth's Revenge.
+    Corrective Measure, Found Verdict, Praedyth's Revenge, plus the two exotic
+    mission weapons **Vexcalibur** (pattern 4223953031) and **Wish-Keeper**
+    (pattern 682995262), added 2026-06-29 after the audit fix surfaced them.
+- **`npm run audit` is now clean and checks craftability BOTH ways**: it flags a
+  `craftable` path with no Manifest recipe AND an item the Manifest marks
+  craftable that has no `craftable` path. `isCraftable()` scans all same-named
+  variants (not the single stored hash) — that was the false-negative bug. No
+  craftable gaps remain across the 34.
 
 ## Manifest gotchas (hard-won — don't relearn these)
 - **Craftability lives on the itemType-30 "pattern" variant**, NOT the itemType-3
@@ -104,10 +111,16 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
-- _(pending this session)_ — removed the dead Nightfall/Trials ritual rotation;
-  `/rotation`→`/xur` resolves only Xûr's live exotic stock with authoritative
-  presence (Vendors `enabled` + 1627=away); client `XurPanel` present-gated.
-  **Server change → needs Railway deploy (push to main).**
+- `a72bdaf` — audit now flags the inverse craftable gap (Manifest-craftable but
+  no `craftable` path). Sweep clean across the 34 (client-only).
+- `c3f1fdc` — added `craftable` paths for Vexcalibur + Wish-Keeper (deployed; both
+  files kept identical; `/paths` verified live).
+- `457041d` — fixed audit false negatives: `isCraftable()` scans all same-named
+  variants for the itemType-30 `crafting` block (client-only).
+- `050e2f4` — removed the dead Nightfall/Trials ritual rotation; `/rotation`→`/xur`
+  resolves only Xûr's live exotic stock with authoritative presence (Vendors
+  `enabled` + 1627=away); client `XurPanel` present-gated. **Deployed + verified
+  live (`source:"live"`).**
 - `2199f61` — window bounds validation + `transparent:false` + bare-host URL
   tolerance (client-only).
 - `6d28333` — deployed 34-item data set (Vanguard Tactician + 8 craftable paths)
