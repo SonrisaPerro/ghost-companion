@@ -43,10 +43,20 @@ An always-on-top Destiny 2 loot-farming overlay.
   availability **rotates**. The Manifest can't say "is it buyable today", so we read
   the live shop and report which tracked ornaments are for sale right now + cost.
 - **Registry:** `server/data/ornaments.json` (+ identical `src/data/ornaments.json`
-  mirror), `trackedOrnaments[]` keyed by `itemHash`. Seeded 2026-06-29 with The Last
-  Word's 4 ornaments — Laconic (1119316141), Heated Exchange (1606218149), The
-  Stagecoach (3227439259), End of an Era (844227660) — all verified "Source:
-  Eververse" in the Manifest collectible `sourceString`.
+  mirror), `trackedOrnaments[]` keyed by `itemHash`. **Expanded 2026-06-29** from The
+  Last Word's 4 to a **curated iconic exotic-weapon set: 20 weapons / 80 ornaments**
+  (Last Word, Thorn, Ace of Spades, Hawkmoon, Whisper, Sleeper, Vex Mythoclast,
+  Outbreak Perfected, Monte Carlo, Trinity Ghoul, Touch of Malice, Xenophage, The
+  Lament, Le Monarque, Sunshot, Riskrunner, MIDA, One Thousand Voices, Witherhoard,
+  Graviton Lance). Every `itemHash` + weapon association is **Manifest-verified** by
+  walking each weapon's `WEAPON COSMETICS` socket → `reusablePlugSetHash` → plug items
+  with `traitIds` incl. `item.ornament.weapon`, filtered to collectible `sourceString`
+  "Source: Eververse" (the walker reproduces the 4 known Last Word ornaments exactly).
+  The full master list is **131 exotic weapons / 354 Eververse ornaments** if ever
+  broadening past the curated set. Read the local app Manifest offline with Node 24's
+  built-in `node:sqlite` (`%APPDATA%/ghost-companion/manifest/world_content.sqlite`) —
+  the app's `better-sqlite3` is built for Electron's ABI and won't load under system
+  node.
 - **Vendor hashes (`config.js EVERVERSE_VENDOR_HASHES`):** `[3361454721,
   3790213143, 788270413]` (`lookup --vendors "tess"`). **Only 3361454721 is
   character-readable** (the others return Bungie `1622`); it carries the full ~224
@@ -60,13 +70,22 @@ An always-on-top Destiny 2 loot-farming overlay.
   on token/network failure → `fallback` and everything goes to `notInShop` (never
   falsely claims something's for sale). `/eververse` route, 1h cache, `?force=1`.
   CLI: `npm run eververse` (needs creds in env).
-- **Verified live 2026-06-29:** `source:live`, present:true, 224 sales on the main
-  screen. **End of an Era was in the shop for 700 Silver**; the other 3 were not.
-- **No UI yet** (data-only, per the standing preference). Next step if wanted: a
-  client panel that pings `/eververse` and nudges "X is in Eververse now — go buy it"
-  when `anyInShop`. Note "activity-earned-only" ornaments would live as a static
-  `ornaments[]` on the weapon's paths entry — The Last Word has none (all Eververse),
-  so nothing static was added for it.
+- **Client UI (wired 2026-06-29):** `EverversePanel` in `GhostCompanion.jsx` pings
+  `/eververse` on mount (via `window.api.getEververse` → IPC `get-eververse` →
+  `data-api.getEververse`, 1h cache + `{force:true}` on API-URL save, same plumbing
+  as Xûr). Lists each in-shop tracked ornament (weapon, ornament name, cost coloured
+  by currency: Bright Dust blue / Silver gold / Glimmer green) with a "grab them
+  before the shop rotates" nudge; clicking an entry scans the parent weapon. Renders
+  **only on `source:'live'` + `anyInShop` + ≥1 `inShop`** — same fail-closed discipline
+  as `XurPanel` (never on fallback/unknown). App isn't packaged, so it shows on
+  `npm run dev`.
+- **Verified live 2026-06-29:** after the expand+deploy, `/eververse` `source:live`,
+  `trackedCount:80`, **27 of the tracked ornaments in shop** (all 700 Silver — a
+  freshly-rotated batch incl. End of an Era, Essentialism (Thorn), Gilded Cage
+  (Whisper), 3× Vex Mythoclast, etc.).
+- **"Activity-earned-only" ornaments** would live as a static `ornaments[]` on the
+  weapon's paths entry — none of the curated weapons surfaced any (all their ornaments
+  are Eververse), so nothing static was added.
 
 ## Architecture quick map
 - `src/main/index.js` — Electron main: creates the overlay window, tray, IPC,
