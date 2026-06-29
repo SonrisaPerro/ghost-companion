@@ -53,7 +53,7 @@ async function monumentCatalog(accessToken, character) {
   const armor = []
   const costCache = new Map()
   const seen = new Set()
-  const diag = { sales: sales.length, resolved: 0, failed: 0, exotic: 0, unclassified: 0, sampleTiers: {} }
+  const diag = { sales: sales.length, resolved: 0, failed: 0, exotic: 0, unclassified: 0, sampleTiers: {}, samples: [] }
 
   for (const sale of sales) {
     if (seen.has(sale.itemHash)) continue
@@ -68,6 +68,15 @@ async function monumentCatalog(accessToken, character) {
     }
     const tier = def?.inventory?.tierTypeName || '?'
     diag.sampleTiers[tier] = (diag.sampleTiers[tier] || 0) + 1
+    if (diag.samples.length < 25) {
+      diag.samples.push({
+        hash: def?.hash,
+        name: def?.displayProperties?.name || '',
+        itemType: def?.itemType,
+        typeName: def?.itemTypeDisplayName || '',
+        tier
+      })
+    }
     if (tier !== 'Exotic') continue
     diag.exotic++
     const kind = classifyGear(def)
