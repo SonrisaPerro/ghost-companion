@@ -37,6 +37,37 @@ An always-on-top Destiny 2 loot-farming overlay.
   exotic armor moved to Rahool focusing. So Monument paths apply to NEW legacy
   exotics, never to our raid/dungeon items.
 
+## Eververse ornament tracker (`/eververse` live read)
+- **Why:** some weapon ornaments have NO activity/quest source — their only
+  acquisition is Eververse (Bright Dust = grindable, or Silver = real money), and
+  availability **rotates**. The Manifest can't say "is it buyable today", so we read
+  the live shop and report which tracked ornaments are for sale right now + cost.
+- **Registry:** `server/data/ornaments.json` (+ identical `src/data/ornaments.json`
+  mirror), `trackedOrnaments[]` keyed by `itemHash`. Seeded 2026-06-29 with The Last
+  Word's 4 ornaments — Laconic (1119316141), Heated Exchange (1606218149), The
+  Stagecoach (3227439259), End of an Era (844227660) — all verified "Source:
+  Eververse" in the Manifest collectible `sourceString`.
+- **Vendor hashes (`config.js EVERVERSE_VENDOR_HASHES`):** `[3361454721,
+  3790213143, 788270413]` (`lookup --vendors "tess"`). **Only 3361454721 is
+  character-readable** (the others return Bungie `1622`); it carries the full ~224
+  cosmetic sales directly — ornaments included — so a **plain itemHash match** is
+  enough. **No category-container following** (that's a Monument-only thing; here it
+  just caused failing 1622 sub-vendor reads + 224 redundant def lookups — removed).
+- **`resolveEververse()`** (`eververse.js`): reads each screen's sales, matches
+  tracked itemHashes, classifies cost currency (`bright_dust`/`silver`/`glimmer`).
+  Returns `{ source:'live'|'fallback', vendor.present, anyInShop, inShop[] (with
+  cost), notInShop[], diagnostics }`. `source:'live'` only on an authoritative read;
+  on token/network failure → `fallback` and everything goes to `notInShop` (never
+  falsely claims something's for sale). `/eververse` route, 1h cache, `?force=1`.
+  CLI: `npm run eververse` (needs creds in env).
+- **Verified live 2026-06-29:** `source:live`, present:true, 224 sales on the main
+  screen. **End of an Era was in the shop for 700 Silver**; the other 3 were not.
+- **No UI yet** (data-only, per the standing preference). Next step if wanted: a
+  client panel that pings `/eververse` and nudges "X is in Eververse now — go buy it"
+  when `anyInShop`. Note "activity-earned-only" ornaments would live as a static
+  `ornaments[]` on the weapon's paths entry — The Last Word has none (all Eververse),
+  so nothing static was added for it.
+
 ## Architecture quick map
 - `src/main/index.js` — Electron main: creates the overlay window, tray, IPC,
   starts AutoTracker. **Window bounds now validated against connected displays
