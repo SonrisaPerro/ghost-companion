@@ -53,6 +53,7 @@ async function monumentCatalog(accessToken, character) {
   const armor = []
   const costCache = new Map()
   const seen = new Set()
+  const diag = { sales: sales.length, resolved: 0, failed: 0, exotic: 0, unclassified: 0, sampleTiers: {} }
 
   for (const sale of sales) {
     if (seen.has(sale.itemHash)) continue
@@ -60,17 +61,25 @@ async function monumentCatalog(accessToken, character) {
     let def
     try {
       def = await getItemDef(sale.itemHash)
+      diag.resolved++
     } catch {
+      diag.failed++
       continue
     }
-    if (def?.inventory?.tierTypeName !== 'Exotic') continue
+    const tier = def?.inventory?.tierTypeName || '?'
+    diag.sampleTiers[tier] = (diag.sampleTiers[tier] || 0) + 1
+    if (tier !== 'Exotic') continue
+    diag.exotic++
     const kind = classifyGear(def)
-    if (!kind) continue
+    if (!kind) {
+      diag.unclassified++
+      continue
+    }
     const item = { ...shapeItem(def), costs: await resolveCosts(sale.costs, costCache) }
     if (kind === 'weapon') weapons.push(item)
     else armor.push(item)
   }
-  return { present, weapons, armor }
+  return { present, weapons, armor, diag }
 }
 
 export async function resolveMonument() {
@@ -91,6 +100,7 @@ export async function resolveMonument() {
     const character = await getPrimaryCharacter(access_token)
     const cat = await monumentCatalog(access_token, character)
     result.vendor = { ...result.vendor, present: cat.present, weapons: cat.weapons, armor: cat.armor }
+    result.diag = cat.diag // temporary: read counts to diagnose empty catalogs
     result.source = 'live'
   } catch (err) {
     result.error = err.message // token/network failure → catalog unknown
