@@ -355,6 +355,19 @@
         "estimatedMinutesPerRun": 30,
         "description": "Exotic glaive, guaranteed from the Avalon exotic mission quest.",
         "notes": "One-time quest."
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn’s Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Vexcalibur has a weapon pattern — unlock it by extracting Deepsight Resonance from red-border (Deepsight) copies from the Node.Ovrd.Avalon exotic mission (Expert/Legend rotation), then shape it at the Enclave and re-shape later for enhanced perks.",
+        "notes": "The quest grants your first copy; once the pattern is unlocked, crafting lets you re-roll perks and add an enhanced intrinsic — not RNG. Manifest-verified pattern hash 4223953031."
       }
     ]
   },
@@ -661,6 +674,19 @@
         "estimatedMinutesPerRun": 40,
         "description": "Exotic Combat Bow, earned through the Starcrossed exotic mission (Manifest source: \"Starcrossed\" Mission).",
         "notes": "One-time acquisition; completing the mission progresses the catalyst."
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn’s Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Wish-Keeper has a weapon pattern — unlock it by extracting Deepsight Resonance from red-border (Deepsight) copies earned in the Starcrossed exotic mission (Expert/Legend rotation), then shape it at the Enclave and re-shape later for enhanced perks.",
+        "notes": "The mission grants your first copy; once the pattern is unlocked, crafting lets you re-roll perks — not RNG. Manifest-verified pattern hash 682995262."
       }
     ]
   },
