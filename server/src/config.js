@@ -1,52 +1,24 @@
 // =============================================================================
-// config.js — static configuration for the rotation resolver.
+// config.js — static configuration for the Xûr resolver.
 //
-// IMPORTANT (Edge of Fate era): Nightfall and Trials no longer have a weekly
-// "featured weapon" you can target, and the Bungie API doesn't expose one
-// anywhere (verified: vendor sales, milestones, and activity rewards all lack
-// it). So we DON'T try to resolve a weapon — we surface the activity pools (for
-// auto-tracking runs) plus an accurate, static acquisition note per ritual.
+// IMPORTANT (Edge of Fate era): the old Nightfall/Trials "featured weapon"
+// rotation is gone — there's no targetable weekly weapon and the Bungie API
+// exposes none (verified: vendor sales, milestones, and activity rewards all
+// lack it). That whole feature was removed. What remains is the one
+// ritual-adjacent vendor whose stock IS targetable: Xûr.
 //
-// The ACTIVITY pools are the full set of activity hashes that count as a "run"
-// for each ritual. ANY completion in the pool ticks the counter.
-//
-// Verify/refresh activity pools with:  npm run lookup -- --activities "Nightfall"
+// Xûr sells specific exotic gear you can go buy, so we read his LIVE inventory.
+// His stock is split across multiple vendor "screens": the main offering carries
+// exotic armor + the Xûrfboard + an exotic engram, while "Strange Gear Offers"
+// carries his rotating exotic AND legendary WEAPONS (e.g. Hawkmoon). We read both
+// and merge. Verified via the live vendor dumps + `npm run lookup -- --vendors "nine"`.
 // =============================================================================
 
-// Xûr is the one ritual-adjacent vendor whose stock IS targetable (you buy
-// specific exotic gear from him), so we read his live sales. His inventory is
-// split across multiple vendor "screens": the main offering carries exotic
-// armor + the Xûrfboard + engrams, while "Strange Gear Offers" carries his
-// rotating exotic AND legendary WEAPONS (e.g. Hawkmoon). We read both and merge.
-// Verified via the live vendor dumps + `npm run lookup -- --vendors "nine"`.
 export const XUR_VENDOR_HASH = 2190858386 // Xûr — Agent of the Nine (main screen)
 export const XUR_VENDOR_HASHES = [
   2190858386, // main: exotic armor, Xûrfboard, exotic engram
   3751514131 // "Strange Gear Offers": exotic + legendary weapons, legendary armor set
 ]
-
-// Per-ritual display label + accurate acquisition note (no weapon targeting).
-export const RITUALS = {
-  nightfall: {
-    label: 'Nightfall',
-    note: 'Random weapon drops — guaranteed to be one you have not collected yet until your set is complete, then purely random. Pre-Astyanax (non-tiered); a specific weapon cannot be targeted.'
-  },
-  trials: {
-    label: 'Trials of Osiris',
-    note: 'Targetable: focus weapons you have earned at least once at Saint-14 with Trials Engrams. Reach the Lighthouse (7 total wins) for its dedicated reward pool. A bonus focus pool also rotates weekly.'
-  }
-}
-
-// Activity-hash pools (verified against Manifest 244164.*).
-export const ACTIVITY_POOLS = {
-  // Nightfall: The Ordeal (Master/Grandmaster) rotation + Strange Terrain.
-  nightfall: [
-    3265488365, 3849697861, 3883876600, 68611399, 135872559, 245243711, 380956400,
-    766116577, 887176537, 1302909042, 1358381373, 1801803630, 13813394
-  ],
-  // Trials of Osiris (incl. Matchmade).
-  trials: [3148168425, 3720296444, 4150051058, 588019350, 1114325415, 1166905690, 2723561970]
-}
 
 /** ISO timestamp of the most recent weekly reset (Tuesday 17:00 UTC). */
 export function lastResetISO(now = new Date()) {

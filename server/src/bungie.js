@@ -32,10 +32,17 @@ async function get(path, accessToken) {
   })
   const json = await res.json()
   if (json.ErrorCode && json.ErrorCode !== 1) {
-    throw new Error(`Bungie ${path} → ${json.ErrorCode} ${json.ErrorStatus}: ${json.Message}`)
+    // Attach the raw Bungie ErrorCode so callers can distinguish meaningful
+    // codes (e.g. 1627 DestinyVendorNotFound = vendor is away) from real faults.
+    const err = new Error(`Bungie ${path} → ${json.ErrorCode} ${json.ErrorStatus}: ${json.Message}`)
+    err.code = json.ErrorCode
+    throw err
   }
   return json.Response
 }
+
+// Bungie PlatformErrorCodes we special-case.
+export const ERR_VENDOR_NOT_FOUND = 1627 // DestinyVendorNotFound — vendor not currently present
 
 /** Exchanges the stored refresh_token for a fresh access token. */
 export async function refreshAccessToken() {
@@ -77,17 +84,39 @@ export async function getPrimaryCharacter(accessToken) {
   return { membershipType: primary.membershipType, membershipId: primary.membershipId, characterId }
 }
 
-/** Returns the array of itemHashes a vendor is currently selling (component 402). */
-export async function getVendorSaleHashes(accessToken, { membershipType, membershipId, characterId }, vendorHash) {
-  const res = await get(
-    `/Destiny2/${membershipType}/Profile/${membershipId}/Character/${characterId}` +
-      `/Vendors/${vendorHash}/?components=402`,
-    accessToken
-  )
+/**
+ * Reads a vendor's live presence + current sales authoritatively.
+ *
+ * Components 400 (Vendors) + 402 (Sales): the Vendors component carries the
+ * vendor's `enabled` flag — the real "is this vendor active right now" signal —
+ * rather than us inferring presence from "did any sale come back". When a
+ * time-gated vendor like Xûr is away, Bungie returns ErrorCode 1627
+ * (DestinyVendorNotFound); we treat that as a DEFINITIVE "away", distinct from a
+ * token/network fault (which propagates as a thrown error → "unknown").
+ *
+ * Returns { present, away, saleHashes }:
+ *   - present: true  → vendor enabled AND offering sales (safe to show)
+ *   - away:    true  → vendor confirmed not present (enabled:false, or 1627)
+ *   - throws         → could not determine (caller treats as "unknown")
+ */
+export async function getVendorState(accessToken, { membershipType, membershipId, characterId }, vendorHash) {
+  let res
+  try {
+    res = await get(
+      `/Destiny2/${membershipType}/Profile/${membershipId}/Character/${characterId}` +
+        `/Vendors/${vendorHash}/?components=400,402`,
+      accessToken
+    )
+  } catch (e) {
+    if (e.code === ERR_VENDOR_NOT_FOUND) return { present: false, away: true, saleHashes: [] }
+    throw e // genuine fault — let the caller mark this screen "unknown"
+  }
+  const enabled = res?.vendor?.data?.enabled === true
   const sales = res?.sales?.data || {}
-  return Object.values(sales)
+  const saleHashes = Object.values(sales)
     .map((s) => s.itemHash)
     .filter(Boolean)
+  return { present: enabled && saleHashes.length > 0, away: !enabled, saleHashes }
 }
 
 /** Fetches a single inventory-item definition (API-key only, no auth). */

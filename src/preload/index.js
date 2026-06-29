@@ -25,8 +25,8 @@ const api = {
   saveUserDropRate: (payload) => ipcRenderer.invoke('save-user-drop-rate', payload),
   deleteUserDropRate: (itemHash) => ipcRenderer.invoke('delete-user-drop-rate', itemHash),
 
-  // --- Data API (weekly rotation + community paths) ----------------------
-  getRotation: (opts) => ipcRenderer.invoke('get-rotation', opts || {}),
+  // --- Data API (Xûr live stock + community paths) -----------------------
+  getXur: (opts) => ipcRenderer.invoke('get-xur', opts || {}),
   getCommunityPaths: (opts) => ipcRenderer.invoke('get-community-paths', opts || {}),
   getDataApiUrl: () => ipcRenderer.invoke('get-data-api-url'),
   setDataApiUrl: (url) => ipcRenderer.invoke('set-data-api-url', url),

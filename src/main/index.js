@@ -231,8 +231,8 @@ function registerIpc() {
     return all
   })
 
-  // --- Data API (weekly rotation + community paths) -----------------------
-  ipcMain.handle('get-rotation', async (_e, { force } = {}) => dataApi.getRotation(store, { force }))
+  // --- Data API (Xûr live stock + community paths) ------------------------
+  ipcMain.handle('get-xur', async (_e, { force } = {}) => dataApi.getXur(store, { force }))
   ipcMain.handle('get-community-paths', async (_e, { force } = {}) =>
     dataApi.getCommunityPaths(store, { force })
   )

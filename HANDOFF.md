@@ -18,7 +18,7 @@ An always-on-top Destiny 2 loot-farming overlay.
   Electron main loads it. Manifest + auto-tracker start automatically.
 - **Deploy server:** `git push origin main` → Railway redeploys (watch uptime
   reset on `/health`). Only `server/**` changes need a deploy.
-- **Verify server:** `GET /health`, `/rotation` (hourly cache, `?force=1`),
+- **Verify server:** `GET /health`, `/xur` (hourly cache, `?force=1`),
   `/paths` (`?reload=1` reloads file server-side), `/`.
 
 ## Architecture quick map
@@ -30,7 +30,7 @@ An always-on-top Destiny 2 loot-farming overlay.
 - `src/main/manifest.js` — better-sqlite3 **read-only** Manifest queries via an
   Electron-as-Node self-relaunch shim (`ELECTRON_RUN_AS_NODE=1`). Manifest at
   `%APPDATA%/ghost-companion/manifest/world_content.sqlite`.
-- `src/main/data-api.js` — fetches `/rotation` + `/paths` from Railway; in-memory
+- `src/main/data-api.js` — fetches `/xur` + `/paths` from Railway; in-memory
   1h cache. `baseUrl()` tolerates a bare host (prepends `https://`).
 - `src/main/auto-tracker.js` — polls activity history, auto-increments run counts.
 - `src/renderer/src/GhostCompanion.jsx` — the whole UI. Header drag region (~line
@@ -64,22 +64,24 @@ An always-on-top Destiny 2 loot-farming overlay.
   3278482180) exposes only raid banners / legacy gear — **no Portal-gear focusing**.
 
 ## Known issues / open threads
-1. **Window drag — VERIFY ON NEXT LAUNCH.** Off-screen launch is fixed (stale
-   bounds at `x:2645` sat in the monitor gap between DISPLAY1 [0–2560] and
-   DISPLAY2 [3840+]; now clamped to pinned-right default, confirmed at rect
-   L2140,T0,R2560,B1392). User had not yet confirmed the header drag actually
-   moves the window after the fix — **ask them to test dragging the top bar.** If
-   it still resists with the window fully on-screen, investigate the renderer
-   header `WebkitAppRegion:"drag"` region and whether a "loading" state delays the
-   header rendering.
+1. **Window drag — RESOLVED 2026-06-29.** Off-screen launch fix (stale bounds at
+   `x:2645` in the monitor gap between DISPLAY1 [0–2560] and DISPLAY2 [3840+], now
+   clamped to pinned-right default) shipped in `2199f61`, and the user has now
+   **confirmed the header bar drags the window correctly**. No further action.
 2. **Set-piece enumeration is impossible via the manifest.** Vanguard Tactician
    set nodes are itemType-0 with no gearset/derivedItemCategories/
    previewVendorHash/equippableItemSetHash/displaySource. Set-level entries are the
    honest ceiling unless a new data source appears.
-3. **Edge of Fate loot reality** (see memory): no Nightfall/Trials weekly featured
-   weapon to target anymore (random drops) — this kills the rotation feature's
-   value; Portal gear only via Hawthorne clan engrams. Worth reconsidering what
-   `/rotation` should surface.
+3. **Rotation feature — RESOLVED 2026-06-29.** Edge of Fate removed the targetable
+   Nightfall/Trials featured weapon (random drops; API exposes none), so the ritual
+   rotation was **deleted**. The server endpoint `/rotation` → **`/xur`** now
+   resolves ONLY Xûr's live exotic stock (the one still-targetable vendor).
+   Presence is authoritative: `getVendorState()` reads the Vendors `enabled` flag
+   and treats Bungie `1627` as a definitive "away"; payload is `source:'live'` only
+   on an authoritative read. The client's `XurPanel` renders **only** when
+   `source==='live' && xur.present` — never a stale "IN TOWN". (Removed: server
+   `RITUALS`/`ACTIVITY_POOLS`/`rotation.js`; client `RitualsPanel`/`RitualRow`/
+   `ritualState`/`toggleRitual`/`bumpRitual`.)
 
 ## SECURITY — do not slip on this
 - **Bungie secret rotation was DUE 2026-06-29 (today).** The leaked
@@ -102,7 +104,11 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
+- _(pending this session)_ — removed the dead Nightfall/Trials ritual rotation;
+  `/rotation`→`/xur` resolves only Xûr's live exotic stock with authoritative
+  presence (Vendors `enabled` + 1627=away); client `XurPanel` present-gated.
+  **Server change → needs Railway deploy (push to main).**
 - `2199f61` — window bounds validation + `transparent:false` + bare-host URL
-  tolerance (client-only, **may be unpushed** — check `git status`).
+  tolerance (client-only).
 - `6d28333` — deployed 34-item data set (Vanguard Tactician + 8 craftable paths)
   and the `SOURCE: Source:` dedup fix.

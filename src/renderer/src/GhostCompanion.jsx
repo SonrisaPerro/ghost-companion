@@ -158,11 +158,11 @@ function Account({ auth, busy, onLogin, onLogout, apiUrl, onSaveApiUrl }) {
         </div>
       )}
 
-      {/* Data API (Railway) — drives the weekly rotation + community paths. */}
+      {/* Data API (Railway) — drives Xûr's live stock + community paths. */}
       <div style={{ marginTop:12, borderTop:`1px solid ${C.border}`, paddingTop:12 }}>
         <Lbl color={C.sub}>Data API URL (optional)</Lbl>
         <div style={{ fontSize:11, color:C.sub, lineHeight:1.5, marginBottom:8 }}>
-          Railway service that serves the weekly ritual rotation and community paths.
+          Railway service that serves Xûr's live exotic stock and community paths.
           Leave blank to run on bundled data only.
         </div>
         <div style={{ display:"flex", gap:8 }}>
@@ -647,86 +647,20 @@ function AddPathForm({ onSave, onCancel }) {
   );
 }
 
-/* ── Weekly rituals panel ─────────────────────────────────────────────
-   Shows this week's global Nightfall + Trials featured weapon (resolved
-   server-side from vendor sales) with a per-slot auto-track toggle. When the
-   data API can't resolve the weapon it shows "check the in-game vendor" and
-   still tracks completions via the activity-hash pool. */
-const RITUAL_SLOTS = [
-  { slot:"nightfall", color:C.purple, bg:C.purpleLo },
-  { slot:"trials",    color:C.gold,   bg:C.goldLo   },
-];
-
-function RitualRow({ slot, conf, data, state, onToggle, onAdd, onSub }) {
-  const tracked = !!state?.tracked;
-  const runs    = state?.runs || 0;
-  return (
-    <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:12, marginTop:12 }}>
-      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:8 }}>
-        <div style={{ display:"flex", alignItems:"flex-start", gap:9, minWidth:0 }}>
-          <div style={{ width:34, height:34, flexShrink:0, background:conf.bg,
-            border:`1px solid ${conf.color}`, display:"flex", alignItems:"center",
-            justifyContent:"center", color:conf.color, fontSize:14 }}>◆</div>
-          <div style={{ minWidth:0 }}>
-            <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, fontWeight:700,
-              color:conf.color, letterSpacing:"0.06em", textTransform:"uppercase", lineHeight:1.1 }}>
-              {data.label}
-            </div>
-            {data.note && (
-              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, color:C.sub,
-                letterSpacing:"0.02em", lineHeight:1.3, marginTop:3 }}>
-                {data.note}
-              </div>
-            )}
-          </div>
-        </div>
-        <button onClick={onToggle} style={{ flexShrink:0, padding:"6px 10px",
-          background:tracked ? C.greenLo : C.muted, border:`1px solid ${tracked ? C.green : C.border}`,
-          color:tracked ? C.green : C.sub, fontFamily:"'Barlow Condensed',sans-serif",
-          fontSize:10, fontWeight:700, letterSpacing:"0.12em", cursor:"pointer" }}>
-          {tracked ? "◆ TRACKING" : "TRACK"}
-        </button>
-      </div>
-
-      {tracked && (
-        <div style={{ marginTop:10 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <button onClick={onSub} style={{ width:30, height:30, background:C.muted, border:`1px solid ${C.border}`,
-              color:C.text, fontSize:18, cursor:"pointer", fontFamily:"'Barlow Condensed',sans-serif",
-              display:"flex", alignItems:"center", justifyContent:"center" }}>−</button>
-            <div style={{ flex:1, textAlign:"center" }}>
-              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:30, fontWeight:700, color:conf.color, lineHeight:1 }}>{runs}</div>
-              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.muted, letterSpacing:"0.14em", marginTop:1 }}>RUNS LOGGED</div>
-            </div>
-            <button onClick={onAdd} style={{ width:30, height:30, background:conf.bg, border:`1px solid ${conf.color}`,
-              color:conf.color, fontSize:18, cursor:"pointer", fontFamily:"'Barlow Condensed',sans-serif",
-              display:"flex", alignItems:"center", justifyContent:"center" }}>+</button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+/* ── Xûr panel ────────────────────────────────────────────────────────
+   Xûr's live weekly exotic stock. The old Nightfall/Trials rotation was
+   removed (Edge of Fate has no targetable featured weapon). XurPanel renders
+   ONLY when the server reports an authoritative live read AND Xûr is verified
+   present — never a possibly-stale "IN TOWN". */
 
 function XurSection({ xur, onScan }) {
-  if (!xur) return null;
   const weapons = xur.weapons || [];
   const armorCount = (xur.armor || []).length;
   return (
-    <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:12, marginTop:12 }}>
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
-        <Lbl color={C.blue} mb={0}>{xur.label || "Xûr"}</Lbl>
-        <Badge label={xur.present ? "IN TOWN" : "AWAY"}
-          color={xur.present ? C.green : C.muted} bg={xur.present ? C.greenLo : C.muted}/>
-      </div>
+    <div>
       {xur.location && (
         <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.12em", marginBottom:weapons.length?8:0 }}>
           {xur.location.toUpperCase()}
-        </div>
-      )}
-      {!xur.present && (
-        <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, color:C.sub, letterSpacing:"0.06em" }}>
-          Xûr isn't in the Tower right now (or stock is unavailable without the data API token).
         </div>
       )}
       {weapons.map(w => (
@@ -748,42 +682,36 @@ function XurSection({ xur, onScan }) {
           </div>
         </div>
       ))}
-      {xur.present && armorCount > 0 && (
+      {armorCount > 0 && (
         <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, color:C.sub, letterSpacing:"0.1em", marginTop:6 }}>
           + {armorCount} exotic armor piece{armorCount !== 1 ? "s" : ""} in stock
+        </div>
+      )}
+      {weapons.length === 0 && armorCount === 0 && (
+        <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, color:C.sub, letterSpacing:"0.06em" }}>
+          Xûr is here, but no exotic gear could be read from his stock this refresh.
         </div>
       )}
     </div>
   );
 }
 
-function RitualsPanel({ rotation, ritualState, onToggle, onAdd, onSub, onScan }) {
-  if (!rotation) return null;
-  const xurLive = rotation.source === "live";
-  const week = rotation.weekOf ? new Date(rotation.weekOf).toLocaleDateString() : null;
+function XurPanel({ data, onScan }) {
+  // Only ever surface Xûr when the server gave an AUTHORITATIVE live read AND he
+  // is verified present. Away or unknown (fallback) → render nothing at all.
+  if (!data || data.source !== "live" || !data.xur?.present) return null;
+  const week = data.weekOf ? new Date(data.weekOf).toLocaleDateString() : null;
   return (
-    <Panel bc={C.purple} style={{ marginBottom:14 }}>
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        <Lbl color={C.purple} mb={0}>Weekly Rituals</Lbl>
-        <Badge label={xurLive ? "XÛR LIVE" : "XÛR OFFLINE"}
-          color={xurLive ? C.green : C.gold} bg={xurLive ? C.greenLo : C.goldLo}/>
+    <Panel bc={C.gold} style={{ marginBottom:14 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+        <Lbl color={C.gold} mb={0}>{data.xur.label || "Xûr"} · Exotics</Lbl>
+        <Badge label="IN TOWN · LIVE" color={C.green} bg={C.greenLo}/>
       </div>
-      {RITUAL_SLOTS.map(conf => {
-        const data = rotation[conf.slot];
-        if (!data) return null;
-        return (
-          <RitualRow key={conf.slot} slot={conf.slot} conf={conf} data={data}
-            state={ritualState[`ritual:${conf.slot}`]}
-            onToggle={() => onToggle(conf.slot)}
-            onAdd={() => onAdd(conf.slot, 1)}
-            onSub={() => onSub(conf.slot, -1)}/>
-        );
-      })}
-      {rotation.xur && <XurSection xur={rotation.xur} onScan={onScan}/>}
+      <XurSection xur={data.xur} onScan={onScan}/>
       {week && (
         <div style={{ textAlign:"center", fontFamily:"'Barlow Condensed',sans-serif",
           fontSize:9, color:C.muted, letterSpacing:"0.14em", marginTop:12 }}>
-          WEEK OF {week} · {xurLive ? "XÛR STOCK LIVE" : "XÛR STOCK UNAVAILABLE"}
+          WEEK OF {week} · VERIFIED LIVE
         </div>
       )}
     </Panel>
@@ -810,10 +738,9 @@ export default function GhostCompanion() {
   const [isTracked,   setIsTracked]   = useState(false);
   const [showAdd,     setShowAdd]     = useState(false);
 
-  // Remote data (from the Railway data API): community paths + weekly rotation.
+  // Remote data (from the Railway data API): community paths + Xûr live stock.
   const [communityRates, setCommunityRates] = useState({});
-  const [rotation,       setRotation]       = useState(null);
-  const [ritualState,    setRitualState]    = useState({}); // { "ritual:nightfall": {tracked,runs} }
+  const [xurData,        setXurData]        = useState(null);
   const [apiUrl,         setApiUrl]         = useState("");
 
   // Keep a ref to the current item so the IPC event listener (registered once)
@@ -831,7 +758,7 @@ export default function GhostCompanion() {
   useEffect(() => { window.api?.getUserDropRates?.().then(setUserRates).catch(()=>{}); }, []);
   // Load remote data (no-ops gracefully if no data API URL is configured).
   useEffect(() => { window.api?.getCommunityPaths?.().then(setCommunityRates).catch(()=>{}); }, []);
-  useEffect(() => { window.api?.getRotation?.().then(setRotation).catch(()=>{}); }, []);
+  useEffect(() => { window.api?.getXur?.().then(setXurData).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getDataApiUrl?.().then(v => setApiUrl(v || "")).catch(()=>{}); }, []);
 
   // Refresh whether a given itemHash is currently in the tracked list.
@@ -844,19 +771,9 @@ export default function GhostCompanion() {
   useEffect(() => {
     if (!window.api?.onCompletionDetected) return;
     const unsubscribe = window.api.onCompletionDetected((payload) => {
-      // Ritual tracked items live in their own panel (key "ritual:<slot>"), not
-      // the on-screen card — update their run tally independently.
-      if (typeof payload.itemKey === "string" && payload.itemKey.startsWith("ritual:")) {
-        setRitualState(s => ({
-          ...s,
-          [payload.itemKey]: {
-            ...(s[payload.itemKey] || { tracked: true }),
-            tracked: true,
-            runs: payload.newCount ?? ((s[payload.itemKey]?.runs || 0) + 1),
-          },
-        }));
-        return;
-      }
+      // The ritual rotation feature was removed; ignore any legacy "ritual:*"
+      // tracked-item stragglers still living in a user's store.
+      if (typeof payload.itemKey === "string" && payload.itemKey.startsWith("ritual:")) return;
       const cur = itemRef.current;
       // Only react if the completion is for the item currently on screen.
       const matches =
@@ -1034,73 +951,12 @@ export default function GhostCompanion() {
     setShowAdd(false);
   }, []);
 
-  // ── Weekly rituals: hydrate tracked/runs state once the rotation arrives ──
-  useEffect(() => {
-    if (!rotation) return;
-    let cancelled = false;
-    (async () => {
-      const list   = (await window.api?.getTrackedItems?.()) || [];
-      const counts = (await window.api?.getRunCounts?.()) || {};
-      const next = {};
-      for (const slot of ["nightfall", "trials"]) {
-        const k = `ritual:${slot}`;
-        next[k] = {
-          tracked: list.some(t => t.key === k),
-          runs: counts[`${k}::ritual`] || 0,
-        };
-      }
-      if (!cancelled) setRitualState(next);
-    })();
-    return () => { cancelled = true; };
-  }, [rotation]);
-
-  // Register/unregister a ritual slot for auto-tracking. The descriptor key is a
-  // stable "ritual:<slot>" so run counts persist week to week; the activity-hash
-  // pool is what the tracker matches completions against. There's no targetable
-  // weapon in the Edge of Fate model, so the tracked item is the ritual itself.
-  const toggleRitual = useCallback(async (slot) => {
-    const r = rotation?.[slot];
-    if (!r) return;
-    const k = `ritual:${slot}`;
-    const list = (await window.api.getTrackedItems()) || [];
-    const exists = list.some(t => t.key === k);
-    const next = exists
-      ? list.filter(t => t.key !== k)
-      : [...list, {
-          key: k,
-          itemHash: 0,
-          name: r.label,
-          icon: null,
-          paths: [{
-            id: "ritual",
-            method: r.label,
-            location: r.label,
-            sourceActivityHash: null,
-            sourceActivityHashes: r.activityHashes || [],
-            sourceActivityName: r.label,
-          }],
-        }];
-    await window.api.setTrackedItems(next);
-    setRitualState(s => ({ ...s, [k]: { ...(s[k] || { runs: 0 }), tracked: !exists } }));
-  }, [rotation]);
-
-  // Manual +/- on a ritual's run tally (mirrors the per-path counter).
-  const bumpRitual = useCallback((slot, delta) => {
-    const k = `ritual:${slot}`;
-    setRitualState(s => {
-      const cur  = s[k] || { runs: 0, tracked: false };
-      const runs = Math.max(0, cur.runs + delta);
-      window.api?.setRunCount?.({ itemKey: k, pathId: "ritual", value: runs });
-      return { ...s, [k]: { ...cur, runs } };
-    });
-  }, []);
-
   // Persist a new data API URL and immediately refresh remote data from it.
   const saveApiUrl = useCallback(async (url) => {
     const saved = await window.api.setDataApiUrl(url);
     setApiUrl(saved || "");
     window.api.getCommunityPaths?.({ force: true }).then(setCommunityRates).catch(()=>{});
-    window.api.getRotation?.({ force: true }).then(setRotation).catch(()=>{});
+    window.api.getXur?.({ force: true }).then(setXurData).catch(()=>{});
   }, []);
 
   const best    = itemData ? bestPathId(itemData.acquisitionPaths) : null;
@@ -1156,10 +1012,8 @@ export default function GhostCompanion() {
           apiUrl={apiUrl} onSaveApiUrl={saveApiUrl}/>
       )}
 
-      {/* ── Weekly rituals (global rotation from the data API) ── */}
-      <RitualsPanel rotation={rotation} ritualState={ritualState}
-        onToggle={toggleRitual} onAdd={bumpRitual} onSub={bumpRitual}
-        onScan={(name) => scan(name)}/>
+      {/* ── Xûr (live exotic stock from the data API; only shown when present) ── */}
+      <XurPanel data={xurData} onScan={(name) => scan(name)}/>
 
       {/* ── Path type legend ── */}
       <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:14 }}>

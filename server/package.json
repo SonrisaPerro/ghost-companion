@@ -1,7 +1,7 @@
 {
   "name": "ghost-companion-data-api",
   "version": "1.0.0",
-  "description": "Ghost Companion data API — resolves the global weekly ritual rotation (Nightfall/Trials) and serves community acquisition paths. Deploys on Railway.",
+  "description": "Ghost Companion data API — resolves Xûr's live weekly exotic stock + presence and serves community acquisition paths. Deploys on Railway.",
   "type": "module",
   "main": "index.js",
   "scripts": {
