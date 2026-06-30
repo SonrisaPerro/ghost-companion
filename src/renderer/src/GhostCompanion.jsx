@@ -396,9 +396,7 @@ function CreateGuideForm({ onCreate }) {
    Replaces the old Anthropic API-key Settings panel: we no longer call an LLM,
    but we DO need a Bungie session for auto-tracking. */
 function Account({ auth, busy, onLogin, onLogout, apiUrl, onSaveApiUrl,
-  notifyEnabled, onToggleNotifications,
-  guides, onImportGuideFile, onExportGuides, onDeleteGuide,
-  onBrowseLibrary, onImportCommunityGuide, onCreateGuide }) {
+  notifyEnabled, onToggleNotifications }) {
   const [draft, setDraft] = useState(apiUrl || "");
   useEffect(() => { setDraft(apiUrl || ""); }, [apiUrl]);
   const dirty = draft.trim() !== (apiUrl || "").trim();
@@ -478,57 +476,110 @@ function Account({ auth, busy, onLogin, onLogout, apiUrl, onSaveApiUrl,
         </button>
       </div>
 
-      {/* Guide / secret-chest packages — import, export, manage. */}
-      <div style={{ marginTop:12, borderTop:`1px solid ${C.border}`, paddingTop:12 }}>
-        <Lbl color={C.sub}>Guide Packages</Lbl>
-        <div style={{ fontSize:11, color:C.sub, lineHeight:1.5, marginBottom:8 }}>
-          Import shareable <span style={{ color:C.text }}>.ghostpkg.json</span> guides
-          (secret-chest routes, walkthroughs). They surface on the matching item's card.
-          You can also drag a file onto this window.
-        </div>
-        <div style={{ display:"flex", gap:8, marginBottom:(guides?.length ? 10 : 0) }}>
-          <button onClick={onImportGuideFile} style={{ flex:1,
-            background:C.blueLo, border:`1px solid ${C.blue}`, color:C.blue,
-            fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, fontWeight:700,
-            letterSpacing:"0.1em", padding:"6px 10px", cursor:"pointer", WebkitAppRegion:"no-drag" }}>
-            IMPORT FILE
-          </button>
-          <button onClick={onExportGuides} disabled={!guides?.length} style={{ flex:1,
-            background:guides?.length ? C.muted : C.muted,
-            border:`1px solid ${guides?.length ? C.border : C.muted}`,
-            color:guides?.length ? C.sub : C.muted, fontFamily:"'Barlow Condensed',sans-serif",
-            fontSize:11, fontWeight:700, letterSpacing:"0.1em", padding:"6px 10px",
-            cursor:guides?.length ? "pointer" : "default", WebkitAppRegion:"no-drag" }}>
-            EXPORT
-          </button>
-        </div>
-        {guides?.map((g) => (
-          <div key={g.id} style={{ display:"flex", alignItems:"center", gap:8,
-            padding:"5px 0", borderBottom:`1px solid ${C.muted}` }}>
-            <span style={{ color:C.gold, fontSize:10, flexShrink:0 }}>
-              {g.type === "secret_chest" ? "▣" : "◈"}
-            </span>
-            <div style={{ minWidth:0, flex:1 }}>
-              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, fontWeight:600,
-                color:C.text, letterSpacing:"0.03em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
-                {g.title}
-              </div>
-              {(g.item || g.activity) && (
-                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.1em" }}>
-                  {(g.item || g.activity || "").toUpperCase()}
-                </div>
-              )}
-            </div>
-            <button onClick={() => onDeleteGuide?.(g.id)} title="Remove guide" style={{
-              background:"none", border:`1px solid ${C.border}`, color:C.sub,
-              fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, fontWeight:700,
-              letterSpacing:"0.1em", padding:"3px 8px", cursor:"pointer", flexShrink:0,
-              WebkitAppRegion:"no-drag" }}>
-              ✕
-            </button>
-          </div>
-        ))}
+    </Panel>
+  );
+}
+
+/* ── Guides section (dedicated home for imported / authored walkthroughs) ──
+   Moved out of the Account panel so the guide tools have a clear home. Unlike
+   the on-item GuidesPanel (which only renders guides whose itemHash matches the
+   scanned item), this lists EVERY imported guide as an expandable reader — so
+   itemHash-less secret-chest routes are actually readable here. */
+function Guides({ guides, onImportGuideFile, onExportGuides, onDeleteGuide,
+  onBrowseLibrary, onImportCommunityGuide, onCreateGuide }) {
+  const [openId, setOpenId] = useState(null);
+  const toggle = (id) => setOpenId((cur) => (cur === id ? null : id));
+  return (
+    <Panel bc={C.gold} style={{ marginBottom:10 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
+        <Lbl color={C.gold} mb={0}>Guides &amp; Secret Chests</Lbl>
+        {guides?.length ? <Badge label={`${guides.length}`} color={C.gold} bg={C.goldLo}/> : null}
       </div>
+      <div style={{ fontSize:11, color:C.sub, lineHeight:1.5, marginBottom:8 }}>
+        Import shareable <span style={{ color:C.text }}>.ghostpkg.json</span> walkthroughs
+        (secret-chest routes, encounter guides). Tap any guide to read its steps. Guides
+        tied to a weapon also surface on that item's card. You can drag a file onto this
+        window to import.
+      </div>
+
+      {/* Import / Export */}
+      <div style={{ display:"flex", gap:8, marginBottom:10 }}>
+        <button onClick={onImportGuideFile} style={{ flex:1,
+          background:C.blueLo, border:`1px solid ${C.blue}`, color:C.blue,
+          fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, fontWeight:700,
+          letterSpacing:"0.1em", padding:"6px 10px", cursor:"pointer", WebkitAppRegion:"no-drag" }}>
+          IMPORT FILE
+        </button>
+        <button onClick={onExportGuides} disabled={!guides?.length} style={{ flex:1,
+          background:C.muted, border:`1px solid ${guides?.length ? C.border : C.muted}`,
+          color:guides?.length ? C.sub : C.muted, fontFamily:"'Barlow Condensed',sans-serif",
+          fontSize:11, fontWeight:700, letterSpacing:"0.1em", padding:"6px 10px",
+          cursor:guides?.length ? "pointer" : "default", WebkitAppRegion:"no-drag" }}>
+          EXPORT
+        </button>
+      </div>
+
+      {/* Expandable reader list — works for itemHash-less secret chests. */}
+      {guides?.length ? guides.map((g) => {
+        const open = openId === g.id;
+        return (
+          <div key={g.id} style={{ borderBottom:`1px solid ${C.muted}`, paddingBottom:open?8:0 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 0" }}>
+              <div onClick={() => toggle(g.id)} style={{ display:"flex", alignItems:"center", gap:8,
+                minWidth:0, flex:1, cursor:"pointer" }}>
+                <span style={{ color:C.gold, fontSize:10, flexShrink:0 }}>
+                  {g.type === "secret_chest" ? "▣" : "◈"}
+                </span>
+                <div style={{ minWidth:0, flex:1 }}>
+                  <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:14, fontWeight:700,
+                    color:C.text, letterSpacing:"0.04em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                    {g.title}
+                  </div>
+                  {(g.item || g.activity || g.source) && (
+                    <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.1em" }}>
+                      {[g.item || g.activity, g.source].filter(Boolean).join(" · ").toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <span style={{ color:C.sub, fontSize:11, flexShrink:0 }}>{open ? "▲" : "▼"}</span>
+              </div>
+              <button onClick={() => onDeleteGuide?.(g.id)} title="Remove guide" style={{
+                background:"none", border:`1px solid ${C.border}`, color:C.sub,
+                fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, fontWeight:700,
+                letterSpacing:"0.1em", padding:"3px 8px", cursor:"pointer", flexShrink:0,
+                WebkitAppRegion:"no-drag" }}>
+                ✕
+              </button>
+            </div>
+            {open && (
+              <div style={{ paddingLeft:18 }}>
+                {g.steps?.length > 0 ? g.steps.map((s, i) => (
+                  <div key={i} style={{ display:"flex", gap:8, marginBottom:7, alignItems:"flex-start" }}>
+                    <span style={{ color:C.gold, fontFamily:"'Barlow Condensed',sans-serif", fontSize:11,
+                      fontWeight:700, flexShrink:0, marginTop:1 }}>{i+1}.</span>
+                    <div style={{ minWidth:0 }}>
+                      {s.title && <div style={{ fontSize:12, fontWeight:600, color:C.text, lineHeight:1.4 }}>{s.title}</div>}
+                      {s.description && <div style={{ fontSize:12, color:C.sub, lineHeight:1.5 }}>{s.description}</div>}
+                    </div>
+                  </div>
+                )) : (
+                  <div style={{ fontSize:12, color:C.sub, lineHeight:1.5, paddingBottom:6 }}>
+                    {g.notes || "No steps provided."}
+                  </div>
+                )}
+                {g.steps?.length > 0 && g.notes && (
+                  <div style={{ fontSize:11, color:C.sub, fontStyle:"italic", lineHeight:1.5,
+                    borderLeft:`2px solid ${C.border}`, paddingLeft:8, marginTop:4 }}>{g.notes}</div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      }) : (
+        <div style={{ fontSize:11, color:C.sub, lineHeight:1.5, fontStyle:"italic", padding:"4px 0 2px" }}>
+          No guides yet. Import a file, browse the community library, or create one below.
+        </div>
+      )}
 
       {/* Browse + one-click import curated packs from the data API. */}
       <CommunityLibrary onBrowse={onBrowseLibrary} onImport={onImportCommunityGuide}/>
@@ -1481,6 +1532,7 @@ export default function GhostCompanion() {
   const [auth,        setAuth]        = useState({ loggedIn:false, displayName:null });
   const [authBusy,    setAuthBusy]    = useState(false);
   const [showAccount, setShowAccount] = useState(false);
+  const [showGuides,  setShowGuides]  = useState(false);
 
   // Overlay window controls (frameless window — its own pin/tray buttons).
   const [alwaysOnTop, setAlwaysOnTop] = useState(true);
@@ -1989,8 +2041,17 @@ export default function GhostCompanion() {
             WebkitAppRegion:"no-drag" }}>
             TRAY ▾
           </button>
+          {/* Guides toggle — dedicated home for imported / authored walkthroughs. */}
+          <button onClick={() => { setShowGuides(s => !s); setShowAccount(false); }}
+            title="Guides & secret-chest walkthroughs" style={{
+            background:"none", border:`1px solid ${showGuides ? C.gold : C.muted}`,
+            color: showGuides ? C.gold : C.muted, padding:"3px 8px", cursor:"pointer",
+            fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700, letterSpacing:"0.14em",
+            WebkitAppRegion:"no-drag" }}>
+            {guides.length ? "GUIDES ◆" : "GUIDES ○"}
+          </button>
           {/* Account toggle (was the API-key button) */}
-          <button onClick={() => setShowAccount(s => !s)} title="Bungie sign-in & data settings" style={{
+          <button onClick={() => { setShowAccount(s => !s); setShowGuides(false); }} title="Bungie sign-in & data settings" style={{
             background:"none", border:`1px solid ${showAccount ? C.orange : C.muted}`,
             color: showAccount ? C.orange : C.muted, padding:"3px 8px", cursor:"pointer",
             fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700, letterSpacing:"0.14em",
@@ -2004,8 +2065,12 @@ export default function GhostCompanion() {
       {showAccount && (
         <Account auth={auth} busy={authBusy} onLogin={handleLogin} onLogout={handleLogout}
           apiUrl={apiUrl} onSaveApiUrl={saveApiUrl}
-          notifyEnabled={notifyEnabled} onToggleNotifications={toggleNotifications}
-          guides={guides} onImportGuideFile={importGuideFile}
+          notifyEnabled={notifyEnabled} onToggleNotifications={toggleNotifications}/>
+      )}
+
+      {/* ── Guides (imported / authored walkthroughs + community library) ── */}
+      {showGuides && (
+        <Guides guides={guides} onImportGuideFile={importGuideFile}
           onExportGuides={exportGuides} onDeleteGuide={deleteGuide}
           onBrowseLibrary={browseLibrary} onImportCommunityGuide={importCommunityGuide}
           onCreateGuide={createGuide}/>
