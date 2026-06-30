@@ -15,7 +15,8 @@
     "dist": "electron-vite build && electron-builder",
     "release": "electron-vite build && electron-builder --publish always",
     "lookup": "node scripts/lookup.mjs",
-    "audit": "node scripts/audit-data.mjs"
+    "audit": "node scripts/audit-data.mjs",
+    "test": "node --test"
   },
   "build": {
     "appId": "com.ghostcompanion.app",

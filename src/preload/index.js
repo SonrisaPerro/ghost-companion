@@ -35,6 +35,8 @@ const api = {
   getXur: (opts) => ipcRenderer.invoke('get-xur', opts || {}),
   getEververse: (opts) => ipcRenderer.invoke('get-eververse', opts || {}),
   getCommunityPaths: (opts) => ipcRenderer.invoke('get-community-paths', opts || {}),
+  getCommunityGuides: (opts) => ipcRenderer.invoke('get-community-guides', opts || {}),
+  importCommunityGuide: (id) => ipcRenderer.invoke('import-community-guide', id),
   getDataApiUrl: () => ipcRenderer.invoke('get-data-api-url'),
   setDataApiUrl: (url) => ipcRenderer.invoke('set-data-api-url', url),
 
@@ -51,6 +53,7 @@ const api = {
 
   // --- Guide / secret-chest data packages --------------------------------
   getGuides: () => ipcRenderer.invoke('get-guides'),
+  addGuide: (guide) => ipcRenderer.invoke('add-guide', guide),
   importGuideFile: () => ipcRenderer.invoke('import-guide-file'),
   importGuideText: (text) => ipcRenderer.invoke('import-guide-text', text),
   exportGuides: () => ipcRenderer.invoke('export-guides'),

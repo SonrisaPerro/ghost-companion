@@ -7,6 +7,8 @@
 //   GET /monument  — Monument to Lost Lights exotic archive catalog (cached)
 //   GET /eververse — tracked weapon ornaments currently for sale in Eververse (cached)
 //   GET /paths     — community acquisition-path data (read-only)
+//   GET /guides     — community guide-package library index (read-only)
+//   GET /guides/:id — one full guide package from the library
 //
 // Designed for Railway: binds to process.env.PORT. Xûr's stock is resolved once
 // and cached (it's identical for everyone until his inventory rotates), so client
@@ -20,6 +22,7 @@ import { fileURLToPath } from 'node:url'
 import { resolveXur } from './src/xur.js'
 import { resolveMonument } from './src/monument.js'
 import { resolveEververse } from './src/eververse.js'
+import { loadGuides, getGuidesIndex, getGuidePackage } from './src/guides.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -38,6 +41,10 @@ function loadPaths() {
   return pathsCache
 }
 loadPaths()
+
+// --- /guides : community guide-package library ------------------------------
+const GUIDES_DIR = path.join(__dirname, 'data', 'guides')
+let guidesCount = loadGuides(GUIDES_DIR)
 
 // --- /xur : cached live resolve ---------------------------------------------
 const XUR_TTL_MS = 60 * 60 * 1000 // re-resolve at most hourly
@@ -116,7 +123,8 @@ app.get('/health', (_req, res) => {
     uptime: process.uptime(),
     xurCachedAt: xurAt || null,
     monumentCachedAt: monumentAt || null,
-    eververseCachedAt: eververseAt || null
+    eververseCachedAt: eververseAt || null,
+    guidePackages: guidesCount
   })
 })
 
@@ -156,10 +164,29 @@ app.get('/paths', (req, res) => {
   res.json(pathsCache || {})
 })
 
+// Library index — lightweight metadata for the browse view.
+app.get('/guides', (req, res) => {
+  if (req.query.reload === '1') guidesCount = loadGuides(GUIDES_DIR)
+  res.set('Cache-Control', 'public, max-age=3600')
+  res.json(getGuidesIndex())
+})
+
+// One full package. :id is the filename slug; reject anything non-slug up front.
+app.get('/guides/:id', (req, res) => {
+  const { id } = req.params
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(id) || id.length > 128) {
+    return res.status(400).json({ error: 'bad id' })
+  }
+  const pkg = getGuidePackage(id)
+  if (!pkg) return res.status(404).json({ error: 'not found' })
+  res.set('Cache-Control', 'public, max-age=3600')
+  res.json(pkg)
+})
+
 app.get('/', (_req, res) => {
   res.json({
     service: 'ghost-companion-data-api',
-    endpoints: ['/health', '/xur', '/monument', '/eververse', '/paths']
+    endpoints: ['/health', '/xur', '/monument', '/eververse', '/paths', '/guides', '/guides/:id']
   })
 })
 

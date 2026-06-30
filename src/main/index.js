@@ -290,6 +290,18 @@ function registerIpc() {
   ipcMain.handle('get-community-paths', async (_e, { force } = {}) =>
     dataApi.getCommunityPaths(store, { force })
   )
+
+  // Community guide library: browse index + one-click import. The fetched
+  // package runs through the SAME validate+merge path as a dragged-in file, so
+  // re-importing updates existing guides (dedupe by id) rather than duplicating.
+  ipcMain.handle('get-community-guides', async (_e, { force } = {}) =>
+    dataApi.getCommunityGuides(store, { force })
+  )
+  ipcMain.handle('import-community-guide', async (_e, id) => {
+    const pkg = await dataApi.getCommunityGuidePackage(store, id)
+    if (!pkg) return { ok: false, message: 'Could not fetch that package from the library.' }
+    return importGuideFromText(JSON.stringify(pkg))
+  })
   ipcMain.handle('get-data-api-url', async () => store.get('dataApiUrl') || '')
   ipcMain.handle('set-data-api-url', async (_e, url) => {
     store.set('dataApiUrl', (url || '').trim())
@@ -332,6 +344,22 @@ function registerIpc() {
 
   // --- Guide packages -----------------------------------------------------
   ipcMain.handle('get-guides', async () => store.get('guides') || [])
+
+  // Create a guide in-app (the Create Guide form). Wraps the single guide in a
+  // package envelope and runs the same validate+merge path, so a hand-authored
+  // guide is held to the identical limits as an imported one. Generates a stable
+  // slug id from the title when the form doesn't supply one.
+  ipcMain.handle('add-guide', async (_e, guide) => {
+    if (!guide || typeof guide !== 'object') return { ok: false, message: 'No guide data.' }
+    const id = (guide.id && String(guide.id)) || slugId(guide.title)
+    if (!id) return { ok: false, message: 'A title is required.' }
+    const envelope = {
+      ghostPackage: packages.SCHEMA_VERSION,
+      name: 'My guides',
+      guides: [{ ...guide, id }]
+    }
+    return importGuideFromText(JSON.stringify(envelope))
+  })
 
   // Import from a file chosen via the OS picker.
   ipcMain.handle('import-guide-file', async () => {
@@ -399,7 +427,23 @@ function registerIpc() {
 // ---------------------------------------------------------------------------
 // Guide-package import (shared by the file-picker and drag-and-drop channels)
 // ---------------------------------------------------------------------------
+// Turns a free-text title into a safe, unique-ish slug id (matches packages.js's
+// ID_RE charset). Appends a short random suffix so two same-titled guides don't
+// collide. Returns '' if the title has no usable characters.
+function slugId(title) {
+  const base = String(title || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 100)
+  if (!base) return ''
+  return `${base}-${Math.random().toString(36).slice(2, 7)}`
+}
+
 function importGuideFromText(text) {
+  if (!packages.withinSizeLimit(text)) {
+    return { ok: false, message: 'That file is too large to be a guide package.' }
+  }
   let obj
   try {
     obj = JSON.parse(text)

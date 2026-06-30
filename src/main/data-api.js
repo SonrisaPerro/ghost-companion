@@ -12,7 +12,12 @@
 import fetch from 'node-fetch'
 
 const TTL_MS = 60 * 60 * 1000 // cache remote data for an hour
-const cache = { xur: null, xurAt: 0, paths: null, pathsAt: 0, eververse: null, eververseAt: 0 }
+const cache = {
+  xur: null, xurAt: 0,
+  paths: null, pathsAt: 0,
+  eververse: null, eververseAt: 0,
+  guides: null, guidesAt: 0
+}
 
 function baseUrl(store) {
   let url = (process.env.GHOST_DATA_API_URL || store.get('dataApiUrl') || '').trim()
@@ -59,6 +64,44 @@ export async function getEververse(store, { force = false } = {}) {
     if (!cache.eververse) return null // nothing cached to fall back on
   }
   return cache.eververse
+}
+
+/**
+ * Returns the community guide-library index ({ count, packages[] }), or an empty
+ * index if no URL / unreachable. Cached briefly — the browse list is small.
+ */
+export async function getCommunityGuides(store, { force = false } = {}) {
+  const url = baseUrl(store)
+  if (!url) return { count: 0, packages: [] }
+  if (!force && cache.guides && Date.now() - cache.guidesAt < TTL_MS) return cache.guides
+  try {
+    cache.guides = await getJson(`${url}/guides`)
+    cache.guidesAt = Date.now()
+  } catch (err) {
+    console.error('[data-api] guides index fetch failed:', err.message)
+    if (!cache.guides) return { count: 0, packages: [] }
+  }
+  return cache.guides
+}
+
+/**
+ * Fetches one full guide package from the library by id. Not cached (it's a
+ * one-shot fetch the importer immediately re-validates and merges). The id is
+ * slug-constrained before it ever hits the URL. Returns the package object, or
+ * null if unreachable / not found.
+ */
+export async function getCommunityGuidePackage(store, id) {
+  const url = baseUrl(store)
+  if (!url) return null
+  if (typeof id !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(id) || id.length > 128) {
+    return null
+  }
+  try {
+    return await getJson(`${url}/guides/${encodeURIComponent(id)}`)
+  } catch (err) {
+    console.error('[data-api] guide package fetch failed:', err.message)
+    return null
+  }
 }
 
 /** Returns community paths (keyed by item name), or {} if unavailable. */

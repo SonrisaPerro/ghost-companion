@@ -1,14 +1,16 @@
 # Ghost Companion — Session Handoff
 
-_Last updated: 2026-06-29. Read this first when resuming work on this tool._
+_Last updated: 2026-06-30. Read this first when resuming work on this tool._
 
 ## What this is
 An always-on-top Destiny 2 loot-farming overlay.
 - **Client:** Electron + React, frameless / pinned to the right edge of the
   primary display, width locked to **420px**, see-through via `setOpacity(0.92)`.
-  Runs **only** via `npm run dev` (electron-vite) — it is *not* packaged or
-  distributed. Client-side fixes are "live" the moment the app reloads; they
-  never go through Railway.
+  Dev runs via `npm run dev` (electron-vite). **As of 2026-06-30 it is ALSO
+  packaged + distributed** as a Windows NSIS installer via GitHub Releases with
+  electron-updater auto-update — see "## Distribution / releases". Client-side
+  fixes are "live" the moment the dev app reloads; they never go through Railway,
+  but to reach end users they must be cut into a **new tagged release**.
 - **Server:** a small Express data-API deployed on **Railway**
   (`ghost-companion-production.up.railway.app`). Railway **root dir = `server`**,
   **auto-deploys on `git push` to `main`**.
@@ -21,6 +23,32 @@ An always-on-top Destiny 2 loot-farming overlay.
 - **Verify server:** `GET /health`, `/xur` (hourly cache, `?force=1`),
   `/monument` (6h cache, `?force=1`), `/paths` (`?reload=1` reloads file
   server-side), `/`.
+
+## Distribution / releases (set up 2026-06-30)
+- **Repo is PUBLIC:** `github.com/SonrisaPerro/ghost-companion`. Friend installs
+  with no collaborator invite; electron-updater can reach `latest.yml` without a
+  token (which is why public beats private here).
+- **Release pipeline:** push a `v*` tag to `main` → `.github/workflows/release.yml`
+  (windows-latest) runs `npm ci` → `electron-vite build` → `electron-builder
+  --publish always`. The two Actions secrets (`BUNGIE_API_KEY`, `BUNGIE_CLIENT_ID`)
+  are baked in at build time via the Vite `define` in `electron.vite.config.js`.
+  Output: `Ghost-Companion-Setup-<ver>.exe` + `.blockmap` + `latest.yml` attached
+  to a GitHub Release.
+- **⚠️ GOTCHA — electron-builder publishes the release as a DRAFT.** After the
+  Actions run goes green you MUST go to the Releases page and **publish the draft**,
+  or the friend can't download it and auto-update won't see it.
+- **To ship a change:** bump `version` in `package.json`, commit to `main`,
+  `git tag -a vX.Y.Z && git push origin main --tags`, wait for green, publish the
+  draft. Secrets must already exist before tagging (else a credential-less binary).
+- **Shipped:** `v1.0.0` (live), `v1.0.1` (SmileCo installer branding — in progress
+  / publish the draft when green).
+- **SmileCo branding (v1.0.1):** `build.win.publisherName:"SmileCo"` +
+  `build.copyright` + `nsis.uninstallDisplayName` → "SmileCo" shows in File
+  Properties (Company/Copyright), the UAC prompt, and Add/Remove Programs. It does
+  **NOT** change the SmartScreen "Unknown publisher" banner — that needs an
+  Authenticode cert. Removing the warning entirely = **EV code-signing cert**
+  (~$400–700/yr, instant SmartScreen trust); OV cert warms up over downloads.
+  Staying unsigned (friend clicks "More info → Run anyway") is fine for now.
 
 ## Monument to Lost Lights (`/monument` live read)
 - Vendor hash **4230408743** ("Exotic Archive"), confirmed via
@@ -91,7 +119,9 @@ An always-on-top Destiny 2 loot-farming overlay.
 - `src/main/index.js` — Electron main: creates the overlay window, tray, IPC,
   starts AutoTracker. **Window bounds now validated against connected displays
   on launch** (`isReachable()`); `transparent:false` (see Known Issues).
-- `src/main/bungie-api.js` — OAuth refresh-token grant (confidential client),
+- `src/main/bungie-api.js` — OAuth refresh-token grant (**PUBLIC client** as of
+  2026-06-30 — no `client_secret`; `postToken()` adds HTTP Basic auth ONLY when a
+  secret is present, else sends `client_id` in the body, so the public flow works),
   profile, activity history. Tokens persisted in electron-store.
 - `src/main/manifest.js` — better-sqlite3 **read-only** Manifest queries via an
   Electron-as-Node self-relaunch shim (`ELECTRON_RUN_AS_NODE=1`). Manifest at
@@ -162,15 +192,59 @@ An always-on-top Destiny 2 loot-farming overlay.
    `source==='live' && xur.present` — never a stale "IN TOWN". (Removed: server
    `RITUALS`/`ACTIVITY_POOLS`/`rotation.js`; client `RitualsPanel`/`RitualRow`/
    `ritualState`/`toggleRitual`/`bumpRitual`.)
+4. **Next-dev-batch plan (`tranquil-growing-peacock.md`) is BUILT + committed.**
+   All three builds landed (the plan file is now historical):
+   - Build 1 hide-to-tray + always-on-top **PIN** toggle — `7b75d41` (renderer
+     header buttons ~`GhostCompanion.jsx:1679`/`:1691`).
+   - Build 2 ornaments-on-card — `7b75d41`: `getWeaponOrnaments` in `manifest.js`,
+     IPC + `trackedOrnaments` store, `OrnamentsPanel` (`:918`), server `shopSales`
+     in `server/src/eververse.js:112`, shop-cost merge (`:1590`).
+   - Build 3 data-packages — `3f8badd` went **past** the "design only" scope:
+     `src/main/packages.js` (validate/merge/export, pure), import via
+     `dialog.showOpenDialog` + text import + **drag-and-drop** onto the window
+     (`:1479`), export via `showSaveDialog`, `GuidesPanel` (`:1014`) on item cards
+     + a list in the Account panel.
+   - `npm run build` compiles all three clean (verified 2026-06-30).
+5. **Guide-package follow-up batch — BUILT 2026-06-30 (uncommitted at time of
+   writing).** Three additions on top of Build 3:
+   - **Hard limits / safety (`src/main/packages.js`):** `LIMITS` + `MAX`
+     constants, `withinSizeLimit()` byte gate (512 KB), slug-only ids, per-field
+     length + count caps. Reject-not-truncate. Enforced at BOTH import boundaries
+     (`importGuideFromText` in `src/main/index.js`; renderer drag-drop pre-read
+     guard). **15 unit tests** in `test/packages.test.js` (`npm test`).
+   - **Community library (Build A):** server loads/validates
+     `server/data/guides/*.ghostpkg.json` via `server/src/guides.js`; **`GET
+     /guides`** (index) + **`GET /guides/:id`** (full package, slug-guarded →
+     400/404). Client: `data-api.getCommunityGuides` / `getCommunityGuidePackage`,
+     IPC `get-community-guides` / `import-community-guide`, `CommunityLibrary`
+     browser in the Account panel. Re-import UPDATES via id-merge (no dupes) —
+     verified end-to-end. First curated pack:
+     `server/data/guides/vespers-host-secret-chests.ghostpkg.json` (3 guides,
+     3.6 KB; one linked to Ice Breaker `1111334348`).
+   - **Create Guide form (Build B):** `CreateGuideForm` in the Account panel
+     (title, type, item-search link, activity, dynamic steps, notes) → IPC
+     `add-guide` → slug id + same validate/merge path.
+   - **Server LIMITS mirror:** `server/src/guides.js` duplicates the caps from
+     `packages.js` (separate deploy root — keep the two in sync).
+   - **Deploy note:** the `/guides` endpoints need a Railway redeploy
+     (`git push` → Railway) before the client library browser shows anything.
+   **Reminder: shipping any client change now requires a new tagged release**
+   (bump version → tag → publish draft).
+6. **v1.0.1 draft** — publish it live once its Actions run is green (SmileCo
+   installer branding). Same draft-publish step as v1.0.0.
 
 ## SECURITY — do not slip on this
-- **Bungie secret rotation was DUE 2026-06-29 (today).** The leaked
-  `client_secret` and API key were pasted in chat in a prior session and must be
-  regenerated in the Bungie dev portal. See memory `rotate_bungie_secrets.md`.
-  When rotating: new values go **only** to the gitignored client `.env` and
-  Railway env vars — **never** into source. A client_secret embedded in a
-  distributed desktop app can't stay secret (acceptable here only because this is
-  run-from-source, single-user).
+- **Bungie secret rotation — DONE 2026-06-30.** Resolved by switching the Bungie
+  app to a **PUBLIC OAuth client** (client_id `53408`, no secret exists anymore)
+  and **regenerating the API key** (login verified working under the new key).
+  The leaked old `client_secret`/key are dead (regeneration invalidates the old
+  key; a public client has no secret). New `BUNGIE_API_KEY` + `BUNGIE_CLIENT_ID`
+  live in the gitignored client `.env` AND as **GitHub Actions repo secrets**
+  (baked into CI builds). **Never** put these in source. Note: the API key IS
+  extractable from the shipped `.exe` — inherent to any client-side app and
+  acceptable for a public client; if ever abused, regenerate the key + ship a new
+  release. Git history was scanned 2026-06-30: real `.env` was never committed
+  (only `.env.example` templates), so making the repo public exposed no secrets.
 - Live OAuth tokens (incl. refreshToken) live in
   `%APPDATA%/ghost-companion/config.json`. Never commit or echo them into tracked
   files.
@@ -184,6 +258,10 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
+- **`v1.0.1`** — brand Windows installer as **SmileCo** (`build.win.publisherName`,
+  `copyright`, `nsis.uninstallDisplayName`); version bump. Release workflow.
+- **`v1.0.0`** — first distributed release. Public Bungie OAuth client + regenerated
+  API key baked via CI; electron-builder NSIS + electron-updater; repo made public.
 - _(this session)_ — added **15 Monument exotics** to the data (49 items total);
   built the **`/monument` live-read endpoint** (resolver + shared `gear.js` +
   `getVendorSales`). Deployed + verified.
