@@ -715,20 +715,32 @@ function XurSection({ xur, onScan }) {
 function XurPanel({ data, onScan }) {
   // Only ever surface Xûr when the server gave an AUTHORITATIVE live read AND he
   // is verified present. Away or unknown (fallback) → render nothing at all.
+  // Starts COLLAPSED — the header still shows the count so it stays discoverable.
+  const [open, setOpen] = useState(false);
   if (!data || data.source !== "live" || !data.xur?.present) return null;
   const week = data.weekOf ? new Date(data.weekOf).toLocaleDateString() : null;
+  const n = (data.xur.weapons || []).length + (data.xur.armor || []).length;
   return (
     <Panel bc={C.gold} style={{ marginBottom:14 }}>
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
-        <Lbl color={C.gold} mb={0}>{data.xur.label || "Xûr"} · Exotics</Lbl>
-        <Badge label="IN TOWN · LIVE" color={C.green} bg={C.greenLo}/>
-      </div>
-      <XurSection xur={data.xur} onScan={onScan}/>
-      {week && (
-        <div style={{ textAlign:"center", fontFamily:"'Barlow Condensed',sans-serif",
-          fontSize:9, color:C.muted, letterSpacing:"0.14em", marginTop:12 }}>
-          WEEK OF {week} · VERIFIED LIVE
+      <div onClick={() => setOpen(o => !o)} title={open ? "Collapse" : "Expand"}
+        style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
+          gap:8, cursor:"pointer", userSelect:"none", marginBottom:open ? 8 : 0 }}>
+        <Lbl color={C.gold} mb={0}>{data.xur.label || "Xûr"} · {n} Exotic{n !== 1 ? "s" : ""} In Stock</Lbl>
+        <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+          <Badge label="IN TOWN · LIVE" color={C.green} bg={C.greenLo}/>
+          <span style={{ color:C.gold, fontSize:11, fontFamily:"'Barlow Condensed',sans-serif" }}>{open ? "▲" : "▼"}</span>
         </div>
+      </div>
+      {open && (
+        <>
+          <XurSection xur={data.xur} onScan={onScan}/>
+          {week && (
+            <div style={{ textAlign:"center", fontFamily:"'Barlow Condensed',sans-serif",
+              fontSize:9, color:C.muted, letterSpacing:"0.14em", marginTop:12 }}>
+              WEEK OF {week} · VERIFIED LIVE
+            </div>
+          )}
+        </>
       )}
     </Panel>
   );
@@ -803,7 +815,7 @@ function EverversePanel({ items, location, onScan }) {
       <div onClick={() => setOpen(o => !o)} title={open ? "Collapse" : "Expand"}
         style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
           gap:8, cursor:"pointer", userSelect:"none", marginBottom:open ? 6 : 0 }}>
-        <Lbl color={C.purple} mb={0}>🛒 Eververse · {n} Tracked Ornament{n !== 1 ? "s" : ""} In Stock</Lbl>
+        <Lbl color={C.purple} mb={0}>🛒 Eververse · {n} Suggested Ornament{n !== 1 ? "s" : ""} In Stock</Lbl>
         <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
           <Badge label="IN SHOP · LIVE" color={C.green} bg={C.greenLo}/>
           <span style={{ color:C.purple, fontSize:11, fontFamily:"'Barlow Condensed',sans-serif" }}>{open ? "▲" : "▼"}</span>
@@ -812,7 +824,7 @@ function EverversePanel({ items, location, onScan }) {
       {open && (
         <>
           <div style={{ fontSize:11, color:C.sub, lineHeight:1.5, marginBottom:8 }}>
-            {n === 1 ? "A tracked ornament is" : `${n} tracked ornaments are`} for sale at Tess Everis right now —
+            {n === 1 ? "A suggested ornament is" : `${n} suggested ornaments are`} for sale at Tess Everis right now —
             grab {n === 1 ? "it" : "them"} before the shop rotates.
           </div>
           <EververseSection items={items} onScan={onScan}/>
