@@ -1,6 +1,6 @@
 {
   "name": "ghost-companion",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Ghost Companion — an always-on-top Destiny 2 loot-farming overlay that auto-tracks activity completions via the Bungie API.",
   "main": "./out/main/index.js",
   "author": "Ghost Companion",
@@ -20,6 +20,7 @@
   "build": {
     "appId": "com.ghostcompanion.app",
     "productName": "Ghost Companion",
+    "copyright": "Copyright © 2026 SmileCo",
     "directories": {
       "buildResources": "build"
     },
@@ -28,12 +29,15 @@
       "package.json"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "publisherName": "SmileCo"
     },
     "nsis": {
       "oneClick": false,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Ghost Companion",
+      "uninstallDisplayName": "Ghost Companion (SmileCo)"
     },
     "publish": {
       "provider": "github",
