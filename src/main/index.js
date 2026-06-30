@@ -25,6 +25,11 @@ const require = createRequire(import.meta.url)
 // electron-store is CommonJS; load it via require so it works in our ESM bundle.
 const Store = require('electron-store')
 
+// electron-updater (also CommonJS) pulls new releases from GitHub Releases. The
+// publish target is baked into app-update.yml by electron-builder; we only kick
+// off the check. Runs in packaged builds only — never in `npm run dev`.
+const { autoUpdater } = require('electron-updater')
+
 // Load environment variables from .env located at the project/app root.
 dotenv.config({ path: path.join(app.getAppPath(), '.env') })
 
@@ -256,6 +261,12 @@ function registerIpc() {
     return manifest.getWeaponOrnaments(Number(weaponHash))
   })
 
+  // Factual catalyst + per-column perk pool for a scanned weapon (NOT a god-roll
+  // recommendation — those are community opinion; see the light.gg deep link).
+  ipcMain.handle('get-weapon-perks', async (_e, weaponHash) => {
+    return manifest.getWeaponPerks(Number(weaponHash))
+  })
+
   // --- User-authored acquisition data (keyed by itemHash) -----------------
   ipcMain.handle('get-user-drop-rates', async () => store.get('userDropRates') || {})
 
@@ -454,6 +465,16 @@ if (!app.requestSingleInstanceLock()) {
     registerIpc()
     createWindow()
     createTray()
+
+    // Check for and silently download a newer release, then prompt to restart.
+    // Only meaningful in a packaged build with a publish target; guarded so dev
+    // runs are untouched.
+    if (app.isPackaged) {
+      autoUpdater.autoDownload = true
+      autoUpdater.checkForUpdatesAndNotify().catch((err) =>
+        console.error('[updater] check failed:', err.message)
+      )
+    }
 
     // Desktop notifications run independently of Bungie login (vendor data is
     // public via the data API). Gated by the user's notificationsEnabled pref.

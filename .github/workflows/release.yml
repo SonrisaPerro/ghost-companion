@@ -1,0 +1,38 @@
+name: Release
+
+# Push a version tag (e.g. `git tag v1.0.1 && git push origin v1.0.1`) to build
+# the Windows installer and publish it to GitHub Releases. Installed apps then
+# auto-update from that release via electron-updater.
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write # required for electron-builder to create/upload the Release
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and publish
+        env:
+          # Baked into the bundle at build time (see electron.vite.config.js).
+          # PUBLIC OAuth client — no client secret is used or shipped.
+          BUNGIE_API_KEY: ${{ secrets.BUNGIE_API_KEY }}
+          BUNGIE_CLIENT_ID: ${{ secrets.BUNGIE_CLIENT_ID }}
+          # Lets electron-builder create the GitHub Release and upload artifacts.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run release

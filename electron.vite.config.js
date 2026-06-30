@@ -9,6 +9,16 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   main: {
     plugins: [externalizeDepsPlugin()],
+    // Bake the Bungie credentials into the main bundle at BUILD time. In dev these
+    // env vars are usually empty (the app reads .env at runtime via dotenv, which
+    // wins), so they resolve to ''. In CI/release builds we set BUNGIE_API_KEY and
+    // BUNGIE_CLIENT_ID in the environment (from a GitHub Actions secret), so the
+    // packaged binary ships with a working PUBLIC OAuth client — no .env required
+    // on the user's machine, and no client secret anywhere in the bundle.
+    define: {
+      __BUNGIE_API_KEY__: JSON.stringify(process.env.BUNGIE_API_KEY || ''),
+      __BUNGIE_CLIENT_ID__: JSON.stringify(process.env.BUNGIE_CLIENT_ID || '')
+    },
     build: {
       rollupOptions: {
         input: { index: resolve(__dirname, 'src/main/index.js') }

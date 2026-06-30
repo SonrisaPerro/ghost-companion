@@ -13,14 +13,40 @@
     "start": "electron-vite preview",
     "postinstall": "electron-builder install-app-deps",
     "dist": "electron-vite build && electron-builder",
+    "release": "electron-vite build && electron-builder --publish always",
     "lookup": "node scripts/lookup.mjs",
     "audit": "node scripts/audit-data.mjs"
+  },
+  "build": {
+    "appId": "com.ghostcompanion.app",
+    "productName": "Ghost Companion",
+    "directories": {
+      "buildResources": "build"
+    },
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "SonrisaPerro",
+      "repo": "ghost-companion"
+    }
   },
   "dependencies": {
     "adm-zip": "^0.5.17",
     "better-sqlite3": "^11.3.0",
     "dotenv": "^16.4.5",
     "electron-store": "^8.2.0",
+    "electron-updater": "^6.3.9",
     "node-fetch": "^3.3.2",
     "selfsigned": "^2.4.1"
   },

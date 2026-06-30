@@ -27,13 +27,22 @@ const STORE_KEYS = {
   profile: 'auth.profile' // { membershipType, membershipId, displayName, characterIds }
 }
 
+// Credentials baked in at build time (see electron.vite.config.js `define`). The
+// `typeof` guard keeps the standalone node scripts (scripts/*.mjs) — which run
+// without Vite's define replacement — from throwing a ReferenceError.
+const BAKED_API_KEY = typeof __BUNGIE_API_KEY__ !== 'undefined' ? __BUNGIE_API_KEY__ : ''
+const BAKED_CLIENT_ID = typeof __BUNGIE_CLIENT_ID__ !== 'undefined' ? __BUNGIE_CLIENT_ID__ : ''
+
 /**
- * Reads required Bungie credentials from the environment (.env).
- * Throws a clear error if the API key is missing.
+ * Resolves required Bungie credentials. A local .env (dev, or a power user who
+ * supplies their own) takes precedence; otherwise we fall back to the values
+ * baked into the build. A shipped app ships as a PUBLIC OAuth client, so there
+ * is no client secret — confidential-client support remains only for a dev who
+ * sets BUNGIE_CLIENT_SECRET in their own .env.
  */
 function getConfig() {
-  const apiKey = process.env.BUNGIE_API_KEY
-  const clientId = process.env.BUNGIE_CLIENT_ID
+  const apiKey = process.env.BUNGIE_API_KEY || BAKED_API_KEY
+  const clientId = process.env.BUNGIE_CLIENT_ID || BAKED_CLIENT_ID
   const clientSecret = process.env.BUNGIE_CLIENT_SECRET || ''
   // Must EXACTLY match the redirect URL registered on the Bungie application.
   const redirectUrl =
