@@ -421,4 +421,60 @@ export async function getActivityHistory(store, { characterId, count = 25, mode 
   return data?.activities || []
 }
 
-export { MEMBERSHIP_TYPE_ALL, STORE_KEYS }
+// ---------------------------------------------------------------------------
+// Collectibles (ownership)
+// ---------------------------------------------------------------------------
+
+// DestinyCollectibleState is a bitmask; bit 1 (NotAcquired) is the only one we
+// care about. An item is OWNED when that bit is clear.
+const COLLECTIBLE_NOT_ACQUIRED = 1
+
+// Where we cache the last good ownership read, so a scan can still show
+// COLLECTED/MISSING while offline or between refreshes.
+const COLLECTION_KEY = 'collection.owned' // { hashes: number[], fetchedAt: number }
+
+/**
+ * Fetches the set of collectible hashes the signed-in player has unlocked.
+ * Merges profile-wide collectibles with each character's, since some records
+ * live only at the character scope. Caches the result to the store.
+ *
+ * @returns {Promise<{ hashes: number[], fetchedAt: number }>}
+ */
+export async function getOwnedCollectibles(store) {
+  const accessToken = await getValidAccessToken(store)
+  const profile = getCachedProfile(store)
+  if (!profile) throw new Error('Profile not loaded.')
+
+  // components=800 => DestinyCollectibleComponent (profile + per character).
+  const data = await bungieFetch(
+    `/Destiny2/${profile.membershipType}/Profile/${profile.membershipId}/?components=800`,
+    { accessToken }
+  )
+
+  const owned = new Set()
+  const scan = (collectibles) => {
+    for (const [hash, info] of Object.entries(collectibles || {})) {
+      if ((Number(info?.state) & COLLECTIBLE_NOT_ACQUIRED) === 0) {
+        owned.add(Number(hash) >>> 0) // store as unsigned, matching item.collectibleHash
+      }
+    }
+  }
+  scan(data?.profileCollectibles?.data?.collectibles)
+  for (const c of Object.values(data?.characterCollectibles?.data || {})) {
+    scan(c?.collectibles)
+  }
+
+  const result = { hashes: [...owned], fetchedAt: Date.now() }
+  store.set(COLLECTION_KEY, result)
+  return result
+}
+
+/**
+ * Returns the cached ownership read (or an empty one). Used as a fallback when a
+ * live fetch fails so the UI degrades gracefully.
+ */
+export function getCachedCollectibles(store) {
+  return store.get(COLLECTION_KEY) || { hashes: [], fetchedAt: 0 }
+}
+
+export { MEMBERSHIP_TYPE_ALL, STORE_KEYS, COLLECTION_KEY }

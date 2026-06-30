@@ -14,6 +14,10 @@ const api = {
   login: () => ipcRenderer.invoke('bungie-login'),
   logout: () => ipcRenderer.invoke('bungie-logout'),
   getAuthStatus: () => ipcRenderer.invoke('get-auth-status'),
+  getCollectionStatus: (opts) => ipcRenderer.invoke('get-collection-status', opts || {}),
+
+  // --- External links (light.gg / DIM / Bungie) --------------------------
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
 
   // --- Manifest search ----------------------------------------------------
   searchManifest: (query) => ipcRenderer.invoke('search-manifest', query),
@@ -44,6 +48,17 @@ const api = {
   getRunCounts: () => ipcRenderer.invoke('get-run-counts'),
   setRunCount: (payload) => ipcRenderer.invoke('set-run-count', payload),
 
+  // --- Guide / secret-chest data packages --------------------------------
+  getGuides: () => ipcRenderer.invoke('get-guides'),
+  importGuideFile: () => ipcRenderer.invoke('import-guide-file'),
+  importGuideText: (text) => ipcRenderer.invoke('import-guide-text', text),
+  exportGuides: () => ipcRenderer.invoke('export-guides'),
+  deleteGuide: (id) => ipcRenderer.invoke('delete-guide', id),
+
+  // --- Desktop notifications ---------------------------------------------
+  getNotificationsEnabled: () => ipcRenderer.invoke('get-notifications-enabled'),
+  setNotificationsEnabled: (on) => ipcRenderer.invoke('set-notifications-enabled', on),
+
   // --- Frameless window controls -----------------------------------------
   toggleAlwaysOnTop: () => ipcRenderer.invoke('toggle-always-on-top'),
   getAlwaysOnTop: () => ipcRenderer.invoke('get-always-on-top'),
@@ -56,6 +71,13 @@ const api = {
     const listener = (_event, payload) => callback(payload)
     ipcRenderer.on('new-completion-detected', listener)
     return () => ipcRenderer.removeListener('new-completion-detected', listener)
+  },
+  // Fired when the user clicks a desktop notification — payload is a search
+  // string the renderer can feed straight into scan().
+  onNotificationScan: (callback) => {
+    const listener = (_event, query) => callback(query)
+    ipcRenderer.on('notification-scan', listener)
+    return () => ipcRenderer.removeListener('notification-scan', listener)
   }
 }
 

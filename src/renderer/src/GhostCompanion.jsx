@@ -132,7 +132,9 @@ function Diamond({ n, color=C.orange, bg=C.orangeLo }) {
 /* ── Account panel (Bungie OAuth via main process) ────────────────────
    Replaces the old Anthropic API-key Settings panel: we no longer call an LLM,
    but we DO need a Bungie session for auto-tracking. */
-function Account({ auth, busy, onLogin, onLogout, apiUrl, onSaveApiUrl }) {
+function Account({ auth, busy, onLogin, onLogout, apiUrl, onSaveApiUrl,
+  notifyEnabled, onToggleNotifications,
+  guides, onImportGuideFile, onExportGuides, onDeleteGuide }) {
   const [draft, setDraft] = useState(apiUrl || "");
   useEffect(() => { setDraft(apiUrl || ""); }, [apiUrl]);
   const dirty = draft.trim() !== (apiUrl || "").trim();
@@ -193,6 +195,75 @@ function Account({ auth, busy, onLogin, onLogout, apiUrl, onSaveApiUrl }) {
             SAVE
           </button>
         </div>
+      </div>
+
+      {/* Desktop notifications — tracked items/ornaments + weekly reset. */}
+      <div style={{ marginTop:12, borderTop:`1px solid ${C.border}`, paddingTop:12 }}>
+        <Lbl color={C.sub}>Desktop Notifications</Lbl>
+        <div style={{ fontSize:11, color:C.sub, lineHeight:1.5, marginBottom:8 }}>
+          Alerts when a tracked ornament hits Tess' shop, a tracked item enters Xûr's
+          stock, or the Tuesday weekly reset lands.
+        </div>
+        <button onClick={onToggleNotifications} style={{
+          background:notifyEnabled ? C.greenLo : C.muted,
+          border:`1px solid ${notifyEnabled ? C.green : C.border}`,
+          color:notifyEnabled ? C.green : C.sub, fontFamily:"'Barlow Condensed',sans-serif",
+          fontSize:11, fontWeight:700, letterSpacing:"0.12em", padding:"6px 12px",
+          cursor:"pointer", WebkitAppRegion:"no-drag" }}>
+          {notifyEnabled ? "◆  NOTIFICATIONS ON" : "NOTIFICATIONS OFF"}
+        </button>
+      </div>
+
+      {/* Guide / secret-chest packages — import, export, manage. */}
+      <div style={{ marginTop:12, borderTop:`1px solid ${C.border}`, paddingTop:12 }}>
+        <Lbl color={C.sub}>Guide Packages</Lbl>
+        <div style={{ fontSize:11, color:C.sub, lineHeight:1.5, marginBottom:8 }}>
+          Import shareable <span style={{ color:C.text }}>.ghostpkg.json</span> guides
+          (secret-chest routes, walkthroughs). They surface on the matching item's card.
+          You can also drag a file onto this window.
+        </div>
+        <div style={{ display:"flex", gap:8, marginBottom:(guides?.length ? 10 : 0) }}>
+          <button onClick={onImportGuideFile} style={{ flex:1,
+            background:C.blueLo, border:`1px solid ${C.blue}`, color:C.blue,
+            fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, fontWeight:700,
+            letterSpacing:"0.1em", padding:"6px 10px", cursor:"pointer", WebkitAppRegion:"no-drag" }}>
+            IMPORT FILE
+          </button>
+          <button onClick={onExportGuides} disabled={!guides?.length} style={{ flex:1,
+            background:guides?.length ? C.muted : C.muted,
+            border:`1px solid ${guides?.length ? C.border : C.muted}`,
+            color:guides?.length ? C.sub : C.muted, fontFamily:"'Barlow Condensed',sans-serif",
+            fontSize:11, fontWeight:700, letterSpacing:"0.1em", padding:"6px 10px",
+            cursor:guides?.length ? "pointer" : "default", WebkitAppRegion:"no-drag" }}>
+            EXPORT
+          </button>
+        </div>
+        {guides?.map((g) => (
+          <div key={g.id} style={{ display:"flex", alignItems:"center", gap:8,
+            padding:"5px 0", borderBottom:`1px solid ${C.muted}` }}>
+            <span style={{ color:C.gold, fontSize:10, flexShrink:0 }}>
+              {g.type === "secret_chest" ? "▣" : "◈"}
+            </span>
+            <div style={{ minWidth:0, flex:1 }}>
+              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, fontWeight:600,
+                color:C.text, letterSpacing:"0.03em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                {g.title}
+              </div>
+              {(g.item || g.activity) && (
+                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.1em" }}>
+                  {(g.item || g.activity || "").toUpperCase()}
+                </div>
+              )}
+            </div>
+            <button onClick={() => onDeleteGuide?.(g.id)} title="Remove guide" style={{
+              background:"none", border:`1px solid ${C.border}`, color:C.sub,
+              fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, fontWeight:700,
+              letterSpacing:"0.1em", padding:"3px 8px", cursor:"pointer", flexShrink:0,
+              WebkitAppRegion:"no-drag" }}>
+              ✕
+            </button>
+          </div>
+        ))}
       </div>
     </Panel>
   );
@@ -497,6 +568,7 @@ function buildItemData(hit, userRates = {}, communityRates = {}) {
     rarity: hit.tierTypeName || "",
     description: hit.description || "",
     icon: hit.icon || null,
+    collectibleHash: hit.collectibleHash || null,
     prerequisites: [],
     acquisitionPaths: paths,
     tips,
@@ -907,6 +979,96 @@ function OrnamentsPanel({ ornaments, trackedSet, shopCostByHash, live, onToggle 
   );
 }
 
+/* ── Deep links out (light.gg / DIM / Bungie) ─────────────────────────
+   A small row of external links for the on-screen item. Opens in the user's
+   default browser via the main process (http(s)-only). DIM needs a Bungie
+   membership context, so we use its armory route which works from an itemHash. */
+function DeepLinks({ itemHash }) {
+  if (!itemHash) return null;
+  const links = [
+    { label: "light.gg", color: C.gold,
+      url: `https://www.light.gg/db/items/${itemHash}/` },
+    { label: "DIM", color: C.blue,
+      url: `https://app.destinyitemmanager.com/armory/${itemHash}` },
+    { label: "Bungie", color: C.purple,
+      url: `https://www.bungie.net/7/en/Destiny/Items?itemHash=${itemHash}` },
+  ];
+  const open = (url) => window.api?.openExternal?.(url);
+  return (
+    <div style={{ display:"flex", gap:8, marginBottom:10 }}>
+      {links.map((l) => (
+        <button key={l.label} onClick={() => open(l.url)} title={`Open in ${l.label}`}
+          style={{ flex:1, padding:"7px 0", background:C.muted, border:`1px solid ${l.color}`,
+            color:l.color, fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, fontWeight:700,
+            letterSpacing:"0.1em", cursor:"pointer" }}>
+          {l.label.toUpperCase()} ↗
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ── Guides / secret-chest walkthroughs for the on-screen item ────────
+   Renders any imported guide whose itemHash matches the item. Each guide is
+   an expandable card with optional ordered steps. Self-hides when none match. */
+function GuidesPanel({ guides }) {
+  const [openId, setOpenId] = useState(null);
+  if (!guides || !guides.length) return null;
+  return (
+    <Panel bc={C.gold} style={{ marginBottom:10 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
+        <Lbl color={C.gold} mb={0}>Guides &amp; Secret Chests</Lbl>
+        <Badge label={`${guides.length}`} color={C.gold} bg={C.goldLo}/>
+      </div>
+      {guides.map((g) => {
+        const open = openId === g.id;
+        return (
+          <div key={g.id} style={{ borderBottom:`1px solid ${C.muted}`, paddingBottom:open?8:0 }}>
+            <div onClick={() => setOpenId(open ? null : g.id)} style={{ display:"flex", alignItems:"center",
+              gap:8, padding:"7px 0", cursor:"pointer" }}>
+              <span style={{ color:C.gold, fontSize:10, flexShrink:0 }}>
+                {g.type === "secret_chest" ? "▣" : "◈"}
+              </span>
+              <div style={{ minWidth:0, flex:1 }}>
+                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:14, fontWeight:700,
+                  color:C.text, letterSpacing:"0.04em" }}>{g.title}</div>
+                {(g.activity || g.source) && (
+                  <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.1em" }}>
+                    {[g.activity, g.source].filter(Boolean).join(" · ").toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <span style={{ color:C.sub, fontSize:11, flexShrink:0 }}>{open ? "▲" : "▼"}</span>
+            </div>
+            {open && (
+              <div style={{ paddingLeft:18 }}>
+                {g.steps?.length > 0 ? g.steps.map((s, i) => (
+                  <div key={i} style={{ display:"flex", gap:8, marginBottom:7, alignItems:"flex-start" }}>
+                    <span style={{ color:C.gold, fontFamily:"'Barlow Condensed',sans-serif", fontSize:11,
+                      fontWeight:700, flexShrink:0, marginTop:1 }}>{i+1}.</span>
+                    <div style={{ minWidth:0 }}>
+                      {s.title && <div style={{ fontSize:12, fontWeight:600, color:C.text, lineHeight:1.4 }}>{s.title}</div>}
+                      {s.description && <div style={{ fontSize:12, color:C.sub, lineHeight:1.5 }}>{s.description}</div>}
+                    </div>
+                  </div>
+                )) : (
+                  <div style={{ fontSize:12, color:C.sub, lineHeight:1.5, paddingBottom:6 }}>
+                    {g.notes || "No steps provided."}
+                  </div>
+                )}
+                {g.steps?.length > 0 && g.notes && (
+                  <div style={{ fontSize:11, color:C.sub, fontStyle:"italic", lineHeight:1.5,
+                    borderLeft:`2px solid ${C.border}`, paddingLeft:8, marginTop:4 }}>{g.notes}</div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </Panel>
+  );
+}
+
 /* ── Main App ─────────────────────────────────────────────────────── */
 export default function GhostCompanion() {
   const [query,       setQuery]       = useState("");
@@ -935,6 +1097,14 @@ export default function GhostCompanion() {
   const [weaponOrnaments,  setWeaponOrnaments]  = useState([]);
   const [trackedOrnaments, setTrackedOrnaments] = useState([]);
 
+  // Collection ownership: a Set of owned collectibleHashes (from Bungie, when
+  // logged in) so item cards can show a COLLECTED / MISSING badge.
+  const [ownedHashes,      setOwnedHashes]      = useState(() => new Set());
+  // Guide / secret-chest packages (loaded from the local store).
+  const [guides,           setGuides]           = useState([]);
+  // Desktop notifications master toggle.
+  const [notifyEnabled,    setNotifyEnabled]    = useState(true);
+
   // Remote data (from the Railway data API): community paths + Xûr live stock.
   const [communityRates, setCommunityRates] = useState({});
   const [xurData,        setXurData]        = useState(null);
@@ -961,6 +1131,22 @@ export default function GhostCompanion() {
   useEffect(() => { window.api?.getDataApiUrl?.().then(v => setApiUrl(v || "")).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getAlwaysOnTop?.().then(v => setAlwaysOnTop(v !== false)).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getTrackedOrnaments?.().then(v => setTrackedOrnaments(v || [])).catch(()=>{}); }, []);
+  useEffect(() => { window.api?.getGuides?.().then(v => setGuides(v || [])).catch(()=>{}); }, []);
+  useEffect(() => { window.api?.getNotificationsEnabled?.().then(v => setNotifyEnabled(v !== false)).catch(()=>{}); }, []);
+
+  // Load collection ownership whenever auth state flips to logged-in (cached
+  // first for instant paint, then a live refresh). No-op when logged out.
+  useEffect(() => {
+    if (!auth.loggedIn || !window.api?.getCollectionStatus) return;
+    let alive = true;
+    window.api.getCollectionStatus({ force: false })
+      .then(res => { if (alive && res?.hashes) setOwnedHashes(new Set(res.hashes)); })
+      .catch(()=>{});
+    window.api.getCollectionStatus({ force: true })
+      .then(res => { if (alive && res?.hashes) setOwnedHashes(new Set(res.hashes)); })
+      .catch(()=>{});
+    return () => { alive = false; };
+  }, [auth.loggedIn]);
 
   // Flip always-on-top (main persists it; reflect the authoritative new value).
   const togglePin = useCallback(async () => {
@@ -1100,6 +1286,71 @@ export default function GhostCompanion() {
     }
   }, [query, scanning, refreshTracked]);
 
+  // ── IPC: a clicked desktop notification asks us to scan an item ─────────
+  useEffect(() => {
+    if (!window.api?.onNotificationScan) return;
+    const unsubscribe = window.api.onNotificationScan((q) => {
+      if (typeof q === "string" && q.trim()) scan(q.trim());
+    });
+    return unsubscribe;
+  }, [scan]);
+
+  // ── Notifications master toggle ─────────────────────────────────────────
+  const toggleNotifications = useCallback(async () => {
+    try {
+      const next = !notifyEnabled;
+      setNotifyEnabled(next);
+      await window.api?.setNotificationsEnabled?.(next);
+    } catch {/* ignore */}
+  }, [notifyEnabled]);
+
+  // ── Guide / secret-chest package management ─────────────────────────────
+  const importGuideFile = useCallback(async () => {
+    try {
+      const res = await window.api?.importGuideFile?.();
+      if (res?.ok) {
+        setGuides((await window.api.getGuides()) || []);
+        setError(null);
+      } else if (res && res.message) {
+        setError(`Import failed: ${res.message}`);
+      }
+    } catch (e) { setError(`Import failed: ${e.message}`); }
+  }, []);
+  const importGuideText = useCallback(async (text) => {
+    try {
+      const res = await window.api?.importGuideText?.(text);
+      if (res?.ok) { setGuides((await window.api.getGuides()) || []); setError(null); }
+      else if (res && res.message) setError(`Import failed: ${res.message}`);
+      return res;
+    } catch (e) { setError(`Import failed: ${e.message}`); return { ok:false }; }
+  }, []);
+  const exportGuides = useCallback(async () => {
+    try { await window.api?.exportGuides?.(); } catch {/* ignore */}
+  }, []);
+  const deleteGuide = useCallback(async (id) => {
+    try { setGuides((await window.api?.deleteGuide?.(id)) || []); } catch {/* ignore */}
+  }, []);
+
+  // Drag a .ghostpkg.json / .json onto the window to import it.
+  const [dragOver, setDragOver] = useState(false);
+  const onDragOver = useCallback((e) => { e.preventDefault(); setDragOver(true); }, []);
+  const onDragLeave = useCallback((e) => {
+    // Only clear when the pointer actually leaves the window, not a child.
+    if (e.relatedTarget === null) setDragOver(false);
+  }, []);
+  const onDrop = useCallback(async (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer?.files?.[0];
+    if (!file) return;
+    if (!/\.(ghostpkg(\.json)?|json)$/i.test(file.name)) {
+      setError("Drop a .ghostpkg.json guide package.");
+      return;
+    }
+    try { await importGuideText(await file.text()); }
+    catch (err) { setError(`Import failed: ${err.message}`); }
+  }, [importGuideText]);
+
   // ── Auto-track registration ─────────────────────────────────────────────
   // Adds/removes the on-screen item from the tracked list so the main-process
   // poller increments run counts on matching activity completions. The tracked
@@ -1225,9 +1476,34 @@ export default function GhostCompanion() {
   const best    = itemData ? bestPathId(itemData.acquisitionPaths) : null;
   const itemRar = rar(itemData?.rarity);
 
+  // Ownership of the on-screen item: known only when logged in AND the item has a
+  // collectible. `null` → unknown (don't show a badge); true/false → COLLECTED/MISSING.
+  const owned = useMemo(() => {
+    if (!auth.loggedIn || !itemData?.collectibleHash) return null;
+    return ownedHashes.has(itemData.collectibleHash >>> 0);
+  }, [auth.loggedIn, itemData, ownedHashes]);
+
+  // Guides whose itemHash matches the on-screen item (surface on its card).
+  const itemGuides = useMemo(() => {
+    if (!itemData?.itemHash || !guides.length) return [];
+    return guides.filter(g => Number(g.itemHash) === Number(itemData.itemHash));
+  }, [itemData, guides]);
+
   return (
-    <div style={{ fontFamily:"'Barlow',sans-serif", background:C.bg, minHeight:"100vh",
-      padding:16, color:C.text, maxWidth:520, margin:"0 auto" }}>
+    <div onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}
+      style={{ fontFamily:"'Barlow',sans-serif", background:C.bg, minHeight:"100vh",
+      padding:16, color:C.text, maxWidth:520, margin:"0 auto",
+      outline:dragOver ? `2px dashed ${C.blue}` : "none", outlineOffset:-6 }}>
+      {dragOver && (
+        <div style={{ position:"fixed", inset:0, zIndex:50, pointerEvents:"none",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          background:"rgba(5,8,15,0.82)" }}>
+          <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:16, fontWeight:700,
+            color:C.blue, letterSpacing:"0.14em", border:`1px dashed ${C.blue}`, padding:"16px 24px" }}>
+            DROP GUIDE PACKAGE TO IMPORT
+          </div>
+        </div>
+      )}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@300;400;500&display=swap');
         @keyframes ghostSpin { to { transform:rotate(360deg); } }
@@ -1291,7 +1567,10 @@ export default function GhostCompanion() {
       {/* ── Account ── */}
       {showAccount && (
         <Account auth={auth} busy={authBusy} onLogin={handleLogin} onLogout={handleLogout}
-          apiUrl={apiUrl} onSaveApiUrl={saveApiUrl}/>
+          apiUrl={apiUrl} onSaveApiUrl={saveApiUrl}
+          notifyEnabled={notifyEnabled} onToggleNotifications={toggleNotifications}
+          guides={guides} onImportGuideFile={importGuideFile}
+          onExportGuides={exportGuides} onDeleteGuide={deleteGuide}/>
       )}
 
       {/* ── Xûr (live exotic stock from the data API; only shown when present) ── */}
@@ -1416,9 +1695,23 @@ export default function GhostCompanion() {
                   </div>
                 </div>
               </div>
-              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, color:C.blue,
-                letterSpacing:"0.08em", textAlign:"right", flexShrink:0 }}>
-                {itemData.acquisitionPaths?.length || 0} PATH{itemData.acquisitionPaths?.length !== 1 ? "S" : ""} FOUND
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:5, flexShrink:0 }}>
+                {owned !== null && (
+                  <div title={owned
+                    ? "You've already collected this (per your Bungie collections)."
+                    : "Not yet in your Bungie collections."}
+                    style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, fontWeight:700,
+                    letterSpacing:"0.12em", padding:"2px 7px", whiteSpace:"nowrap",
+                    background:owned ? C.greenLo : C.orangeLo,
+                    border:`1px solid ${owned ? C.green : C.orange}`,
+                    color:owned ? C.green : C.orange }}>
+                    {owned ? "◆ COLLECTED" : "○ MISSING"}
+                  </div>
+                )}
+                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, color:C.blue,
+                  letterSpacing:"0.08em", textAlign:"right" }}>
+                  {itemData.acquisitionPaths?.length || 0} PATH{itemData.acquisitionPaths?.length !== 1 ? "S" : ""} FOUND
+                </div>
               </div>
             </div>
             {itemData.description && (
@@ -1436,6 +1729,9 @@ export default function GhostCompanion() {
               </div>
             )}
           </Panel>
+
+          {/* Deep links out (light.gg / DIM / Bungie) */}
+          <DeepLinks itemHash={itemData.itemHash}/>
 
           {/* Auto-track + add-path controls */}
           <div style={{ display:"flex", gap:8, marginBottom:10 }}>
@@ -1472,6 +1768,9 @@ export default function GhostCompanion() {
             live={eververseLive}
             onToggle={toggleOrnamentTrack}
           />
+
+          {/* Imported guides / secret-chest walkthroughs for this item */}
+          <GuidesPanel guides={itemGuides}/>
 
           {/* Prerequisites */}
           {itemData.prerequisites?.length > 0 && (

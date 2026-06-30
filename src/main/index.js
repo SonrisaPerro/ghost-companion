@@ -4,8 +4,9 @@
 // up every IPC channel, and starts the auto-tracker.
 // =============================================================================
 
-import { app, BrowserWindow, ipcMain, Tray, Menu, screen, nativeImage, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, Tray, Menu, screen, nativeImage, shell, dialog } from 'electron'
 import path from 'node:path'
+import fsp from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
 import dotenv from 'dotenv'
@@ -13,7 +14,9 @@ import dotenv from 'dotenv'
 import * as bungie from './bungie-api.js'
 import * as manifest from './manifest.js'
 import * as dataApi from './data-api.js'
+import * as packages from './packages.js'
 import { AutoTracker, TRACKER_STORE_KEYS } from './auto-tracker.js'
+import { Notifier } from './notifier.js'
 
 // --- ESM shims (no __dirname in ESM) ---------------------------------------
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -35,6 +38,8 @@ const store = new Store({
     runCounts: {}, // { "<itemKey>::<pathId>": number }
     userDropRates: {}, // user-authored acquisition data, keyed by itemHash
     trackedOrnaments: [], // user-tracked Eververse ornaments (drives the shop alert panel)
+    guides: [], // imported guide/secret-chest packages (see packages.js)
+    notificationsEnabled: true, // desktop alerts for vendor hits + weekly reset
     // Base URL of the Ghost Companion data API (Railway). Defaulted to the public
     // service so Xûr/Eververse/community paths work on first launch; the user can
     // clear it in Account to run on bundled data only, or point at their own host.
@@ -45,6 +50,7 @@ const store = new Store({
 let mainWindow = null
 let tray = null
 let tracker = null
+let notifier = null
 
 const WINDOW_WIDTH = 420
 const OPACITY = 0.92
@@ -205,6 +211,32 @@ function registerIpc() {
 
   ipcMain.handle('get-auth-status', async () => bungie.getAuthStatus(store))
 
+  // Player collection ownership (drives the COLLECTED/MISSING badge). Tries a
+  // live read; falls back to the last cached one so the badge still renders
+  // offline or if Bungie is briefly unreachable.
+  ipcMain.handle('get-collection-status', async (_e, { force } = {}) => {
+    if (!bungie.getAuthStatus(store).loggedIn) return { hashes: [], fetchedAt: 0, loggedIn: false }
+    const cached = bungie.getCachedCollectibles(store)
+    if (!force && cached.fetchedAt) return { ...cached, loggedIn: true }
+    try {
+      const fresh = await bungie.getOwnedCollectibles(store)
+      return { ...fresh, loggedIn: true }
+    } catch (err) {
+      console.error('[collection] fetch failed:', err.message)
+      return { ...cached, loggedIn: true } // graceful fallback to last good read
+    }
+  })
+
+  // Open an external URL in the user's real browser (light.gg / DIM / Bungie
+  // deep links). Restricted to http(s) so a bad payload can't launch anything.
+  ipcMain.handle('open-external', async (_e, url) => {
+    if (typeof url === 'string' && /^https?:\/\//i.test(url)) {
+      await shell.openExternal(url)
+      return true
+    }
+    return false
+  })
+
   // --- Manifest -----------------------------------------------------------
   ipcMain.handle('search-manifest', async (_e, query) => {
     return manifest.searchManifest(query)
@@ -287,6 +319,59 @@ function registerIpc() {
     return counts
   })
 
+  // --- Guide packages -----------------------------------------------------
+  ipcMain.handle('get-guides', async () => store.get('guides') || [])
+
+  // Import from a file chosen via the OS picker.
+  ipcMain.handle('import-guide-file', async () => {
+    const res = await dialog.showOpenDialog(mainWindow, {
+      title: 'Import Ghost Companion guide package',
+      filters: [{ name: 'Ghost package', extensions: ['ghostpkg.json', 'ghostpkg', 'json'] }],
+      properties: ['openFile']
+    })
+    if (res.canceled || !res.filePaths?.[0]) return { canceled: true }
+    try {
+      return importGuideFromText(await fsp.readFile(res.filePaths[0], 'utf8'))
+    } catch (err) {
+      return { ok: false, message: `Could not read file: ${err.message}` }
+    }
+  })
+
+  // Import from raw text (drag-and-drop reads the file in the renderer).
+  ipcMain.handle('import-guide-text', async (_e, text) => importGuideFromText(text))
+
+  ipcMain.handle('export-guides', async () => {
+    const guides = store.get('guides') || []
+    if (!guides.length) return { ok: false, message: 'No guides to export yet.' }
+    const res = await dialog.showSaveDialog(mainWindow, {
+      title: 'Export guides',
+      defaultPath: 'ghost-guides.ghostpkg.json',
+      filters: [{ name: 'Ghost package', extensions: ['json'] }]
+    })
+    if (res.canceled || !res.filePath) return { canceled: true }
+    try {
+      await fsp.writeFile(res.filePath, JSON.stringify(packages.buildExport(guides), null, 2), 'utf8')
+      return { ok: true, count: guides.length, path: res.filePath }
+    } catch (err) {
+      return { ok: false, message: `Could not write file: ${err.message}` }
+    }
+  })
+
+  ipcMain.handle('delete-guide', async (_e, id) => {
+    const next = (store.get('guides') || []).filter((g) => g.id !== id)
+    store.set('guides', next)
+    return next
+  })
+
+  // --- Notifications ------------------------------------------------------
+  ipcMain.handle('get-notifications-enabled', async () => store.get('notificationsEnabled') !== false)
+  ipcMain.handle('set-notifications-enabled', async (_e, on) => {
+    store.set('notificationsEnabled', !!on)
+    if (on) notifier?.start()
+    else notifier?.stop()
+    return store.get('notificationsEnabled')
+  })
+
   // --- Window controls (frameless window needs its own buttons) -----------
   ipcMain.handle('toggle-always-on-top', async () => {
     const next = !store.get('window.alwaysOnTop')
@@ -298,6 +383,29 @@ function registerIpc() {
   ipcMain.handle('get-always-on-top', async () => store.get('window.alwaysOnTop'))
   ipcMain.handle('minimize-window', async () => mainWindow?.minimize())
   ipcMain.handle('hide-window', async () => mainWindow?.hide())
+}
+
+// ---------------------------------------------------------------------------
+// Guide-package import (shared by the file-picker and drag-and-drop channels)
+// ---------------------------------------------------------------------------
+function importGuideFromText(text) {
+  let obj
+  try {
+    obj = JSON.parse(text)
+  } catch {
+    return { ok: false, message: 'That file is not valid JSON.' }
+  }
+  const v = packages.validatePackage(obj)
+  if (!v.ok) return { ok: false, message: v.errors.join(' ') }
+  const merged = packages.mergeGuides(store.get('guides') || [], v.guides)
+  store.set('guides', merged.guides)
+  return {
+    ok: true,
+    name: v.name,
+    added: merged.added,
+    updated: merged.updated,
+    total: merged.guides.length
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -338,10 +446,19 @@ if (!app.requestSingleInstanceLock()) {
     }
   })
 
+  // Windows shows notifications under this identity; without it toasts from a
+  // dev/unpackaged Electron run may not appear.
+  if (process.platform === 'win32') app.setAppUserModelId('com.ghostcompanion.app')
+
   app.whenReady().then(async () => {
     registerIpc()
     createWindow()
     createTray()
+
+    // Desktop notifications run independently of Bungie login (vendor data is
+    // public via the data API). Gated by the user's notificationsEnabled pref.
+    notifier = new Notifier(store, () => mainWindow)
+    if (store.get('notificationsEnabled') !== false) notifier.start()
 
     // Make sure the Manifest is present/current before the renderer searches it.
     try {
@@ -374,6 +491,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on('before-quit', () => {
     app.isQuitting = true
     if (tracker) tracker.stop()
+    if (notifier) notifier.stop()
     manifest.closeDb()
   })
 }
