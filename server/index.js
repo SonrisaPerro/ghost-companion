@@ -6,6 +6,7 @@
 //   GET /xur       — Xûr's live weekly exotic stock + presence (cached)
 //   GET /monument  — Monument to Lost Lights exotic archive catalog (cached)
 //   GET /eververse — tracked weapon ornaments currently for sale in Eververse (cached)
+//   GET /weekly    — Tower concierge: Xûr + Eververse + this week's raid slate (cached)
 //   GET /paths     — community acquisition-path data (read-only)
 //   GET /guides     — community guide-package library index (read-only)
 //   GET /guides/:id — one full guide package from the library
@@ -22,6 +23,8 @@ import { fileURLToPath } from 'node:url'
 import { resolveXur } from './src/xur.js'
 import { resolveMonument } from './src/monument.js'
 import { resolveEververse } from './src/eververse.js'
+import { resolveActivities } from './src/milestones.js'
+import { lastResetISO } from './src/config.js'
 import { loadGuides, getGuidesIndex, getGuidePackage } from './src/guides.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -117,6 +120,64 @@ async function getEververse(force = false) {
   return eververseCache && !force ? eververseCache : eververseInFlight
 }
 
+// --- /weekly activities : cached public-milestones read ---------------------
+// Public, API-key-only (no service-account token needed). Refreshed hourly; the
+// slate only changes at the weekly reset, so this is generous.
+const ACTIVITIES_TTL_MS = 60 * 60 * 1000
+let activitiesCache = null
+let activitiesAt = 0
+let activitiesInFlight = null
+
+async function getActivities(force = false) {
+  const fresh = Date.now() - activitiesAt < ACTIVITIES_TTL_MS
+  if (!force && activitiesCache && fresh) return activitiesCache
+  if (activitiesInFlight) return activitiesInFlight
+  activitiesInFlight = resolveActivities()
+    .then((r) => {
+      activitiesCache = r
+      activitiesAt = Date.now()
+      return r
+    })
+    .finally(() => {
+      activitiesInFlight = null
+    })
+  return activitiesCache && !force ? activitiesCache : activitiesInFlight
+}
+
+// Compact Eververse view for the weekly concierge: just presence + the tracked
+// ornaments that are buyable right now (drops the heavy ~224-item shopSales[] /
+// diagnostics, which the dedicated /eververse endpoint still serves in full).
+function trimEververse(evv) {
+  if (!evv) return { source: 'fallback' }
+  return {
+    source: evv.source,
+    present: evv.vendor?.present || false,
+    location: evv.vendor?.location || null,
+    anyInShop: evv.anyInShop || false,
+    inShop: evv.inShop || []
+  }
+}
+
+// --- /weekly : one-fetch Tower concierge ------------------------------------
+// Aggregates everything a player would normally run around the Tower to check.
+// Stage 1: the live, authoritative sources (Xûr, Eververse, raid slate). Each
+// sub-source carries its own `source` flag so the client live-gates per section.
+async function getWeekly(force = false) {
+  const [xur, eververse, activities] = await Promise.all([
+    getXur(force),
+    getEververse(force),
+    getActivities(force)
+  ])
+  return {
+    weekOf: lastResetISO(),
+    generatedAt: new Date().toISOString(),
+    resetsAt: activities?.endsAt || null,
+    xur,
+    eververse: trimEververse(eververse),
+    activities
+  }
+}
+
 app.get('/health', (_req, res) => {
   res.json({
     ok: true,
@@ -124,6 +185,7 @@ app.get('/health', (_req, res) => {
     xurCachedAt: xurAt || null,
     monumentCachedAt: monumentAt || null,
     eververseCachedAt: eververseAt || null,
+    activitiesCachedAt: activitiesAt || null,
     guidePackages: guidesCount
   })
 })
@@ -151,6 +213,16 @@ app.get('/monument', async (req, res) => {
 app.get('/eververse', async (req, res) => {
   try {
     const data = await getEververse(req.query.force === '1')
+    res.set('Cache-Control', 'public, max-age=900') // 15 min edge cache
+    res.json(data)
+  } catch (e) {
+    res.status(502).json({ error: e.message })
+  }
+})
+
+app.get('/weekly', async (req, res) => {
+  try {
+    const data = await getWeekly(req.query.force === '1')
     res.set('Cache-Control', 'public, max-age=900') // 15 min edge cache
     res.json(data)
   } catch (e) {
@@ -186,7 +258,7 @@ app.get('/guides/:id', (req, res) => {
 app.get('/', (_req, res) => {
   res.json({
     service: 'ghost-companion-data-api',
-    endpoints: ['/health', '/xur', '/monument', '/eververse', '/paths', '/guides', '/guides/:id']
+    endpoints: ['/health', '/xur', '/monument', '/eververse', '/weekly', '/paths', '/guides', '/guides/:id']
   })
 })
 

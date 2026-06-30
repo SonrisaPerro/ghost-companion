@@ -154,3 +154,19 @@ export async function getVendorSales(accessToken, { membershipType, membershipId
 export async function getItemDef(itemHash) {
   return get(`/Destiny2/Manifest/DestinyInventoryItemDefinition/${itemHash}/`)
 }
+
+/** Fetches any Manifest definition by component + hash (API-key only, no auth). */
+export async function getDef(component, hash) {
+  return get(`/Destiny2/Manifest/${component}/${hash}/`)
+}
+
+/**
+ * Reads the PUBLIC weekly milestones (API-key only, NO OAuth). This is global,
+ * identical for everyone, and the cheapest authoritative source for "what's the
+ * weekly activity slate this reset" — raids surface here with their available
+ * difficulty variants and the reset endDate. (Daily Lost Sector and the FEATURED
+ * rotator are NOT exposed here — those come from the deterministic rotation table.)
+ */
+export async function getPublicMilestones() {
+  return get('/Destiny2/Milestones/')
+}

@@ -1231,6 +1231,113 @@ function EverversePanel({ items, location, onScan }) {
   );
 }
 
+/* ── This Week (Tower concierge) ──────────────────────────────────────
+   One-glance view of what you'd otherwise run around the Tower to check —
+   Xûr, Eververse, and this week's raid slate — from the /weekly endpoint.
+   Each section live-gates on its own source flag. (Daily Lost Sector + the
+   featured farmable rotator come from the rotation table in the next stage.) */
+function resetCountdown(iso) {
+  const ms = new Date(iso) - new Date();
+  if (!iso || isNaN(ms) || ms <= 0) return null;
+  const d = Math.floor(ms / 86400000), h = Math.floor((ms % 86400000) / 3600000), m = Math.floor((ms % 3600000) / 60000);
+  if (d > 0) return `${d}D ${h}H`;
+  if (h > 0) return `${h}H ${m}M`;
+  return `${m}M`;
+}
+
+function WeekSection({ title, color, children }) {
+  return (
+    <div style={{ marginBottom:13 }}>
+      <Lbl color={color} mb={6}>{title}</Lbl>
+      {children}
+    </div>
+  );
+}
+
+function ThisWeekPanel({ data, onScan, onRefresh }) {
+  if (!data) {
+    return (
+      <Panel bc={C.blue} style={{ marginBottom:14 }}>
+        <Lbl color={C.blue} mb={6}>This Week in Destiny</Lbl>
+        <div style={{ fontSize:11, color:C.sub, lineHeight:1.5 }}>
+          Weekly data isn't available right now. Check that your data API URL is set in
+          <b> Account</b>, then refresh — this pulls the live concierge (Xûr, Eververse, raids).
+        </div>
+      </Panel>
+    );
+  }
+  const x = data.xur, xLive = x?.source === "live", xur = x?.xur;
+  const e = data.eververse, eLive = e?.source === "live", inShop = e?.inShop || [];
+  const a = data.activities, raids = a?.raids || [], dungeons = a?.dungeons || [];
+  const countdown = resetCountdown(data.resetsAt);
+  const anyLive = xLive || eLive || a?.source === "live";
+  const week = data.weekOf ? new Date(data.weekOf).toLocaleDateString() : null;
+
+  return (
+    <Panel bc={C.blue} style={{ marginBottom:14 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginBottom:11 }}>
+        <Lbl color={C.blue} mb={0}>This Week in Destiny</Lbl>
+        <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+          {countdown && <Badge label={`RESETS ${countdown}`} color={C.gold} bg={C.goldLo}/>}
+          <button onClick={onRefresh} title="Refresh now" style={{ background:"none", border:`1px solid ${C.muted}`,
+            color:C.sub, fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, lineHeight:1,
+            padding:"3px 7px", cursor:"pointer", WebkitAppRegion:"no-drag" }}>↻</button>
+        </div>
+      </div>
+
+      <WeekSection title="Xûr — Agent of the Nine" color={C.gold}>
+        {xLive && xur?.present ? (
+          <XurSection xur={xur} onScan={onScan}/>
+        ) : (
+          <div style={{ fontSize:11, color:C.sub, letterSpacing:"0.03em" }}>
+            {xLive ? "Not in town right now — Xûr returns Friday." : "Status unavailable this refresh."}
+          </div>
+        )}
+      </WeekSection>
+
+      <WeekSection title="Eververse — Tess Everis" color={C.purple}>
+        {eLive && inShop.length ? (
+          <EververseSection items={inShop} onScan={onScan}/>
+        ) : (
+          <div style={{ fontSize:11, color:C.sub, letterSpacing:"0.03em" }}>
+            {eLive ? "None of your tracked ornaments are in the shop right now." : "Shop status unavailable this refresh."}
+          </div>
+        )}
+      </WeekSection>
+
+      <WeekSection title={`Raids Available${raids.length ? ` · ${raids.length}` : ""}`} color={C.blue}>
+        {a?.source === "live" && raids.length ? (
+          <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+            {raids.map(r => (
+              <div key={r.milestoneHash} title={r.master ? "Master difficulty active" : r.name}
+                style={{ display:"flex", alignItems:"center", gap:5,
+                  border:`1px solid ${r.master ? C.gold : C.blueLo}`, background:C.panelAlt, padding:"3px 7px",
+                  fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, color:C.text, letterSpacing:"0.03em" }}>
+                {r.name}
+                {r.master && <span style={{ fontSize:8, color:C.gold, letterSpacing:"0.1em" }}>MASTER</span>}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ fontSize:11, color:C.sub }}>Raid slate unavailable this refresh.</div>
+        )}
+        {dungeons.length > 0 && (
+          <div style={{ marginTop:8, fontSize:10, color:C.sub, letterSpacing:"0.04em" }}>
+            Dungeons: {dungeons.map(d => d.name).join(" · ")}
+          </div>
+        )}
+      </WeekSection>
+
+      {anyLive && (
+        <div style={{ textAlign:"center", fontFamily:"'Barlow Condensed',sans-serif",
+          fontSize:9, color:C.muted, letterSpacing:"0.14em", marginTop:2 }}>
+          {week ? `WEEK OF ${week} · ` : ""}VERIFIED LIVE
+        </div>
+      )}
+    </Panel>
+  );
+}
+
 /* ── Ornaments-on-card panel ──────────────────────────────────────────
    On a scanned weapon, lists its Eververse-sourced ornaments with a "track
    any?" checklist. Tracking an ornament persists it locally (electron-store)
@@ -1533,6 +1640,7 @@ export default function GhostCompanion() {
   const [authBusy,    setAuthBusy]    = useState(false);
   const [showAccount, setShowAccount] = useState(false);
   const [showGuides,  setShowGuides]  = useState(false);
+  const [showWeek,    setShowWeek]    = useState(false);
 
   // Overlay window controls (frameless window — its own pin/tray buttons).
   const [alwaysOnTop, setAlwaysOnTop] = useState(true);
@@ -1563,6 +1671,7 @@ export default function GhostCompanion() {
   const [communityRates, setCommunityRates] = useState({});
   const [xurData,        setXurData]        = useState(null);
   const [eververseData,  setEververseData]  = useState(null);
+  const [weeklyData,     setWeeklyData]     = useState(null);
   const [apiUrl,         setApiUrl]         = useState("");
 
   // Keep a ref to the current item so the IPC event listener (registered once)
@@ -1581,6 +1690,7 @@ export default function GhostCompanion() {
   // Load remote data (no-ops gracefully if no data API URL is configured).
   useEffect(() => { window.api?.getCommunityPaths?.().then(setCommunityRates).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getXur?.().then(setXurData).catch(()=>{}); }, []);
+  useEffect(() => { window.api?.getWeekly?.().then(setWeeklyData).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getEververse?.().then(setEververseData).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getDataApiUrl?.().then(v => setApiUrl(v || "")).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getAlwaysOnTop?.().then(v => setAlwaysOnTop(v !== false)).catch(()=>{}); }, []);
@@ -1930,6 +2040,7 @@ export default function GhostCompanion() {
     window.api.getCommunityPaths?.({ force: true }).then(setCommunityRates).catch(()=>{});
     window.api.getXur?.({ force: true }).then(setXurData).catch(()=>{});
     window.api.getEververse?.({ force: true }).then(setEververseData).catch(()=>{});
+    window.api.getWeekly?.({ force: true }).then(setWeeklyData).catch(()=>{});
   }, []);
 
   // Live shop state derived once from the Eververse payload. `shopCostByHash` maps
@@ -2041,8 +2152,17 @@ export default function GhostCompanion() {
             WebkitAppRegion:"no-drag" }}>
             TRAY ▾
           </button>
+          {/* This Week toggle — Tower concierge (Xûr, Eververse, raids). */}
+          <button onClick={() => { setShowWeek(s => !s); setShowGuides(false); setShowAccount(false); }}
+            title="This week in Destiny — Xûr, Eververse, raid slate" style={{
+            background:"none", border:`1px solid ${showWeek ? C.blue : C.muted}`,
+            color: showWeek ? C.blue : C.muted, padding:"3px 8px", cursor:"pointer",
+            fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700, letterSpacing:"0.14em",
+            WebkitAppRegion:"no-drag" }}>
+            WEEK
+          </button>
           {/* Guides toggle — dedicated home for imported / authored walkthroughs. */}
-          <button onClick={() => { setShowGuides(s => !s); setShowAccount(false); }}
+          <button onClick={() => { setShowGuides(s => !s); setShowAccount(false); setShowWeek(false); }}
             title="Guides & secret-chest walkthroughs" style={{
             background:"none", border:`1px solid ${showGuides ? C.gold : C.muted}`,
             color: showGuides ? C.gold : C.muted, padding:"3px 8px", cursor:"pointer",
@@ -2051,7 +2171,7 @@ export default function GhostCompanion() {
             {guides.length ? "GUIDES ◆" : "GUIDES ○"}
           </button>
           {/* Account toggle (was the API-key button) */}
-          <button onClick={() => { setShowAccount(s => !s); setShowGuides(false); }} title="Bungie sign-in & data settings" style={{
+          <button onClick={() => { setShowAccount(s => !s); setShowGuides(false); setShowWeek(false); }} title="Bungie sign-in & data settings" style={{
             background:"none", border:`1px solid ${showAccount ? C.orange : C.muted}`,
             color: showAccount ? C.orange : C.muted, padding:"3px 8px", cursor:"pointer",
             fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700, letterSpacing:"0.14em",
@@ -2074,6 +2194,12 @@ export default function GhostCompanion() {
           onExportGuides={exportGuides} onDeleteGuide={deleteGuide}
           onBrowseLibrary={browseLibrary} onImportCommunityGuide={importCommunityGuide}
           onCreateGuide={createGuide}/>
+      )}
+
+      {/* ── This Week (Tower concierge: Xûr + Eververse + raid slate) ── */}
+      {showWeek && (
+        <ThisWeekPanel data={weeklyData} onScan={(name) => scan(name)}
+          onRefresh={() => window.api.getWeekly?.({ force: true }).then(setWeeklyData).catch(()=>{})}/>
       )}
 
       {/* ── Xûr (live exotic stock from the data API; only shown when present) ── */}

@@ -34,6 +34,7 @@ const api = {
   // --- Data API (Xûr live stock + community paths) -----------------------
   getXur: (opts) => ipcRenderer.invoke('get-xur', opts || {}),
   getEververse: (opts) => ipcRenderer.invoke('get-eververse', opts || {}),
+  getWeekly: (opts) => ipcRenderer.invoke('get-weekly', opts || {}),
   getCommunityPaths: (opts) => ipcRenderer.invoke('get-community-paths', opts || {}),
   getCommunityGuides: (opts) => ipcRenderer.invoke('get-community-guides', opts || {}),
   importCommunityGuide: (id) => ipcRenderer.invoke('import-community-guide', id),

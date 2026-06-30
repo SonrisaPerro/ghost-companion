@@ -16,6 +16,7 @@ const cache = {
   xur: null, xurAt: 0,
   paths: null, pathsAt: 0,
   eververse: null, eververseAt: 0,
+  weekly: null, weeklyAt: 0,
   guides: null, guidesAt: 0
 }
 
@@ -64,6 +65,25 @@ export async function getEververse(store, { force = false } = {}) {
     if (!cache.eververse) return null // nothing cached to fall back on
   }
   return cache.eververse
+}
+
+/**
+ * Returns the cached "This Week" concierge payload, fetching if stale. Shape
+ * mirrors the server's /weekly: { weekOf, resetsAt, xur, eververse, activities }.
+ * null if no URL / unreachable — the panel just stays hidden.
+ */
+export async function getWeekly(store, { force = false } = {}) {
+  const url = baseUrl(store)
+  if (!url) return null
+  if (!force && cache.weekly && Date.now() - cache.weeklyAt < TTL_MS) return cache.weekly
+  try {
+    cache.weekly = await getJson(`${url}/weekly`)
+    cache.weeklyAt = Date.now()
+  } catch (err) {
+    console.error('[data-api] weekly fetch failed:', err.message)
+    if (!cache.weekly) return null // nothing cached to fall back on
+  }
+  return cache.weekly
 }
 
 /**
