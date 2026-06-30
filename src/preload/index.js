@@ -24,6 +24,7 @@ const api = {
   getItemByHash: (itemHash) => ipcRenderer.invoke('get-item-by-hash', itemHash),
   searchActivities: (query) => ipcRenderer.invoke('search-activities', query),
   getWeaponOrnaments: (weaponHash) => ipcRenderer.invoke('get-weapon-ornaments', weaponHash),
+  getWeaponPerks: (weaponHash) => ipcRenderer.invoke('get-weapon-perks', weaponHash),
 
   // --- User-authored acquisition data ------------------------------------
   getUserDropRates: () => ipcRenderer.invoke('get-user-drop-rates'),

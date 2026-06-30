@@ -1109,6 +1109,38 @@
     ]
   },
 
+  "Sunshot": {
+    "itemHash": 2907129557,
+    "acquisitionPaths": [
+      {
+        "id": "xur",
+        "method": "Xûr — Exotic Offerings",
+        "pathType": "vendor",
+        "location": "Wherever Xûr is this weekend (Fri–Tue reset)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Solar Hand Cannon, part of the world Exotic pool (Manifest source: \"Exotic engrams; extremely rare world drops\"). Most reliable route: Xûr rotates world-pool Exotic weapons into his stock — when Sunshot is offered you can buy it outright. The app's Xûr panel flags it whenever it's live.",
+        "notes": "Not auto-trackable (vendor purchase, not an activity). Manifest-grounded: Sunshot appears in Xûr's Exotic offerings table. Pay Xûr's usual Strange Coins / Legendary Shards when it's in stock."
+      },
+      {
+        "id": "exotic_pool",
+        "method": "Exotic Engram / World Drop",
+        "pathType": "vendor",
+        "location": "The Tower (Master Rahool — decrypt Exotic engrams)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Random route: Sunshot can decrypt from any Exotic engram (opened at Master Rahool) or drop extremely rarely from world activities, per its Manifest source string. No fixed activity, so it can't be auto-tracked.",
+        "notes": "Not auto-trackable — random from the world Exotic pool. Farm Exotic engrams via Master Lost Sectors and Portal weekly rewards; once collected, world-pool Exotics can often be focused at Rahool with an Exotic Cipher."
+      }
+    ]
+  },
+
   "Graviton Forfeit": {
     "itemHash": 407148246,
     "acquisitionPaths": [

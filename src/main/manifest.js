@@ -352,3 +352,161 @@ export function getWeaponOrnaments(weaponHash) {
   }
   return out
 }
+
+// Plug categories that aren't real "perks" (empty sockets, kill/memento trackers,
+// shaders, crafting bookkeeping) — filtered out of the perk-pool walk.
+const NON_PERK_PLUG = /empty_socket|tracker|memento|shader|deprecated|masterworks\.stat/i
+
+/**
+ * Lazily-built index of exotic *catalyst* Triumph records, keyed by the lowercased
+ * weapon name (records are named "<Weapon> Catalyst"). Built once per process from
+ * DestinyRecordDefinition — the catalyst's source/effect and completion objectives
+ * live on the Triumph, not on the weapon's masterwork plug.
+ */
+let catalystIndex = null
+function getCatalystIndex() {
+  if (catalystIndex) return catalystIndex
+  catalystIndex = new Map()
+  try {
+    const rows = getDb().prepare(`SELECT json FROM DestinyRecordDefinition`).all()
+    for (const row of rows) {
+      const d = parseRow(row)
+      const name = d?.displayProperties?.name || ''
+      const m = /^(.+) Catalyst$/.exec(name)
+      if (!m || !(d.objectiveHashes || []).length) continue
+      catalystIndex.set(m[1].toLowerCase(), d)
+    }
+  } catch {
+    /* leave the (possibly partial) index; lookups just miss */
+  }
+  return catalystIndex
+}
+
+/** Resolves an exotic weapon's catalyst (record description + objectives), or null. */
+function resolveCatalyst(weaponName) {
+  const rec = getCatalystIndex().get((weaponName || '').toLowerCase())
+  if (!rec) return null
+  const db = getDb()
+  const objectives = []
+  for (const oh of rec.objectiveHashes || []) {
+    const o = parseRow(db.prepare(`SELECT json FROM DestinyObjectiveDefinition WHERE id = ?`).get(oh | 0))
+    if (!o) continue
+    // valueStyle 2 = Checkbox — a binary step (e.g. "Insert the Catalyst"), not a
+    // counter, so its completionValue is meaningless to display as a number.
+    const checkbox = o.valueStyle === 2 || o.completedValueStyle === 2
+    objectives.push({
+      description: (o.progressDescription || '').trim() || 'Progress',
+      target: o.completionValue || 0,
+      checkbox
+    })
+  }
+  return {
+    name: rec.displayProperties.name,
+    description: (rec.displayProperties.description || '').trim(),
+    icon: rec.displayProperties.icon ? `${BUNGIE_ROOT}${rec.displayProperties.icon}` : null,
+    objectives
+  }
+}
+
+/** Shapes a plug item def into a perk-pool entry, or null if it's not a real perk. */
+function perkEntry(def) {
+  if (!def) return null
+  const pci = def.plug?.plugCategoryIdentifier || ''
+  const name = def.displayProperties?.name || ''
+  if (!name || /^empty /i.test(name) || NON_PERK_PLUG.test(pci)) return null
+  return {
+    itemHash: def.hash,
+    name,
+    description: (def.displayProperties?.description || '').trim(),
+    icon: def.displayProperties?.icon ? `${BUNGIE_ROOT}${def.displayProperties.icon}` : null,
+    category: pci
+  }
+}
+
+/** Derives a human column label from the dominant plug category of its perks. */
+function columnLabel(category) {
+  const c = category || ''
+  if (/barrel|blade|scope|haft|bowstring|launcher_barrel|tube|sight/i.test(c)) return 'Barrel / Sight'
+  if (/magazine|batter|guard|ammunition|arrow|magwell/i.test(c)) return 'Magazine'
+  if (/grip|stock/i.test(c)) return 'Grip / Stock'
+  if (/origin/i.test(c)) return 'Origin Trait'
+  if (/intrinsic/i.test(c)) return 'Intrinsic'
+  if (/frame|trait/i.test(c)) return 'Trait'
+  return 'Perk'
+}
+
+/**
+ * Returns the factual perk data for a weapon, for the on-card "catalyst + perks"
+ * panel. NOT a god-roll recommendation (those are community opinion and live on
+ * light.gg) — this is purely what the Manifest says: the weapon's intrinsic, the
+ * real per-column perk pool (random rolls when present, else the fixed/curated
+ * perks), and the exotic catalyst's objectives. Returns empty for non-weapons.
+ *
+ * @returns {{ catalyst: object|null, intrinsic: object|null, columns: Array<{label,random,perks:object[]}> }}
+ */
+export function getWeaponPerks(weaponHash) {
+  const weapon = getItemByHash(weaponHash)
+  const empty = { catalyst: null, intrinsic: null, columns: [] }
+  if (!weapon || weapon.itemType !== 3 || !weapon.sockets) return empty // itemType 3 = weapon
+
+  const db = getDb()
+  // Map each socket category name → the socket indexes it owns.
+  const idxByCat = {}
+  for (const sc of weapon.sockets.socketCategories || []) {
+    const cat = parseRow(
+      db.prepare(`SELECT json FROM DestinySocketCategoryDefinition WHERE id = ?`).get(sc.socketCategoryHash | 0)
+    )
+    const nm = (cat?.displayProperties?.name || '').toUpperCase()
+    if (nm) idxByCat[nm] = [...(idxByCat[nm] || []), ...(sc.socketIndexes || [])]
+  }
+  const entries = weapon.sockets.socketEntries || []
+
+  // Resolves a socket entry to its distinct, real perks (random pool preferred).
+  const perksFor = (entry) => {
+    if (!entry) return []
+    const setHash = entry.randomizedPlugSetHash || entry.reusablePlugSetHash
+    const out = []
+    const seen = new Set()
+    if (setHash) {
+      const ps = parseRow(db.prepare(`SELECT json FROM DestinyPlugSetDefinition WHERE id = ?`).get(setHash | 0))
+      for (const p of ps?.reusablePlugItems || []) {
+        if (p.currentlyCanRoll === false || seen.has(p.plugItemHash)) continue
+        seen.add(p.plugItemHash)
+        const e = perkEntry(getItemByHash(p.plugItemHash))
+        if (e) out.push(e)
+      }
+    } else if (entry.singleInitialItemHash) {
+      const e = perkEntry(getItemByHash(entry.singleInitialItemHash))
+      if (e) out.push(e)
+    }
+    return out
+  }
+
+  // Intrinsic trait (the exotic's signature effect, or a legendary's frame).
+  let intrinsic = null
+  for (const i of idxByCat['INTRINSIC TRAITS'] || []) {
+    const got = perksFor(entries[i])
+    if (got.length) { intrinsic = got[0]; break }
+  }
+
+  // The selectable perk columns.
+  const columns = []
+  for (const i of (idxByCat['WEAPON PERKS'] || []).slice().sort((a, b) => a - b)) {
+    const entry = entries[i]
+    const perks = perksFor(entry)
+    if (!perks.length) continue
+    columns.push({ label: columnLabel(perks[0].category), random: !!entry.randomizedPlugSetHash, perks })
+  }
+  // Disambiguate repeated labels (e.g. the two trait columns → "Trait 1" / "Trait 2").
+  const labelCounts = {}
+  for (const c of columns) labelCounts[c.label] = (labelCounts[c.label] || 0) + 1
+  const labelSeen = {}
+  for (const c of columns) {
+    if (labelCounts[c.label] > 1) {
+      labelSeen[c.label] = (labelSeen[c.label] || 0) + 1
+      c.label = `${c.label} ${labelSeen[c.label]}`
+    }
+  }
+
+  return { catalyst: resolveCatalyst(weapon.displayProperties?.name), intrinsic, columns }
+}

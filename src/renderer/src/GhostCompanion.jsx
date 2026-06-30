@@ -1069,6 +1069,135 @@ function GuidesPanel({ guides }) {
   );
 }
 
+/* ── Weapon catalyst + perk pool (factual, Manifest-sourced) ──────────
+   Shows the exotic catalyst (objective + effect), the weapon's intrinsic, and
+   the real per-column perk pool (random rolls when present, else fixed perks).
+   This is NOT a god-roll recommendation — those are community opinion; the
+   light.gg deep link above is the honest source for "best" picks. Collapsed by
+   default since the pool can be long. Self-hides for non-weapons. */
+function WeaponPerksPanel({ data }) {
+  const [openPerks, setOpenPerks] = useState(false);
+  if (!data) return null;
+  const { catalyst, intrinsic, columns } = data;
+  if (!catalyst && !intrinsic && !(columns?.length)) return null;
+  const hasRandom = (columns || []).some((c) => c.random);
+  return (
+    <>
+      {catalyst && (
+        <Panel bc={C.gold} style={{ marginBottom:10 }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
+            <Lbl color={C.gold} mb={0}>Catalyst</Lbl>
+            <Badge label="EXOTIC" color={C.gold} bg={C.goldLo}/>
+          </div>
+          <div style={{ display:"flex", gap:10, alignItems:"flex-start" }}>
+            {catalyst.icon && (
+              <img src={catalyst.icon} alt="" width={30} height={30}
+                style={{ border:`1px solid ${C.gold}`, flexShrink:0 }}/>
+            )}
+            <div style={{ minWidth:0 }}>
+              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:15, fontWeight:700,
+                color:C.text, letterSpacing:"0.04em" }}>{catalyst.name}</div>
+              {catalyst.description && (
+                <div style={{ fontSize:12, color:C.sub, fontStyle:"italic", lineHeight:1.5, marginTop:2 }}>
+                  {catalyst.description}
+                </div>
+              )}
+            </div>
+          </div>
+          {catalyst.objectives?.length > 0 && (
+            <>
+              <div style={{ marginTop:8, display:"flex", flexDirection:"column", gap:5 }}>
+                {catalyst.objectives.map((o, i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8,
+                    background:C.panelAlt, border:`1px solid ${C.muted}`, padding:"4px 8px" }}>
+                    <span style={{ display:"flex", alignItems:"center", gap:7, minWidth:0 }}>
+                      {o.checkbox && (
+                        <span style={{ color:C.gold, fontSize:11, flexShrink:0 }}>☐</span>
+                      )}
+                      <span style={{ fontSize:12, color:C.sub, lineHeight:1.3 }}>{o.description}</span>
+                    </span>
+                    {!o.checkbox && o.target > 1 && (
+                      <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, fontWeight:700,
+                        color:C.gold, flexShrink:0 }}>{o.target.toLocaleString()}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize:11, color:C.sub, fontStyle:"italic", lineHeight:1.5, marginTop:8,
+                borderLeft:`2px solid ${C.border}`, paddingLeft:8 }}>
+                Earn the catalyst in-game, then <span style={{ color:C.text }}>insert it</span> into
+                the weapon's catalyst slot (☐ steps) to start tracking. Complete the remaining
+                objectives to unlock the masterwork upgrade.
+              </div>
+            </>
+          )}
+        </Panel>
+      )}
+
+      {(intrinsic || columns?.length > 0) && (
+        <Panel bc={C.blue} style={{ marginBottom:10 }}>
+          <div onClick={() => setOpenPerks((s) => !s)} style={{ display:"flex", alignItems:"center",
+            justifyContent:"space-between", cursor:"pointer" }}>
+            <Lbl color={C.blue} mb={0}>
+              {hasRandom ? "Perk Pool · What Can Roll" : "Perks"}
+            </Lbl>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              {hasRandom && <Badge label="RANDOM ROLLS" color={C.blue} bg={C.blueLo}/>}
+              <span style={{ color:C.sub, fontSize:11 }}>{openPerks ? "▲" : "▼"}</span>
+            </div>
+          </div>
+
+          {intrinsic && (
+            <div style={{ display:"flex", gap:9, alignItems:"flex-start", marginTop:8 }}>
+              {intrinsic.icon && (
+                <img src={intrinsic.icon} alt="" width={26} height={26}
+                  style={{ border:`1px solid ${C.blue}`, flexShrink:0 }}/>
+              )}
+              <div style={{ minWidth:0 }}>
+                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.blue, letterSpacing:"0.14em" }}>
+                  INTRINSIC
+                </div>
+                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:14, fontWeight:700,
+                  color:C.text, letterSpacing:"0.03em" }}>{intrinsic.name}</div>
+                {openPerks && intrinsic.description && (
+                  <div style={{ fontSize:11, color:C.sub, lineHeight:1.5, marginTop:2 }}>{intrinsic.description}</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {openPerks && columns?.map((col, ci) => (
+            <div key={ci} style={{ marginTop:10 }}>
+              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub,
+                letterSpacing:"0.14em", marginBottom:5 }}>
+                {col.label.toUpperCase()} · {col.perks.length}
+              </div>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:5 }}>
+                {col.perks.map((p) => (
+                  <span key={p.itemHash} title={p.description || p.name}
+                    style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:12, color:C.text,
+                    background:C.panelAlt, border:`1px solid ${C.border}`, padding:"3px 7px",
+                    letterSpacing:"0.02em", whiteSpace:"nowrap" }}>
+                    {p.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {openPerks && hasRandom && (
+            <div style={{ fontSize:11, color:C.sub, fontStyle:"italic", lineHeight:1.5, marginTop:10,
+              borderLeft:`2px solid ${C.border}`, paddingLeft:8 }}>
+              This is the full roll pool from the Manifest — not a recommendation. For
+              community god-roll picks, use the light.gg link above.
+            </div>
+          )}
+        </Panel>
+      )}
+    </>
+  );
+}
+
 /* ── Main App ─────────────────────────────────────────────────────── */
 export default function GhostCompanion() {
   const [query,       setQuery]       = useState("");
@@ -1096,6 +1225,9 @@ export default function GhostCompanion() {
   // the user's persisted set of tracked ornaments (drives the shop-alert merge).
   const [weaponOrnaments,  setWeaponOrnaments]  = useState([]);
   const [trackedOrnaments, setTrackedOrnaments] = useState([]);
+
+  // Factual catalyst + per-column perk pool for the on-screen weapon (per scan).
+  const [weaponPerks,      setWeaponPerks]      = useState(null);
 
   // Collection ownership: a Set of owned collectibleHashes (from Bungie, when
   // logged in) so item cards can show a COLLECTED / MISSING badge.
@@ -1239,6 +1371,7 @@ export default function GhostCompanion() {
     setAcquired(false);
     setShowAdd(false);
     setWeaponOrnaments([]);
+    setWeaponPerks(null);
 
     try {
       const term = raw.trim();
@@ -1271,6 +1404,11 @@ export default function GhostCompanion() {
       window.api?.getWeaponOrnaments?.(hit.itemHash)
         .then(o => setWeaponOrnaments(o || []))
         .catch(() => setWeaponOrnaments([]));
+
+      // Walk the weapon's catalyst + perk pool (null/empty for non-weapons → panel hides).
+      window.api?.getWeaponPerks?.(hit.itemHash)
+        .then(p => setWeaponPerks(p || null))
+        .catch(() => setWeaponPerks(null));
 
       // Hydrate any previously-logged (or auto-tracked) run counts from store.
       const counts = (await window.api.getRunCounts?.()) || {};
@@ -1768,6 +1906,9 @@ export default function GhostCompanion() {
             live={eververseLive}
             onToggle={toggleOrnamentTrack}
           />
+
+          {/* Catalyst + factual perk pool for this weapon */}
+          <WeaponPerksPanel data={weaponPerks}/>
 
           {/* Imported guides / secret-chest walkthroughs for this item */}
           <GuidesPanel guides={itemGuides}/>
