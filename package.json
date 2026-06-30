@@ -1,6 +1,6 @@
 {
   "name": "ghost-companion",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Ghost Companion — an always-on-top Destiny 2 loot-farming overlay that auto-tracks activity completions via the Bungie API.",
   "main": "./out/main/index.js",
   "author": "Ghost Companion",
