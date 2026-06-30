@@ -1088,5 +1088,284 @@
         "notes": "Cost is an Exotic Cipher + Glimmer (some exotics also need an Ascendant Alloy/Shard). Originally a Season of the Undying (2019) season-pass reward. Not auto-trackable — it's a purchase, not an activity drop."
       }
     ]
+  },
+
+  "Turncoat": {
+    "itemHash": 253843484,
+    "acquisitionPaths": [
+      {
+        "id": "rewards_pass",
+        "method": "Rewards Pass (Portal)",
+        "pathType": "other",
+        "location": "Portal → Rewards Pass; once its cycle ends → Tower: Monument to Seasons Past",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Hand Cannon — NOT armor (Manifest source: \"Source: Rewards Pass\" — the current Portal Rewards Pass system, distinct from legacy numbered Season Passes). Earned by leveling the active Rewards Pass to the rank that grants it.",
+        "notes": "Manifest-grounded: Turncoat is not in any archived vendor's item list in the Manifest, consistent with it being a current/active Rewards Pass reward. When a Rewards Pass cycle ends, its rewards move to the Seasonal Archive at the Monument to Seasons Past vendor in the Tower (archived Rewards Pass tabs, e.g. \"Ash & Iron\", \"Reclamation\", \"Lawless\"). The Manifest doesn't pin which specific Rewards Pass cycle (reward-item lists are pruned for old passes). Not auto-trackable."
+      }
+    ]
+  },
+
+  "Graviton Forfeit": {
+    "itemHash": 407148246,
+    "acquisitionPaths": [
+      {
+        "id": "focusing",
+        "method": "Novel Decryption — Rahool",
+        "pathType": "vendor",
+        "location": "The Tower (Rahool)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Hunter Helmet (Manifest source: \"Exotic engrams; extremely rare world drops\"). Reliable route: once collected, focus it at Rahool's SECOND page → Novel Decryption with an Exotic Cipher + an Exotic engram. It can also drop at random from Exotic engrams / rare world drops.",
+        "notes": "Not auto-trackable (no activity) — a targeted Rahool decryption, not a drop. Cost: 1 Exotic Cipher + 1 Exotic engram. Farm Exotic engrams via Master Lost Sectors and Portal weekly rewards."
+      }
+    ]
+  },
+
+  "Caliban's Hand": {
+    "itemHash": 327385975,
+    "acquisitionPaths": [
+      {
+        "id": "focusing",
+        "method": "Novel Decryption — Rahool",
+        "pathType": "vendor",
+        "location": "The Tower (Rahool)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Hunter Gauntlets (Manifest source: \"Exotic Armor Focusing\"). Once collected, pull it directly at Rahool's SECOND page → Novel Decryption with an Exotic Cipher + an Exotic engram. Re-decrypt to chase better stat rolls / higher armor tiers.",
+        "notes": "Not auto-trackable (no activity) — a targeted Rahool decryption, not a drop. Cost: 1 Exotic Cipher + 1 Exotic engram. Farm Exotic engrams via Master Lost Sectors and Portal weekly rewards."
+      }
+    ]
+  },
+
+  "Wormhusk Crown": {
+    "itemHash": 3721047650,
+    "acquisitionPaths": [
+      {
+        "id": "focusing",
+        "method": "Novel Decryption — Rahool",
+        "pathType": "vendor",
+        "location": "The Tower (Rahool)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Hunter Helmet (Manifest source: \"Exotic engrams; extremely rare world drops\"). Reliable route: once collected, focus it at Rahool's SECOND page → Novel Decryption with an Exotic Cipher + an Exotic engram. It can also drop at random from Exotic engrams / rare world drops.",
+        "notes": "Not auto-trackable (no activity) — a targeted Rahool decryption, not a drop. Cost: 1 Exotic Cipher + 1 Exotic engram. Farm Exotic engrams via Master Lost Sectors and Portal weekly rewards."
+      }
+    ]
+  },
+
+  "Fr0st-EE5": {
+    "itemHash": 1737050140,
+    "acquisitionPaths": [
+      {
+        "id": "focusing",
+        "method": "Novel Decryption — Rahool",
+        "pathType": "vendor",
+        "location": "The Tower (Rahool)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Hunter Leg Armor (Manifest source: \"Exotic engrams; extremely rare world drops\"). Reliable route: once collected, focus it at Rahool's SECOND page → Novel Decryption with an Exotic Cipher + an Exotic engram. It can also drop at random from Exotic engrams / rare world drops.",
+        "notes": "Not auto-trackable (no activity) — a targeted Rahool decryption, not a drop. Cost: 1 Exotic Cipher + 1 Exotic engram. Farm Exotic engrams via Master Lost Sectors and Portal weekly rewards. Scan as \"Fr0st-EE5\"."
+      }
+    ]
+  },
+
+  "Shinobu's Vow": {
+    "itemHash": 1611241895,
+    "acquisitionPaths": [
+      {
+        "id": "focusing",
+        "method": "Novel Decryption — Rahool",
+        "pathType": "vendor",
+        "location": "The Tower (Rahool)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Hunter Gauntlets (Manifest source: \"Exotic engrams; extremely rare world drops\"). Reliable route: once collected, focus it at Rahool's SECOND page → Novel Decryption with an Exotic Cipher + an Exotic engram. It can also drop at random from Exotic engrams / rare world drops.",
+        "notes": "Not auto-trackable (no activity) — a targeted Rahool decryption, not a drop. Cost: 1 Exotic Cipher + 1 Exotic engram. Farm Exotic engrams via Master Lost Sectors and Portal weekly rewards."
+      }
+    ]
+  },
+
+  "Centrifuse": {
+    "itemHash": 1912669214,
+    "acquisitionPaths": [
+      {
+        "id": "seasonal_archive",
+        "method": "Monument to Seasons Past — Season of the Deep",
+        "pathType": "vendor",
+        "location": "The Tower: Monument to Seasons Past (Seasonal Archive) → Season of the Deep",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Arc Auto Rifle — NOT armor (Manifest source: \"Source: Season Pass Reward\"). Originally the Season of the Deep (Season 21, 2023) season-pass exotic, confirmed via Manifest season watermark. That season has ended, but it is now reclaimable from the Tower.",
+        "notes": "Manifest-verified Tower vendor: the Monument to Seasons Past (Seasonal Archive) sells it under the \"Season of the Deep\" tab (vendor 3394295929). Reacquired with Glimmer/legacy currency. Not auto-trackable."
+      },
+      {
+        "id": "exotic_archive",
+        "method": "Monument to Lost Lights — Exotic Archive",
+        "pathType": "vendor",
+        "location": "The Tower: Monument to Lost Lights (Exotic Archive) → Lightfall Exotics",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Alternate Tower route for the same weapon: the Exotic Archive at the Monument to Lost Lights also stocks Centrifuse.",
+        "notes": "Manifest-verified: listed in the \"Lightfall Exotics\" Exotic Archive vendor (67760598). Purchased with an Exotic Cipher + Glimmer/Ascendant materials, like other Monument exotics. Not auto-trackable."
+      }
+    ]
+  },
+
+  "Malfeasance": {
+    "itemHash": 204878059,
+    "acquisitionPaths": [
+      {
+        "id": "drifter_vendor",
+        "method": "The Drifter — Tower",
+        "pathType": "vendor",
+        "location": "The Tower: The Drifter (Annex)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Hand Cannon (Manifest source: \"Source: An Exotic quest or challenge.\"). Originally from the Gambit Exotic quest \"The Other Side\" (defeat the Ascendant Primeval Servitor / Primeval Envoys in Gambit, then complete the quest from the Drifter).",
+        "notes": "Manifest-verified Tower vendor: The Drifter (vendor 248695599, \"Rogue Lightbearer\") stocks Malfeasance, so it can be acquired/reacquired directly from him in the Tower without needing the original quest to be active. Not auto-trackable."
+      }
+    ]
+  },
+
+  "Mothkeeper's Wraps": {
+    "itemHash": 3688534631,
+    "acquisitionPaths": [
+      {
+        "id": "focusing",
+        "method": "Novel Decryption — Rahool",
+        "pathType": "vendor",
+        "location": "The Tower (Rahool)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Hunter Gauntlets (Manifest source: \"Exotic Armor Focusing\"). Once collected, pull it directly at Rahool's SECOND page → Novel Decryption with an Exotic Cipher + an Exotic engram. Re-decrypt to chase better stat rolls / higher armor tiers.",
+        "notes": "Not auto-trackable (no activity) — a targeted Rahool decryption, not a drop. Cost: 1 Exotic Cipher + 1 Exotic engram. Farm Exotic engrams via Master Lost Sectors and Portal weekly rewards."
+      }
+    ]
+  },
+
+  "The Sixth Coyote": {
+    "itemHash": 1168370782,
+    "acquisitionPaths": [
+      {
+        "id": "focusing",
+        "method": "Novel Decryption — Rahool",
+        "pathType": "vendor",
+        "location": "The Tower (Rahool)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Hunter Chest Armor (Manifest source: \"Exotic engrams; extremely rare world drops\"). Reliable route: once collected, focus it at Rahool's SECOND page → Novel Decryption with an Exotic Cipher + an Exotic engram. It can also drop at random from Exotic engrams / rare world drops.",
+        "notes": "Not auto-trackable (no activity) — a targeted Rahool decryption, not a drop. Cost: 1 Exotic Cipher + 1 Exotic engram. Farm Exotic engrams via Master Lost Sectors and Portal weekly rewards. Scan as \"The Sixth Coyote\"."
+      }
+    ]
+  },
+
+  "Raiden Flux": {
+    "itemHash": 368733543,
+    "acquisitionPaths": [
+      {
+        "id": "focusing",
+        "method": "Novel Decryption — Rahool",
+        "pathType": "vendor",
+        "location": "The Tower (Rahool)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Hunter Chest Armor (Manifest source: \"Exotic engrams; extremely rare world drops\"). Reliable route: once collected, focus it at Rahool's SECOND page → Novel Decryption with an Exotic Cipher + an Exotic engram. It can also drop at random from Exotic engrams / rare world drops.",
+        "notes": "Not auto-trackable (no activity) — a targeted Rahool decryption, not a drop. Cost: 1 Exotic Cipher + 1 Exotic engram. Farm Exotic engrams via Master Lost Sectors and Portal weekly rewards."
+      }
+    ]
+  },
+
+  "Omnioculus": {
+    "itemHash": 4255001288,
+    "acquisitionPaths": [
+      {
+        "id": "focusing",
+        "method": "Novel Decryption — Rahool",
+        "pathType": "vendor",
+        "location": "The Tower (Rahool)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Hunter Chest Armor (Manifest source: \"Exotic Armor Focusing\"). Once collected, pull it directly at Rahool's SECOND page → Novel Decryption with an Exotic Cipher + an Exotic engram. Re-decrypt to chase better stat rolls / higher armor tiers.",
+        "notes": "Not auto-trackable (no activity) — a targeted Rahool decryption, not a drop. Cost: 1 Exotic Cipher + 1 Exotic engram. Farm Exotic engrams via Master Lost Sectors and Portal weekly rewards."
+      }
+    ]
+  },
+
+  "Star-Eater Scales": {
+    "itemHash": 1006498763,
+    "acquisitionPaths": [
+      {
+        "id": "focusing",
+        "method": "Novel Decryption — Rahool",
+        "pathType": "vendor",
+        "location": "The Tower (Rahool)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Hunter Leg Armor (Manifest source: \"Exotic Armor Focusing\"). Once collected, pull it directly at Rahool's SECOND page → Novel Decryption with an Exotic Cipher + an Exotic engram. Re-decrypt to chase better stat rolls / higher armor tiers.",
+        "notes": "Not auto-trackable (no activity) — a targeted Rahool decryption, not a drop. Cost: 1 Exotic Cipher + 1 Exotic engram. Farm Exotic engrams via Master Lost Sectors and Portal weekly rewards."
+      }
+    ]
+  },
+
+  "Gyrfalcon's Hauberk": {
+    "itemHash": 2447096246,
+    "acquisitionPaths": [
+      {
+        "id": "focusing",
+        "method": "Novel Decryption — Rahool",
+        "pathType": "vendor",
+        "location": "The Tower (Rahool)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Exotic Hunter Chest Armor (Manifest source: \"Exotic Armor Focusing\"). Once collected, pull it directly at Rahool's SECOND page → Novel Decryption with an Exotic Cipher + an Exotic engram. Re-decrypt to chase better stat rolls / higher armor tiers.",
+        "notes": "Not auto-trackable (no activity) — a targeted Rahool decryption, not a drop. Cost: 1 Exotic Cipher + 1 Exotic engram. Farm Exotic engrams via Master Lost Sectors and Portal weekly rewards."
+      }
+    ]
   }
 }

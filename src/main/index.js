@@ -35,7 +35,10 @@ const store = new Store({
     runCounts: {}, // { "<itemKey>::<pathId>": number }
     userDropRates: {}, // user-authored acquisition data, keyed by itemHash
     trackedOrnaments: [], // user-tracked Eververse ornaments (drives the shop alert panel)
-    dataApiUrl: '' // base URL of the Ghost Companion data API (Railway); empty = off
+    // Base URL of the Ghost Companion data API (Railway). Defaulted to the public
+    // service so Xûr/Eververse/community paths work on first launch; the user can
+    // clear it in Account to run on bundled data only, or point at their own host.
+    dataApiUrl: 'https://ghost-companion-production.up.railway.app'
   }
 })
 

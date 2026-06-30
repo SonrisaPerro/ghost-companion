@@ -34,6 +34,10 @@ const RARITY = {
 };
 const rar = (r) => RARITY[r] || { color:C.sub, bg:C.muted };
 
+// Recognisable example searches for the empty state — gives a first-time user a
+// one-tap way to see what a scan looks like instead of a blank prompt.
+const QUICK_SCANS = ["Touch of Malice", "Thorn", "Gjallarhorn", "Vex Mythoclast", "The Last Word"];
+
 /* ── Math ─────────────────────────────────────────────────────────── */
 const probN    = (rate,runs) => runs > 0 ? (1 - Math.pow(1 - Math.max(0.001,rate), runs)) * 100 : 0;
 const expRuns  = (rate)      => Math.round(1 / Math.max(0.001,rate));
@@ -88,6 +92,18 @@ function Badge({ label, color, bg }) {
       letterSpacing:"0.12em", color, display:"inline-block" }}>
       {label}
     </div>
+  );
+}
+
+// Clickable pill — used for the empty-state example searches and the sign-in nudge.
+function Chip({ children, onClick, color=C.blue, title }) {
+  return (
+    <button onClick={onClick} title={title} style={{
+      background:C.panelAlt, border:`1px solid ${color}`, color,
+      fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, fontWeight:600,
+      letterSpacing:"0.06em", padding:"5px 11px", cursor:"pointer", WebkitAppRegion:"no-drag" }}>
+      {children}
+    </button>
   );
 }
 
@@ -332,7 +348,7 @@ function PathCard({ path, runs, onAdd, onSub, isBest }) {
           <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:12 }}>
             <Lbl color={ptype.color}>This Path — Runs Logged</Lbl>
             <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-              <button onClick={onSub} style={{ width:34, height:34, background:C.muted, border:`1px solid ${C.border}`,
+              <button onClick={onSub} title="Remove one run" aria-label="Remove one run" style={{ width:34, height:34, background:C.muted, border:`1px solid ${C.border}`,
                 color:C.text, fontSize:20, cursor:"pointer", fontFamily:"'Barlow Condensed',sans-serif",
                 display:"flex", alignItems:"center", justifyContent:"center" }}>−</button>
               <div style={{ flex:1, textAlign:"center" }}>
@@ -343,7 +359,7 @@ function PathCard({ path, runs, onAdd, onSub, isBest }) {
                   </div>
                 )}
               </div>
-              <button onClick={onAdd} style={{ width:34, height:34, background:ptype.bg, border:`1px solid ${ptype.color}`,
+              <button onClick={onAdd} title="Log one run" aria-label="Log one run" style={{ width:34, height:34, background:ptype.bg, border:`1px solid ${ptype.color}`,
                 color:ptype.color, fontSize:20, cursor:"pointer", fontFamily:"'Barlow Condensed',sans-serif",
                 display:"flex", alignItems:"center", justifyContent:"center" }}>+</button>
             </div>
@@ -778,23 +794,34 @@ function EverversePanel({ items, location, onScan }) {
   // `items` is the already-merged in-shop list (curated registry + the user's own
   // tracked ornaments matched against the live sales). The parent only builds it
   // from an AUTHORITATIVE live read, so an empty list here means nothing to show.
+  // Starts COLLAPSED — the header still shows the count so it stays discoverable.
+  const [open, setOpen] = useState(false);
   if (!items?.length) return null;
   const n = items.length;
   return (
     <Panel bc={C.purple} style={{ marginBottom:14 }}>
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
-        <Lbl color={C.purple} mb={0}>🛒 Eververse · Tracked Ornament{n !== 1 ? "s" : ""} In Stock</Lbl>
-        <Badge label="IN SHOP · LIVE" color={C.green} bg={C.greenLo}/>
+      <div onClick={() => setOpen(o => !o)} title={open ? "Collapse" : "Expand"}
+        style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
+          gap:8, cursor:"pointer", userSelect:"none", marginBottom:open ? 6 : 0 }}>
+        <Lbl color={C.purple} mb={0}>🛒 Eververse · {n} Tracked Ornament{n !== 1 ? "s" : ""} In Stock</Lbl>
+        <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+          <Badge label="IN SHOP · LIVE" color={C.green} bg={C.greenLo}/>
+          <span style={{ color:C.purple, fontSize:11, fontFamily:"'Barlow Condensed',sans-serif" }}>{open ? "▲" : "▼"}</span>
+        </div>
       </div>
-      <div style={{ fontSize:11, color:C.sub, lineHeight:1.5, marginBottom:8 }}>
-        {n === 1 ? "A tracked ornament is" : `${n} tracked ornaments are`} for sale at Tess Everis right now —
-        grab {n === 1 ? "it" : "them"} before the shop rotates.
-      </div>
-      <EververseSection items={items} onScan={onScan}/>
-      <div style={{ textAlign:"center", fontFamily:"'Barlow Condensed',sans-serif",
-        fontSize:9, color:C.muted, letterSpacing:"0.14em", marginTop:10 }}>
-        {(location || "THE TOWER").toUpperCase()} · VERIFIED LIVE
-      </div>
+      {open && (
+        <>
+          <div style={{ fontSize:11, color:C.sub, lineHeight:1.5, marginBottom:8 }}>
+            {n === 1 ? "A tracked ornament is" : `${n} tracked ornaments are`} for sale at Tess Everis right now —
+            grab {n === 1 ? "it" : "them"} before the shop rotates.
+          </div>
+          <EververseSection items={items} onScan={onScan}/>
+          <div style={{ textAlign:"center", fontFamily:"'Barlow Condensed',sans-serif",
+            fontSize:9, color:C.muted, letterSpacing:"0.14em", marginTop:10 }}>
+            {(location || "THE TOWER").toUpperCase()} · VERIFIED LIVE
+          </div>
+        </>
+      )}
     </Panel>
   );
 }
@@ -1212,11 +1239,14 @@ export default function GhostCompanion() {
             letterSpacing:"0.22em", color:C.sub, marginTop:2 }}>LOOT ACQUISITION SYSTEM · MULTI-PATH</div>
         </div>
         <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:5 }}
+            title={auth.loggedIn
+              ? `Signed in as ${auth.displayName || "Guardian"} — auto-tracking active`
+              : "Not signed in — searching still works; sign in to auto-track runs"}>
             <div style={{ width:5, height:5, borderRadius:"50%",
               background: auth.loggedIn ? C.green : C.muted, animation:"pulse 2s ease infinite" }}/>
             <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, letterSpacing:"0.18em", color:C.sub }}>
-              {auth.loggedIn ? "ONLINE" : "OFFLINE"}
+              {auth.loggedIn ? "BUNGIE" : "GUEST"}
             </span>
           </div>
           {/* Always-on-top pin toggle (keeps the overlay above the game). */}
@@ -1236,7 +1266,7 @@ export default function GhostCompanion() {
             TRAY ▾
           </button>
           {/* Account toggle (was the API-key button) */}
-          <button onClick={() => setShowAccount(s => !s)} style={{
+          <button onClick={() => setShowAccount(s => !s)} title="Bungie sign-in & data settings" style={{
             background:"none", border:`1px solid ${showAccount ? C.orange : C.muted}`,
             color: showAccount ? C.orange : C.muted, padding:"3px 8px", cursor:"pointer",
             fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700, letterSpacing:"0.14em",
@@ -1259,9 +1289,11 @@ export default function GhostCompanion() {
       <EverversePanel items={eververseInShop} location={eververseData?.vendor?.location} onScan={(name) => scan(name)}/>
 
       {/* ── Path type legend ── */}
-      <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:14 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", marginBottom:14 }}>
+        <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700,
+          color:C.sub, letterSpacing:"0.16em" }}>PATH TYPES</span>
         {Object.entries(PATH_TYPE).slice(0,4).map(([k,v]) => (
-          <div key={k} style={{ display:"flex", alignItems:"center", gap:4 }}>
+          <div key={k} style={{ display:"flex", alignItems:"center", gap:4 }} title={`${v.label} acquisition`}>
             <span style={{ color:v.color, fontSize:10 }}>{v.icon}</span>
             <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.muted, letterSpacing:"0.1em" }}>{v.label}</span>
           </div>
@@ -1281,15 +1313,26 @@ export default function GhostCompanion() {
             <input value={query} onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key==="Enter" && scan()}
               placeholder="Name or itemHash — e.g. Touch of Malice, 2575506895"
-              style={{ flex:1, background:"transparent", border:"none", color:C.text,
+              style={{ flex:1, minWidth:0, background:"transparent", border:"none", color:C.text,
                 fontFamily:"'Barlow Condensed',sans-serif", fontSize:17, fontWeight:500, letterSpacing:"0.04em" }}/>
-            <button onClick={scan} disabled={scanning} style={{ background:scanning ? C.muted : C.orange,
+            {query && !scanning && (
+              <button onClick={() => setQuery("")} title="Clear" aria-label="Clear search" style={{
+                background:"none", border:"none", color:C.sub, fontSize:18, lineHeight:1,
+                cursor:"pointer", padding:"0 2px", flexShrink:0 }}>×</button>
+            )}
+            <button onClick={scan} disabled={scanning} title="Search the Destiny 2 Manifest (Enter)" style={{ background:scanning ? C.muted : C.orange,
               border:"none", color:scanning ? C.sub : "#fff",
               fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, fontWeight:700,
               letterSpacing:"0.14em", padding:"8px 12px", cursor:scanning ? "default" : "pointer", flexShrink:0 }}>
               {scanning ? "SCANNING" : "SCAN"}
             </button>
           </div>
+          {!scanning && (
+            <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.muted,
+              letterSpacing:"0.1em", marginTop:7 }}>
+              PRESS ENTER TO SCAN · PASTE AN ITEMHASH FROM DIM OR LIGHT.GG
+            </div>
+          )}
         </Panel>
       </div>
 
@@ -1305,12 +1348,38 @@ export default function GhostCompanion() {
 
       {/* ── Empty state ── */}
       {!itemData && !scanning && !error && (
-        <div style={{ textAlign:"center", padding:"50px 20px", animation:"fadeUp 0.5s ease" }}>
-          <Ghost size={52} color={C.muted}/>
-          <div style={{ marginTop:14, fontFamily:"'Barlow Condensed',sans-serif", fontSize:12,
-            color:C.muted, letterSpacing:"0.16em", lineHeight:1.8 }}>
-            ENTER AN ITEM NAME TO SEARCH<br/>THE DESTINY 2 MANIFEST
+        <div style={{ textAlign:"center", padding:"36px 16px 24px", animation:"fadeUp 0.5s ease" }}>
+          <Ghost size={48} color={C.muted}/>
+          <div style={{ marginTop:14, fontFamily:"'Barlow Condensed',sans-serif", fontSize:13,
+            color:C.sub, letterSpacing:"0.1em", lineHeight:1.7, maxWidth:300, margin:"14px auto 0" }}>
+            SEARCH ANY DESTINY 2 WEAPON OR ARMOR TO SEE EVERY WAY TO FARM IT —
+            WITH LIVE DROP-CHANCE MATH AND AUTO-TRACKED RUN COUNTS.
           </div>
+
+          {/* One-tap examples so a first scan is obvious. */}
+          <div style={{ marginTop:18 }}>
+            <Lbl color={C.muted} mb={8}>Try an example</Lbl>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:8, justifyContent:"center" }}>
+              {QUICK_SCANS.map(name => (
+                <Chip key={name} color={C.gold} title={`Scan ${name}`} onClick={() => scan(name)}>
+                  {name}
+                </Chip>
+              ))}
+            </div>
+          </div>
+
+          {/* Nudge sign-in only when it would actually add something (auto-track). */}
+          {!auth.loggedIn && (
+            <div style={{ marginTop:20, paddingTop:18, borderTop:`1px solid ${C.border}`, maxWidth:320, margin:"20px auto 0" }}>
+              <div style={{ fontSize:11, color:C.sub, lineHeight:1.6, marginBottom:10 }}>
+                Sign in with Bungie.net and the Ghost will auto-count your runs from in-game
+                activity completions — no manual tallying.
+              </div>
+              <Chip color={C.orange} onClick={() => setShowAccount(true)}>
+                SIGN IN WITH BUNGIE →
+              </Chip>
+            </div>
+          )}
         </div>
       )}
 
@@ -1359,7 +1428,9 @@ export default function GhostCompanion() {
           {/* Auto-track + add-path controls */}
           <div style={{ display:"flex", gap:8, marginBottom:10 }}>
             <button onClick={toggleTrack} disabled={!itemData.acquisitionPaths?.length} title={
-              itemData.acquisitionPaths?.length ? "" : "Add a path with a source activity first"
+              !itemData.acquisitionPaths?.length ? "Add a path with a source activity first"
+                : auth.loggedIn ? "Auto-count runs when the Ghost detects a matching activity"
+                : "Tracks this item now; sign in with Bungie to auto-count runs"
             } style={{ flex:1, padding:"9px 0",
               background:isTracked ? C.greenLo : C.muted,
               border:`1px solid ${isTracked ? C.green : C.border}`,
