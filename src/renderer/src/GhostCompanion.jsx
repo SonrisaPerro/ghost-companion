@@ -2116,16 +2116,19 @@ export default function GhostCompanion() {
       `}</style>
 
       {/* ── Header (draggable region for the frameless window) ── */}
-      <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16,
+      {/* Wraps: at the locked sidebar width the button cluster drops to its own
+          row (right-aligned) instead of clipping — robust as more buttons land. */}
+      <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap", gap:12, rowGap:10, marginBottom:16,
         paddingBottom:14, borderBottom:`1px solid ${C.border}`, WebkitAppRegion:"drag" }}>
         <Ghost size={34} color={C.blue} spin/>
-        <div>
+        <div style={{ flex:"1 1 auto", minWidth:0 }}>
           <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:22, fontWeight:700,
             letterSpacing:"0.14em", color:C.text, lineHeight:1 }}>GHOST COMPANION</div>
           <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9,
             letterSpacing:"0.22em", color:C.sub, marginTop:2 }}>LOOT ACQUISITION SYSTEM · MULTI-PATH</div>
         </div>
-        <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:10 }}>
+        <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", justifyContent:"flex-end",
+          flexWrap:"wrap", gap:8, rowGap:6 }}>
           <div style={{ display:"flex", alignItems:"center", gap:5 }}
             title={auth.loggedIn
               ? `Signed in as ${auth.displayName || "Guardian"} — auto-tracking active`

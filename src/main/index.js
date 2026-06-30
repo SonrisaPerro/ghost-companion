@@ -57,7 +57,9 @@ let tray = null
 let tracker = null
 let notifier = null
 
-const WINDOW_WIDTH = 420
+const WINDOW_WIDTH = 460
+const DEFAULT_HEIGHT = 900 // tall sidebar, but not the full monitor by default
+const MIN_HEIGHT = 480
 const OPACITY = 0.92
 
 // ---------------------------------------------------------------------------
@@ -83,11 +85,14 @@ function createWindow() {
   const display = screen.getPrimaryDisplay()
   const { width: screenW, height: screenH, x: screenX, y: screenY } = display.workArea
 
+  // Default to a tall sidebar pinned to the top-right — but cap the height so a
+  // fresh launch isn't full-monitor-tall (the user can still drag it taller).
+  const defaultHeight = Math.min(screenH, DEFAULT_HEIGHT)
   const defaultBounds = {
     x: screenX + screenW - WINDOW_WIDTH,
     y: screenY,
     width: WINDOW_WIDTH,
-    height: screenH
+    height: defaultHeight
   }
 
   const saved = store.get('window.bounds')
@@ -95,16 +100,25 @@ function createWindow() {
   // layout; otherwise reset to the pinned-right default and forget the bad ones.
   let bounds = defaultBounds
   if (isReachable(saved)) {
-    bounds = { ...saved, width: WINDOW_WIDTH }
+    // Honor the saved position, but re-assert the locked width. Earlier builds
+    // always defaulted to full-monitor height, so a near-full saved height was
+    // never a deliberate choice — collapse that back to the new capped default.
+    // Otherwise keep the user's real resize, clamped to a sane range.
+    const wasFullHeightDefault = saved.height >= screenH - 4
+    const h = wasFullHeightDefault
+      ? defaultHeight
+      : Math.max(MIN_HEIGHT, Math.min(saved.height, screenH))
+    bounds = { ...saved, width: WINDOW_WIDTH, height: h }
   } else if (saved) {
     store.set('window.bounds', null)
   }
 
   mainWindow = new BrowserWindow({
     ...bounds,
-    width: WINDOW_WIDTH, // width is fixed by spec
+    width: WINDOW_WIDTH, // width is locked (right-edge sidebar); see WINDOW_WIDTH
     minWidth: WINDOW_WIDTH,
     maxWidth: WINDOW_WIDTH,
+    minHeight: MIN_HEIGHT,
     frame: false, // frameless overlay
     // NOTE: transparent:true is intentionally OFF. On Windows a transparent
     // window can't be edge-resized and often ignores the -webkit-app-region
