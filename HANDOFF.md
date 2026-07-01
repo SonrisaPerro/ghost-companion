@@ -1,6 +1,6 @@
 # Ghost Companion — Session Handoff
 
-_Last updated: 2026-06-30. Read this first when resuming work on this tool._
+_Last updated: 2026-07-01. Read this first when resuming work on this tool._
 
 ## What this is
 An always-on-top Destiny 2 loot-farming overlay.
@@ -34,13 +34,13 @@ An always-on-top Destiny 2 loot-farming overlay.
   are baked in at build time via the Vite `define` in `electron.vite.config.js`.
   Output: `Ghost-Companion-Setup-<ver>.exe` + `.blockmap` + `latest.yml` attached
   to a GitHub Release.
-- **⚠️ GOTCHA — electron-builder publishes the release as a DRAFT.** After the
-  Actions run goes green you MUST go to the Releases page and **publish the draft**,
-  or the friend can't download it and auto-update won't see it. Confirmed
-  2026-07-01: `npm run release` = `electron-builder --publish always` with **no
-  `releaseType` set**, so it uses electron-builder's default (`draft`). To make the
-  pipeline publish directly, add `"releaseType": "release"` under `build.publish`
-  in `package.json`.
+- **AUTO-PUBLISH (as of v1.0.6, 2026-07-01):** `build.publish` in `package.json`
+  now sets `"releaseType": "release"`, so a tagged CI build publishes the release
+  directly — **no manual draft-publish step**. Verified live on v1.0.6.
+  - _Historical gotcha (pre-v1.0.6):_ electron-builder's default `releaseType` is
+    `draft`, so v1.0.0–v1.0.5 each published as a DRAFT that had to be published by
+    hand on the Releases page before the friend could download / auto-update could
+    see it. That manual step is gone now; kept here only so the old commits make sense.
 - **⚠️ VERIFICATION TRAP — the unauthenticated GitHub releases API only returns
   PUBLISHED releases; drafts are invisible without a token.** So a `curl` of
   `/releases` that shows every version "published" is NOT evidence the pipeline
@@ -50,9 +50,12 @@ An always-on-top Destiny 2 loot-farming overlay.
 - **To ship a change:** bump `version` in `package.json`, commit to `main`,
   `git tag -a vX.Y.Z && git push origin main --tags`, wait for green, publish the
   draft. Secrets must already exist before tagging (else a credential-less binary).
-- **Shipped:** `v1.0.0`–`v1.0.5` all live (published). `v1.0.5` (2026-07-01) =
-  This Week concierge Stages 1–4 (rotations, Banshee-44, notifier) + updated app
-  `description`. `/releases/latest` resolves to it. Hand friends
+- **Shipped:** `v1.0.0`–`v1.0.6` all live (published). **`v1.0.6` (2026-07-01) is
+  the current latest** = sustainable rotation pipeline (seed + auto-refresh),
+  notifier cache-efficiency, and the `releaseType:"release"` auto-publish flip.
+  `v1.0.5` (2026-07-01) = This Week concierge Stages 1–4 (rotations, Banshee-44,
+  notifier) + updated app `description`. `/releases/latest` resolves to v1.0.6.
+  Hand friends
   `github.com/SonrisaPerro/ghost-companion/releases/latest` → grab the Setup .exe →
   "More info → Run anyway" past SmartScreen (app is unsigned).
 - **SmileCo branding (v1.0.1):** `build.win.publisherName:"SmileCo"` +
@@ -313,8 +316,12 @@ An always-on-top Destiny 2 loot-farming overlay.
      (`git push` → Railway) before the client library browser shows anything.
    **Reminder: shipping any client change now requires a new tagged release**
    (bump version → tag → publish draft).
-6. **v1.0.1 draft** — publish it live once its Actions run is green (SmileCo
-   installer branding). Same draft-publish step as v1.0.0.
+6. **All releases through v1.0.6 are published + live — nothing pending.** (This
+   thread used to track publishing the v1.0.1 draft; that and every draft since
+   have been published, and v1.0.6 now auto-publishes.) No known open build work:
+   tray/pin, ornaments-on-card, data-packages, guide library, and the This Week
+   concierge (Stages 1–4) are all shipped. The only structural dead-end is #2
+   (set-piece enumeration), which no data source can satisfy.
 
 ## SECURITY — do not slip on this
 - **Bungie secret rotation — DONE 2026-06-30.** Resolved by switching the Bungie
@@ -341,16 +348,22 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
-- _(this session, 2026-06-30)_ — **This Week concierge Stages 1–4.** `/weekly`
+- **`v1.0.6`** (2026-07-01, live) — sustainable rotation pipeline (seed +
+  auto-refresh from Kyber's Corner behind 4 safety rails), notifier
+  cache-efficiency (respects data-api's 1h cache; no 30-min force refetch), and
+  `build.publish.releaseType:"release"` so tags **auto-publish** (no manual draft).
+  All client + server pieces verified live on Railway.
+- **`v1.0.5`** (2026-07-01, live) — **This Week concierge Stages 1–4 released.**
+  (Earlier note said these client changes were held to batch one release — that tag
+  was cut as v1.0.5, then v1.0.6 followed. Nothing is held anymore.)
+- _(session, 2026-06-30)_ — **This Week concierge Stages 1–4.** `/weekly`
   aggregator; collapsible Eververse list; window-sizing fix (width 460, capped
   default height, wrapping header); **Stage 2** rotation resolver + table + 7 tests
   + Featured section (`d4d8256`); **Stage 3** live Banshee-44 weapons (`/banshee`,
   `9542d08`) + WEEK-tab section (`871d3f0`) + GM-reward dead-end finding; **Stage 4**
   notifier Xûr-arrived + Banshee tracked-weapon alerts (`e4333b4`). Server pieces
-  deployed + verified live on Railway. **Client changes since v1.0.x are NOT yet
-  released** — user chose to hold the tag (would be v1.0.5) and batch a single
-  release. Cut it with: bump `package.json` → `git tag -a v1.0.5` → push → publish
-  the draft.
+  deployed + verified live on Railway. **Released as v1.0.5** (and superseded by
+  v1.0.6) — no longer held.
 - **`v1.0.1`** — brand Windows installer as **SmileCo** (`build.win.publisherName`,
   `copyright`, `nsis.uninstallDisplayName`); version bump. Release workflow.
 - **`v1.0.0`** — first distributed release. Public Bungie OAuth client + regenerated
