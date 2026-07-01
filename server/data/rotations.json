@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "note": "Weekly rotators the Bungie API does NOT expose (featured raid pair, featured dungeon pair, Grand Master Nightfall + its reward). These are community-tracked. This table holds EXPLICIT per-week entries keyed by the weekly-reset ISO (Tuesday 17:00 UTC) — no forward extrapolation. Add a week only when its values are verified. Upgrade path: once a verified ordered-list + anchor is available, swap the lookup for modular arithmetic in rotations.js without changing the /weekly contract.",
+  "weeks": {
+    "2026-06-30T17:00:00.000Z": {
+      "verified": true,
+      "featuredRaids": ["Crota's End", "Vault of Glass"],
+      "featuredDungeons": ["Warlord's Ruin", "Grasp of Avarice"],
+      "grandmasterNightfall": { "activity": "The Sunless Cell", "weapon": "Null Composure" }
+    }
+  }
+}

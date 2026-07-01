@@ -24,6 +24,7 @@ import { resolveXur } from './src/xur.js'
 import { resolveMonument } from './src/monument.js'
 import { resolveEververse } from './src/eververse.js'
 import { resolveActivities } from './src/milestones.js'
+import { resolveRotations, loadRotations } from './src/rotations.js'
 import { lastResetISO } from './src/config.js'
 import { loadGuides, getGuidesIndex, getGuidePackage } from './src/guides.js'
 
@@ -163,6 +164,7 @@ function trimEververse(evv) {
 // Stage 1: the live, authoritative sources (Xûr, Eververse, raid slate). Each
 // sub-source carries its own `source` flag so the client live-gates per section.
 async function getWeekly(force = false) {
+  if (force) loadRotations() // let rotations.json edits take effect without a redeploy
   const [xur, eververse, activities] = await Promise.all([
     getXur(force),
     getEververse(force),
@@ -174,7 +176,8 @@ async function getWeekly(force = false) {
     resetsAt: activities?.endsAt || null,
     xur,
     eververse: trimEververse(eververse),
-    activities
+    activities,
+    rotations: resolveRotations()
   }
 }
 

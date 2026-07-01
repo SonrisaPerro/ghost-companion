@@ -1268,6 +1268,23 @@ function WeekSection({ title, color, children, collapsible = false, defaultOpen 
   );
 }
 
+// A labeled row of featured (farmable) activity chips for the weekly rotation.
+function FeaturedRow({ label, items }) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap", gap:6, marginBottom:2 }}>
+      <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, color:C.sub,
+        letterSpacing:"0.06em", minWidth:58 }}>{label.toUpperCase()}</span>
+      {items.map((name) => (
+        <div key={name} style={{ display:"flex", alignItems:"center", border:`1px solid ${C.greenLo}`,
+          background:C.panelAlt, padding:"3px 7px", fontFamily:"'Barlow Condensed',sans-serif",
+          fontSize:11, color:C.text, letterSpacing:"0.03em" }}>
+          {name}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ThisWeekPanel({ data, onScan, onRefresh }) {
   if (!data) {
     return (
@@ -1283,6 +1300,9 @@ function ThisWeekPanel({ data, onScan, onRefresh }) {
   const x = data.xur, xLive = x?.source === "live", xur = x?.xur;
   const e = data.eververse, eLive = e?.source === "live", inShop = e?.inShop || [];
   const a = data.activities, raids = a?.raids || [], dungeons = a?.dungeons || [];
+  const rot = data.rotations, rotOn = rot?.source === "computed";
+  const featRaids = rot?.featuredRaids || [], featDungeons = rot?.featuredDungeons || [], gm = rot?.grandmasterNightfall;
+  const hasFeatured = rotOn && (featRaids.length || featDungeons.length || gm);
   const countdown = resetCountdown(data.resetsAt);
   const anyLive = xLive || eLive || a?.source === "live";
   const week = data.weekOf ? new Date(data.weekOf).toLocaleDateString() : null;
@@ -1345,6 +1365,31 @@ function ThisWeekPanel({ data, onScan, onRefresh }) {
           </div>
         )}
       </WeekSection>
+
+      {hasFeatured && (
+        <WeekSection title="Featured · Farmable This Week" color={C.green}>
+          {featRaids.length > 0 && <FeaturedRow label="Raids" items={featRaids}/>}
+          {featDungeons.length > 0 && <FeaturedRow label="Dungeons" items={featDungeons}/>}
+          {gm && (
+            <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap", gap:6, marginTop:featRaids.length||featDungeons.length ? 8 : 0 }}>
+              <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, color:C.sub, letterSpacing:"0.06em", minWidth:58 }}>GM NIGHTFALL</span>
+              <div style={{ display:"flex", alignItems:"center", gap:5, border:`1px solid ${C.greenLo}`,
+                background:C.panelAlt, padding:"3px 7px", fontFamily:"'Barlow Condensed',sans-serif",
+                fontSize:11, color:C.text, letterSpacing:"0.03em" }}>
+                {gm.activity}
+                {gm.weapon && (
+                  <span onClick={() => onScan?.(gm.weapon)} title={`Look up ${gm.weapon}`}
+                    style={{ fontSize:9, color:C.green, letterSpacing:"0.08em", cursor:onScan?"pointer":"default" }}>
+                    · {gm.weapon.toUpperCase()}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+          <div style={{ fontSize:9, color:C.muted, letterSpacing:"0.1em", marginTop:8,
+            fontFamily:"'Barlow Condensed',sans-serif" }}>COMMUNITY-TRACKED ROTATION</div>
+        </WeekSection>
+      )}
 
       {anyLive && (
         <div style={{ textAlign:"center", fontFamily:"'Barlow Condensed',sans-serif",
