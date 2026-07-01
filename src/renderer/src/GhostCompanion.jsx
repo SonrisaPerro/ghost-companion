@@ -1105,6 +1105,39 @@ function XurSection({ xur, onScan }) {
   );
 }
 
+// Banshee-44's live weekly weapon rotation (legendary buyables). Same row idiom
+// as XurSection but blue, and each weapon is scannable.
+function BansheeSection({ weapons, location, onScan }) {
+  return (
+    <div>
+      {location && (
+        <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.12em", marginBottom:weapons.length?8:0 }}>
+          {location.toUpperCase()}
+        </div>
+      )}
+      {weapons.map(w => (
+        <div key={w.itemHash} onClick={() => onScan?.(w.name)} title="Scan this item"
+          style={{ display:"flex", alignItems:"center", gap:9, padding:"5px 0", cursor:"pointer" }}
+          onMouseEnter={e => e.currentTarget.style.opacity = 0.8}
+          onMouseLeave={e => e.currentTarget.style.opacity = 1}>
+          {w.icon
+            ? <img src={w.icon} alt="" width={26} height={26} style={{ border:`1px solid ${C.blue}`, flexShrink:0 }}/>
+            : <div style={{ width:26, height:26, background:C.blueLo, border:`1px solid ${C.blue}`, flexShrink:0 }}/>}
+          <div style={{ minWidth:0 }}>
+            <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, fontWeight:700,
+              color:C.blue, letterSpacing:"0.04em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+              {w.name}
+            </div>
+            <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.1em" }}>
+              {(w.tier || "LEGENDARY").toUpperCase()} · {(w.type || "WEAPON").toUpperCase()}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function XurPanel({ data, onScan }) {
   // Only ever surface Xûr when the server gave an AUTHORITATIVE live read AND he
   // is verified present. Away or unknown (fallback) → render nothing at all.
@@ -1299,12 +1332,13 @@ function ThisWeekPanel({ data, onScan, onRefresh }) {
   }
   const x = data.xur, xLive = x?.source === "live", xur = x?.xur;
   const e = data.eververse, eLive = e?.source === "live", inShop = e?.inShop || [];
+  const b = data.banshee, bLive = b?.source === "live", bWeapons = b?.weapons || [];
   const a = data.activities, raids = a?.raids || [], dungeons = a?.dungeons || [];
   const rot = data.rotations, rotOn = rot?.source === "computed";
   const featRaids = rot?.featuredRaids || [], featDungeons = rot?.featuredDungeons || [], gm = rot?.grandmasterNightfall;
   const hasFeatured = rotOn && (featRaids.length || featDungeons.length || gm);
   const countdown = resetCountdown(data.resetsAt);
-  const anyLive = xLive || eLive || a?.source === "live";
+  const anyLive = xLive || eLive || bLive || a?.source === "live";
   const week = data.weekOf ? new Date(data.weekOf).toLocaleDateString() : null;
 
   return (
@@ -1328,6 +1362,16 @@ function ThisWeekPanel({ data, onScan, onRefresh }) {
           </div>
         )}
       </WeekSection>
+
+      {bLive && bWeapons.length > 0 && (
+        <WeekSection
+          title={`Banshee-44 — Weapons · ${bWeapons.length}`}
+          color={C.blue}
+          collapsible
+        >
+          <BansheeSection weapons={bWeapons} location={b.location} onScan={onScan}/>
+        </WeekSection>
+      )}
 
       <WeekSection
         title={`Eververse — Tess Everis${eLive && inShop.length ? ` · ${inShop.length}` : ""}`}
