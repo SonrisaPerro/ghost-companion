@@ -50,11 +50,13 @@ An always-on-top Destiny 2 loot-farming overlay.
 - **To ship a change:** bump `version` in `package.json`, commit to `main`,
   `git tag -a vX.Y.Z && git push origin main --tags`, wait for green, publish the
   draft. Secrets must already exist before tagging (else a credential-less binary).
-- **Shipped:** `v1.0.0`–`v1.0.6` all live (published). **`v1.0.6` (2026-07-01) is
-  the current latest** = sustainable rotation pipeline (seed + auto-refresh),
-  notifier cache-efficiency, and the `releaseType:"release"` auto-publish flip.
-  `v1.0.5` (2026-07-01) = This Week concierge Stages 1–4 (rotations, Banshee-44,
-  notifier) + updated app `description`. `/releases/latest` resolves to v1.0.6.
+- **Shipped:** `v1.0.0`–`v1.0.7` all live (published). **`v1.0.7` (2026-07-01) is
+  the current latest** = live catalyst/pattern progress on item cards + "CHASE
+  WEAPONS HERE" rotation join (WEEK tab) + the Xûr schedule-window presence fix
+  (see the two dedicated sections below). `v1.0.6` = sustainable rotation pipeline
+  (seed + auto-refresh), notifier cache-efficiency, and the `releaseType:"release"`
+  auto-publish flip. `v1.0.5` = This Week concierge Stages 1–4. `/releases/latest`
+  resolves to v1.0.7 (auto-published; workflow run went green + not-draft, verified).
   Hand friends
   `github.com/SonrisaPerro/ghost-companion/releases/latest` → grab the Setup .exe →
   "More info → Run anyway" past SmartScreen (app is unsigned).
@@ -201,6 +203,32 @@ An always-on-top Destiny 2 loot-farming overlay.
   Destiny vendor and advisor data" scope or vendor reads 2108. Minting + error
   decoder documented in the `ghost_companion_bungie_oauth_architecture` memory.
 
+## Live progress + chase weapons (v1.0.7, 2026-07-01)
+- **Live catalyst & pattern progress (item cards):** on scan, the renderer reads
+  the player's **profile Records (component 900)** and shows real numbers instead
+  of a static "has a catalyst" note.
+  - **Foundation (`src/main/bungie-api.js`):** `getPlayerRecords(store,{force})`
+    fetches component 900 (profile + character records, best-progress wins),
+    in-memory **10-min cache**; `lookupRecords(hashes)` returns
+    `{objectives:[{objectiveHash,progress,completionValue,complete}],complete}`.
+    IPC `get-record-progress` (`index.js`) → preload `getRecordProgress`.
+  - **Manifest (`src/main/manifest.js`):** `resolveCatalyst()` now also emits
+    `recordHash` + per-objective `objectiveHash` (the join keys into 900).
+    `getPatternIndex()`/`resolvePattern(name)` = a lazily-built, **collision-free**
+    map (183 records, unique names, verified) of craftable **pattern** records —
+    a record named exactly the weapon whose objective progressDescription is
+    "Pattern progress" (target usually 5, or 1 for exotic-mission weapons).
+    `getWeaponPerks()` returns `{catalyst, pattern, intrinsic, columns}`.
+  - **UI (`WeaponPerksPanel` in `GhostCompanion.jsx`):** catalyst card shows live
+    `x/y` + bars + ✓ COMPLETE; a new purple **Craftable Pattern** card shows `x/5`
+    + bar / ✓ UNLOCKED. **Fail-safe:** logged-out/uncached falls back to the static
+    target + "sign in to track" — it never shows a wrong number.
+- **Chase weapons (Theme 2, WEEK tab):** pure client-side join (`featuredChaseItems`
+  in `GhostCompanion.jsx`) of the weekly featured raid/dungeon rotation to the drop
+  catalog by `location`; renders a **"CHASE WEAPONS HERE"** block grouped by activity
+  with **tracked items starred**. No server change (renderer already has both the
+  catalog and `weeklyData.rotations`).
+
 ## Architecture quick map
 - `src/main/index.js` — Electron main: creates the overlay window, tray, IPC,
   starts AutoTracker. **Window bounds now validated against connected displays
@@ -278,6 +306,16 @@ An always-on-top Destiny 2 loot-farming overlay.
    `source==='live' && xur.present` — never a stale "IN TOWN". (Removed: server
    `RITUALS`/`ACTIVITY_POOLS`/`rotation.js`; client `RitualsPanel`/`RitualRow`/
    `ritualState`/`toggleRitual`/`bumpRitual`.)
+   - **PRESENCE SCHEDULE-GATE (v1.0.7, 2026-07-01):** the `enabled` flag alone is
+     NOT sufficient — Bungie leaves it `true` and keeps serving Xûr's *last
+     appearance's* stock during his absence window, so the app showed "The Tower"
+     with full stock on a Wednesday when he isn't there. `resolveXur` now also
+     requires `isXurInWindow()` (`server/src/xur.js`): he's in-world **Fri 17:00 →
+     Tue 17:00 UTC** (arrives Fri daily reset, departs Tue weekly reset; resets are
+     DST-independent so a UTC day/hour gate is exact). `present = stock.present &&
+     isXurInWindow()`. The notifier reads the same `present`, so no false
+     "Xûr has arrived" on Wed/Thu. Location label corrected "near Ikora" → "The
+     Tower (Hangar)". Verified: live `/xur` flipped to `present:false` post-deploy.
 4. **Next-dev-batch plan (`tranquil-growing-peacock.md`) is BUILT + committed.**
    All three builds landed (the plan file is now historical):
    - Build 1 hide-to-tray + always-on-top **PIN** toggle — `7b75d41` (renderer
@@ -316,11 +354,12 @@ An always-on-top Destiny 2 loot-farming overlay.
      (`git push` → Railway) before the client library browser shows anything.
    **Reminder: shipping any client change now requires a new tagged release**
    (bump version → tag → publish draft).
-6. **All releases through v1.0.6 are published + live — nothing pending.** (This
+6. **All releases through v1.0.7 are published + live — nothing pending.** (This
    thread used to track publishing the v1.0.1 draft; that and every draft since
-   have been published, and v1.0.6 now auto-publishes.) No known open build work:
-   tray/pin, ornaments-on-card, data-packages, guide library, and the This Week
-   concierge (Stages 1–4) are all shipped. The only structural dead-end is #2
+   have been published, and v1.0.6+ auto-publish.) No known open build work:
+   tray/pin, ornaments-on-card, data-packages, guide library, the This Week
+   concierge (Stages 1–4), and the v1.0.7 live catalyst/pattern progress + chase
+   weapons + Xûr schedule-gate are all shipped. The only structural dead-end is #2
    (set-piece enumeration), which no data source can satisfy.
 
 ## SECURITY — do not slip on this
@@ -348,6 +387,12 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
+- **`v1.0.7`** (2026-07-01, live) — bump `8b773a3`/`006b379`, tag pushed, CI green +
+  auto-published. Contents: `6ae92cb` feat — live catalyst/pattern progress (profile
+  Records 900) + "CHASE WEAPONS HERE" rotation join; `8b773a3` fix(xur) — presence
+  gated on his Fri–Tue schedule window (+ "The Tower (Hangar)" label). Server fix
+  deployed to Railway (live `/xur` verified `present:false`); client features reach
+  users via this tagged release.
 - **`v1.0.6`** (2026-07-01, live) — sustainable rotation pipeline (seed +
   auto-refresh from Kyber's Corner behind 4 safety rails), notifier
   cache-efficiency (respects data-api's 1h cache; no 30-min force refetch), and
