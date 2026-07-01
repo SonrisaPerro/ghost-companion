@@ -1,12 +1,13 @@
 {
-  "schema": 1,
-  "note": "Weekly rotators the Bungie API does NOT expose (featured raid pair, featured dungeon pair, Grand Master Nightfall + its reward). These are community-tracked. This table holds EXPLICIT per-week entries keyed by the weekly-reset ISO (Tuesday 17:00 UTC) — no forward extrapolation. Add a week only when its values are verified. Upgrade path: once a verified ordered-list + anchor is available, swap the lookup for modular arithmetic in rotations.js without changing the /weekly contract.",
+  "schema": 2,
+  "note": "Weekly rotators the Bungie API does NOT expose (featured raid pair, featured dungeon pair, weekly Grandmaster Alert + its weapon). Community-tracked. This file is the SEED layer: hand-verified per-week entries keyed by the weekly-reset ISO (Tuesday 17:00 UTC), verified:true, source:'seed'. For a current week that is NOT seeded here, rotations.js auto-fetches raids/dungeons from a vetted source (see rotations-source.js) and caches them in-memory (verified:false, source:'kyberscorner'). No forward extrapolation — unseeded/unfetched weeks resolve to source:'unknown' and the UI hides the card. GM Alert weapon has no stable source page, so it only appears for hand-seeded weeks. To pin a week: run `node scripts/refresh-rotations.mjs --write` (fills raids/dungeons) and add the grandmasterAlert by hand.",
   "weeks": {
     "2026-06-30T17:00:00.000Z": {
       "verified": true,
+      "source": "seed",
       "featuredRaids": ["Crota's End", "Vault of Glass"],
       "featuredDungeons": ["Warlord's Ruin", "Grasp of Avarice"],
-      "grandmasterNightfall": { "activity": "The Sunless Cell", "weapon": "Null Composure" }
+      "grandmasterAlert": { "activity": "The Sunless Cell", "weapon": "Null Composure" }
     }
   }
 }

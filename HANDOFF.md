@@ -36,12 +36,25 @@ An always-on-top Destiny 2 loot-farming overlay.
   to a GitHub Release.
 - **⚠️ GOTCHA — electron-builder publishes the release as a DRAFT.** After the
   Actions run goes green you MUST go to the Releases page and **publish the draft**,
-  or the friend can't download it and auto-update won't see it.
+  or the friend can't download it and auto-update won't see it. Confirmed
+  2026-07-01: `npm run release` = `electron-builder --publish always` with **no
+  `releaseType` set**, so it uses electron-builder's default (`draft`). To make the
+  pipeline publish directly, add `"releaseType": "release"` under `build.publish`
+  in `package.json`.
+- **⚠️ VERIFICATION TRAP — the unauthenticated GitHub releases API only returns
+  PUBLISHED releases; drafts are invisible without a token.** So a `curl` of
+  `/releases` that shows every version "published" is NOT evidence the pipeline
+  auto-publishes — you're only seeing the ones already published by hand. Don't
+  conclude "auto-publish" from that call. To check draft state, use an
+  authenticated request (`gh`/PAT) or the Releases page in the browser.
 - **To ship a change:** bump `version` in `package.json`, commit to `main`,
   `git tag -a vX.Y.Z && git push origin main --tags`, wait for green, publish the
   draft. Secrets must already exist before tagging (else a credential-less binary).
-- **Shipped:** `v1.0.0` (live), `v1.0.1` (SmileCo installer branding — in progress
-  / publish the draft when green).
+- **Shipped:** `v1.0.0`–`v1.0.5` all live (published). `v1.0.5` (2026-07-01) =
+  This Week concierge Stages 1–4 (rotations, Banshee-44, notifier) + updated app
+  `description`. `/releases/latest` resolves to it. Hand friends
+  `github.com/SonrisaPerro/ghost-companion/releases/latest` → grab the Setup .exe →
+  "More info → Run anyway" past SmartScreen (app is unsigned).
 - **SmileCo branding (v1.0.1):** `build.win.publisherName:"SmileCo"` +
   `build.copyright` + `nsis.uninstallDisplayName` → "SmileCo" shows in File
   Properties (Company/Copyright), the UAC prompt, and Add/Remove Programs. It does
@@ -127,20 +140,33 @@ An always-on-top Destiny 2 loot-farming overlay.
   - **Activities** (`resolveActivities`, `src/milestones.js`) — raids/dungeons from
     the PUBLIC milestones (API-key only, no OAuth). Lists which raids are *available*
     + reset end time; the public API does NOT expose *featured/farmable*.
-- **Stage 2 (deterministic rotations — `src/rotations.js` + `data/rotations.json`):**
-  the featured raid pair, featured dungeon pair, and GM Nightfall (+reward) are NOT
-  in any Bungie endpoint. `resolveRotations()` reads an **explicit per-week lookup
-  table** keyed by weekly-reset ISO (Tue 17:00 UTC) — deliberately **no forward
-  extrapolation** until a verified community ordered-list exists (honest-over-clever:
-  a fabricated ordering looks right for one week then silently drifts). Returns
-  `source:'computed'` for entered weeks, `'unknown'` otherwise. Folded into `/weekly`
-  as `rotations`; WEEK tab shows a **"Featured · Farmable This Week"** section
-  (`FeaturedRow` chips + GM line), self-hiding when unknown. **7 node:test cases**
-  (`server/scripts/rotations.test.mjs`, `node --test`) pin the 2026-06-30 ground
-  truth (Crota's End + Vault of Glass / Warlord's Ruin + Grasp of Avarice / Sunless
-  Cell → Null Composure) incl. reset-boundary math. Verified live on Railway.
-  - **To add a week:** append an entry to `server/data/rotations.json` (verify the
-    values first), `git push` → Railway. No code change.
+- **Stage 2 (rotations — `src/rotations.js` + `src/rotations-source.js` +
+  `data/rotations.json`):** the featured raid pair, featured dungeon pair, and weekly
+  **Grandmaster Alert** (post-Edge-of-Fate name for the old "GM Nightfall"; see below)
+  are NOT in any Bungie endpoint. **Two honest layers, no forward extrapolation:**
+  - **SEED** — hand-verified per-week entries in `data/rotations.json` (schema 2),
+    keyed by weekly-reset ISO (Tue 17:00 UTC), `verified:true`, `source:"seed"`.
+    Take precedence over fetched data.
+  - **AUTO-REFRESH (2026-07-01, #7)** — for a current week NOT seeded, `ensureRotations()`
+    fetches raids/dungeons **once** from a **vetted community source** (Kyber's Corner
+    stable page, `rotations-source.js`) and caches in-memory (`verified:false`,
+    `source:"kyberscorner"`). Coalesced + 30-min negative cache. **Four safety rails**
+    so a scrape only ever ADDS data, never wrong data: stable URL; **gate on the page's
+    `article:modified_time` ≥ this week's reset** (Kyber's updates the featured titles
+    but leaves the visible date text STALE, so trust the freshness metadata, not the
+    on-page date); scraped titles must match known raid/dungeon POOLS; require ≥1 of
+    each. Any failure → `source:'unknown'` → WEEK tab hides the card.
+  - **No modular extrapolation** — verified no source publishes a full ordered cycle
+    (Shacknews stale; Blueberries 403s bots; Kyber's dedicated pages show only the
+    current week). Extrapolating would be plausible-but-unprovable, so we don't.
+  - `resolveRotations()` = sync read of current known state; `ensureRotations()` =
+    async (fetch-if-missing) used by `/weekly`. **12 node:test cases** pin the
+    2026-06-30 seed ground truth + the parser rails (fixture-based, no network).
+  - **GM Alert weapon** has no stable source page → only present for hand-seeded weeks.
+  - **Refresh weeks:** `node scripts/refresh-rotations.mjs [--write] [--week ISO]`
+    (dry-run prints, `--write` upserts raids/dungeons; add `grandmasterAlert` by hand;
+    refuses to overwrite a `verified` seed). Or just let the runtime auto-refresh fill
+    it. `?force=1` on `/weekly` also reloads `rotations.json`.
 - **Stage 3 (live Banshee-44 — `src/banshee.js` + `/banshee`):** Banshee's weekly
   legendary weapon rotation (buyable = targetable). `resolveBanshee()` reuses the
   verified `getVendorSales` path (vendor hash **672118013**, confirmed offline via
@@ -162,6 +188,10 @@ An always-on-top Destiny 2 loot-farming overlay.
   **Lost Sector intentionally uncovered** — no API source post-Edge-of-Fate (same
   finding as the GM probe). Existing coverage unchanged (Eververse ornament, Xûr
   tracked item, Tuesday reset). Main-process change → needs a `npm run dev` restart.
+  - **Efficiency (2026-07-01, #9):** the vendor checks no longer pass `{force:true}`
+    — they respect data-api's 1h cache, so a 30-min poll is a cache hit every other
+    tick and piggybacks on UI fetches (weekly/daily rotations never miss an alert in
+    an hour). Stops each install hammering Railway every 30 min.
 - **OAuth is now TWO apps (hard-won):** desktop = PUBLIC client 53408 (no refresh
   token). The Railway server uses a SEPARATE **CONFIDENTIAL** app (client_id +
   secret + refresh_token + api_key, all same app) that MUST have the "Read your

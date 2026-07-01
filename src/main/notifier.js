@@ -90,14 +90,21 @@ export class Notifier {
     return new Set(fresh)
   }
 
-  /** Cross-references tracked ornaments/items against the live vendor payloads. */
+  /**
+   * Cross-references tracked ornaments/items against the live vendor payloads.
+   * These reads intentionally do NOT force a refetch: data-api caches each vendor
+   * for 1h, so on a 30-min poll every other tick is a cache hit (no network), and
+   * we also piggyback on any fetch the UI already made. Vendor rotations are
+   * weekly/daily, so an hour of staleness never misses an alert — and this keeps
+   * us from hammering Railway once per install every 30 minutes.
+   */
   async checkVendors() {
     if (!this.enabled()) return
 
     // --- Eververse: tracked ornaments for sale right now ---------------------
     const trackedOrnaments = this.store.get('trackedOrnaments') || []
     if (trackedOrnaments.length) {
-      const evv = await dataApi.getEververse(this.store, { force: true })
+      const evv = await dataApi.getEververse(this.store)
       if (evv?.source === 'live') {
         const onSale = new Set([
           ...(evv.shopSales || []).map((s) => s.itemHash),
@@ -119,7 +126,7 @@ export class Notifier {
 
     // --- Xûr: arrival + tracked items in his weekly stock --------------------
     const trackedItems = this.store.get('tracking.items') || []
-    const xd = await dataApi.getXur(this.store, { force: true })
+    const xd = await dataApi.getXur(this.store)
     if (xd?.source === 'live' && xd.xur?.present) {
       const week = xd.weekOf || ''
 
@@ -149,7 +156,7 @@ export class Notifier {
 
     // --- Banshee-44: tracked item in his weekly weapon rotation --------------
     if (trackedItems.length) {
-      const bd = await dataApi.getBanshee(this.store, { force: true })
+      const bd = await dataApi.getBanshee(this.store)
       if (bd?.source === 'live' && bd.present) {
         const stockByHash = new Map((bd.weapons || []).map((w) => [Number(w.itemHash), w]))
         const week = bd.weekOf || new Date().toISOString().slice(0, 10)

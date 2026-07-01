@@ -1335,7 +1335,7 @@ function ThisWeekPanel({ data, onScan, onRefresh }) {
   const b = data.banshee, bLive = b?.source === "live", bWeapons = b?.weapons || [];
   const a = data.activities, raids = a?.raids || [], dungeons = a?.dungeons || [];
   const rot = data.rotations, rotOn = rot?.source === "computed";
-  const featRaids = rot?.featuredRaids || [], featDungeons = rot?.featuredDungeons || [], gm = rot?.grandmasterNightfall;
+  const featRaids = rot?.featuredRaids || [], featDungeons = rot?.featuredDungeons || [], gm = rot?.grandmasterAlert || rot?.grandmasterNightfall;
   const hasFeatured = rotOn && (featRaids.length || featDungeons.length || gm);
   const countdown = resetCountdown(data.resetsAt);
   const anyLive = xLive || eLive || bLive || a?.source === "live";
@@ -1416,7 +1416,7 @@ function ThisWeekPanel({ data, onScan, onRefresh }) {
           {featDungeons.length > 0 && <FeaturedRow label="Dungeons" items={featDungeons}/>}
           {gm && (
             <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap", gap:6, marginTop:featRaids.length||featDungeons.length ? 8 : 0 }}>
-              <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, color:C.sub, letterSpacing:"0.06em", minWidth:58 }}>GM NIGHTFALL</span>
+              <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, color:C.sub, letterSpacing:"0.06em", minWidth:58 }}>GM ALERT</span>
               <div style={{ display:"flex", alignItems:"center", gap:5, border:`1px solid ${C.greenLo}`,
                 background:C.panelAlt, padding:"3px 7px", fontFamily:"'Barlow Condensed',sans-serif",
                 fontSize:11, color:C.text, letterSpacing:"0.03em" }}>

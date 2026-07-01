@@ -26,7 +26,7 @@ import { resolveMonument } from './src/monument.js'
 import { resolveEververse } from './src/eververse.js'
 import { resolveActivities } from './src/milestones.js'
 import { resolveBanshee } from './src/banshee.js'
-import { resolveRotations, loadRotations } from './src/rotations.js'
+import { ensureRotations, loadRotations } from './src/rotations.js'
 import { lastResetISO } from './src/config.js'
 import { loadGuides, getGuidesIndex, getGuidePackage } from './src/guides.js'
 
@@ -202,11 +202,12 @@ function trimEververse(evv) {
 // sub-source carries its own `source` flag so the client live-gates per section.
 async function getWeekly(force = false) {
   if (force) loadRotations() // let rotations.json edits take effect without a redeploy
-  const [xur, eververse, activities, banshee] = await Promise.all([
+  const [xur, eververse, activities, banshee, rotations] = await Promise.all([
     getXur(force),
     getEververse(force),
     getActivities(force),
-    getBanshee(force)
+    getBanshee(force),
+    ensureRotations() // seed table, else one validated fetch from the vetted source
   ])
   return {
     weekOf: lastResetISO(),
@@ -216,7 +217,7 @@ async function getWeekly(force = false) {
     eververse: trimEververse(eververse),
     activities,
     banshee: trimBanshee(banshee),
-    rotations: resolveRotations()
+    rotations
   }
 }
 
