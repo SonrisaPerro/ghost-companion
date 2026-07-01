@@ -115,7 +115,7 @@ An always-on-top Destiny 2 loot-farming overlay.
   weapon's paths entry — none of the curated weapons surfaced any (all their ornaments
   are Eververse), so nothing static was added.
 
-## This Week concierge (`/weekly`) — Stages 1–2 (2026-06-30)
+## This Week concierge (`/weekly`) — Stages 1–4 (2026-06-30)
 - **What:** one-fetch Tower concierge aggregating everything a player checks each
   reset. Client **WEEK tab** (`ThisWeekPanel` in `GhostCompanion.jsx`) renders it.
   Server `getWeekly()` in `server/index.js` composes sub-sources; 15-min edge cache,
@@ -141,6 +141,27 @@ An always-on-top Destiny 2 loot-farming overlay.
   Cell → Null Composure) incl. reset-boundary math. Verified live on Railway.
   - **To add a week:** append an entry to `server/data/rotations.json` (verify the
     values first), `git push` → Railway. No code change.
+- **Stage 3 (live Banshee-44 — `src/banshee.js` + `/banshee`):** Banshee's weekly
+  legendary weapon rotation (buyable = targetable). `resolveBanshee()` reuses the
+  verified `getVendorSales` path (vendor hash **672118013**, confirmed offline via
+  `scripts/probe-vendors.mjs`), filters sales to Legendary/Exotic weapons,
+  exotics-first. Folded into `/weekly` as `banshee`; WEEK tab has a collapsible blue
+  **BansheeSection** (each weapon scannable). **Verified live** (6 weapons:
+  Compass Rose, Indebted Kindness, Multimach CCX, Rose, The Hothead Adept, VS Chill
+  Inhibitor). Needs the confidential token (per-character vendor read) → verify by
+  curling the deployed Railway endpoint, not locally.
+  - **GM Nightfall reward — PROBED, dead end:** no Bungie endpoint exposes the weekly
+    featured GM reward. Static activity defs carry only generic engram/tier rewards
+    (467 nightfall-named defs share the same reward hashes); public milestones omit
+    GM entirely. So it lives in the `rotations.json` table (Stage 2), not an API read.
+  - **Ada-1 (350061650) left out:** sells shaders/transmog (Material Exchange) —
+    cosmetic, out of scope for a loot overlay. Hash is known if ever wanted.
+- **Stage 4 (notifier — `src/main/notifier.js`):** added **"Xûr has arrived"** (once
+  per weekly visit, deduped by `weekOf`, independent of tracked items) and a
+  **Banshee tracked-weapon** alert (tracked items vs `dataApi.getBanshee()`). Daily
+  **Lost Sector intentionally uncovered** — no API source post-Edge-of-Fate (same
+  finding as the GM probe). Existing coverage unchanged (Eververse ornament, Xûr
+  tracked item, Tuesday reset). Main-process change → needs a `npm run dev` restart.
 - **OAuth is now TWO apps (hard-won):** desktop = PUBLIC client 53408 (no refresh
   token). The Railway server uses a SEPARATE **CONFIDENTIAL** app (client_id +
   secret + refresh_token + api_key, all same app) that MUST have the "Read your
@@ -290,11 +311,16 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
-- _(this session, 2026-06-30)_ — **This Week concierge Stages 1–2.** `/weekly`
-  aggregator (Xûr + Eververse + activities + rotations); collapsible Eververse list;
-  window-sizing fix (width 460, capped default height, wrapping header); **Stage 2**
-  deterministic rotation resolver + table + 7 tests + WEEK-tab Featured section
-  (`d4d8256`). All deployed + verified live on Railway.
+- _(this session, 2026-06-30)_ — **This Week concierge Stages 1–4.** `/weekly`
+  aggregator; collapsible Eververse list; window-sizing fix (width 460, capped
+  default height, wrapping header); **Stage 2** rotation resolver + table + 7 tests
+  + Featured section (`d4d8256`); **Stage 3** live Banshee-44 weapons (`/banshee`,
+  `9542d08`) + WEEK-tab section (`871d3f0`) + GM-reward dead-end finding; **Stage 4**
+  notifier Xûr-arrived + Banshee tracked-weapon alerts (`e4333b4`). Server pieces
+  deployed + verified live on Railway. **Client changes since v1.0.x are NOT yet
+  released** — user chose to hold the tag (would be v1.0.5) and batch a single
+  release. Cut it with: bump `package.json` → `git tag -a v1.0.5` → push → publish
+  the draft.
 - **`v1.0.1`** — brand Windows installer as **SmileCo** (`build.win.publisherName`,
   `copyright`, `nsis.uninstallDisplayName`); version bump. Release workflow.
 - **`v1.0.0`** — first distributed release. Public Bungie OAuth client + regenerated
