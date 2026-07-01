@@ -6,7 +6,8 @@
 //   GET /xur       — Xûr's live weekly exotic stock + presence (cached)
 //   GET /monument  — Monument to Lost Lights exotic archive catalog (cached)
 //   GET /eververse — tracked weapon ornaments currently for sale in Eververse (cached)
-//   GET /weekly    — Tower concierge: Xûr + Eververse + this week's raid slate (cached)
+//   GET /banshee   — Banshee-44's live weekly weapon stock (cached)
+//   GET /weekly    — Tower concierge: Xûr + Eververse + Banshee + raids + rotations (cached)
 //   GET /paths     — community acquisition-path data (read-only)
 //   GET /guides     — community guide-package library index (read-only)
 //   GET /guides/:id — one full guide package from the library
@@ -24,6 +25,7 @@ import { resolveXur } from './src/xur.js'
 import { resolveMonument } from './src/monument.js'
 import { resolveEververse } from './src/eververse.js'
 import { resolveActivities } from './src/milestones.js'
+import { resolveBanshee } from './src/banshee.js'
 import { resolveRotations, loadRotations } from './src/rotations.js'
 import { lastResetISO } from './src/config.js'
 import { loadGuides, getGuidesIndex, getGuidePackage } from './src/guides.js'
@@ -145,6 +147,41 @@ async function getActivities(force = false) {
   return activitiesCache && !force ? activitiesCache : activitiesInFlight
 }
 
+// --- /banshee : cached live weapon stock -----------------------------------
+// Banshee's weekly weapon rotation changes at the weekly reset, so an hourly TTL
+// is generous; ?force=1 re-reads on demand.
+const BANSHEE_TTL_MS = 60 * 60 * 1000
+let bansheeCache = null
+let bansheeAt = 0
+let bansheeInFlight = null
+
+async function getBanshee(force = false) {
+  const fresh = Date.now() - bansheeAt < BANSHEE_TTL_MS
+  if (!force && bansheeCache && fresh) return bansheeCache
+  if (bansheeInFlight) return bansheeInFlight
+  bansheeInFlight = resolveBanshee()
+    .then((r) => {
+      bansheeCache = r
+      bansheeAt = Date.now()
+      return r
+    })
+    .finally(() => {
+      bansheeInFlight = null
+    })
+  return bansheeCache && !force ? bansheeCache : bansheeInFlight
+}
+
+// Compact Banshee view for the weekly concierge: presence + weapon list only.
+function trimBanshee(b) {
+  if (!b) return { source: 'fallback' }
+  return {
+    source: b.source,
+    present: b.present || false,
+    location: b.location || null,
+    weapons: b.weapons || []
+  }
+}
+
 // Compact Eververse view for the weekly concierge: just presence + the tracked
 // ornaments that are buyable right now (drops the heavy ~224-item shopSales[] /
 // diagnostics, which the dedicated /eververse endpoint still serves in full).
@@ -165,10 +202,11 @@ function trimEververse(evv) {
 // sub-source carries its own `source` flag so the client live-gates per section.
 async function getWeekly(force = false) {
   if (force) loadRotations() // let rotations.json edits take effect without a redeploy
-  const [xur, eververse, activities] = await Promise.all([
+  const [xur, eververse, activities, banshee] = await Promise.all([
     getXur(force),
     getEververse(force),
-    getActivities(force)
+    getActivities(force),
+    getBanshee(force)
   ])
   return {
     weekOf: lastResetISO(),
@@ -177,6 +215,7 @@ async function getWeekly(force = false) {
     xur,
     eververse: trimEververse(eververse),
     activities,
+    banshee: trimBanshee(banshee),
     rotations: resolveRotations()
   }
 }
@@ -189,6 +228,7 @@ app.get('/health', (_req, res) => {
     monumentCachedAt: monumentAt || null,
     eververseCachedAt: eververseAt || null,
     activitiesCachedAt: activitiesAt || null,
+    bansheeCachedAt: bansheeAt || null,
     guidePackages: guidesCount
   })
 })
@@ -216,6 +256,16 @@ app.get('/monument', async (req, res) => {
 app.get('/eververse', async (req, res) => {
   try {
     const data = await getEververse(req.query.force === '1')
+    res.set('Cache-Control', 'public, max-age=900') // 15 min edge cache
+    res.json(data)
+  } catch (e) {
+    res.status(502).json({ error: e.message })
+  }
+})
+
+app.get('/banshee', async (req, res) => {
+  try {
+    const data = await getBanshee(req.query.force === '1')
     res.set('Cache-Control', 'public, max-age=900') // 15 min edge cache
     res.json(data)
   } catch (e) {
@@ -261,7 +311,7 @@ app.get('/guides/:id', (req, res) => {
 app.get('/', (_req, res) => {
   res.json({
     service: 'ghost-companion-data-api',
-    endpoints: ['/health', '/xur', '/monument', '/eververse', '/weekly', '/paths', '/guides', '/guides/:id']
+    endpoints: ['/health', '/xur', '/monument', '/eververse', '/banshee', '/weekly', '/paths', '/guides', '/guides/:id']
   })
 })
 

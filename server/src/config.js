@@ -35,6 +35,13 @@ export const MONUMENT_VENDOR_HASH = 4230408743
 // isn't otherwise queryable from the Manifest.
 export const EVERVERSE_VENDOR_HASHES = [3361454721, 3790213143, 788270413]
 
+// Banshee-44 — Gunsmith (Tower). His weapon stock includes a weekly-rotating set
+// of legendary weapons you can just buy — a genuinely targetable "go grab this"
+// concierge item. Hash confirmed offline from the live Manifest's
+// DestinyVendorDefinition (the `enabled:true` Banshee row) via probe-vendors.mjs;
+// the other Banshee rows (4161623890 / 307884248) are disabled legacy/quest vendors.
+export const BANSHEE_VENDOR_HASH = 672118013
+
 /** ISO timestamp of the most recent weekly reset (Tuesday 17:00 UTC). */
 export function lastResetISO(now = new Date()) {
   const d = new Date(now)
