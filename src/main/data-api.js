@@ -16,6 +16,7 @@ const cache = {
   xur: null, xurAt: 0,
   paths: null, pathsAt: 0,
   eververse: null, eververseAt: 0,
+  banshee: null, bansheeAt: 0,
   weekly: null, weeklyAt: 0,
   guides: null, guidesAt: 0
 }
@@ -65,6 +66,25 @@ export async function getEververse(store, { force = false } = {}) {
     if (!cache.eververse) return null // nothing cached to fall back on
   }
   return cache.eververse
+}
+
+/**
+ * Returns the cached Banshee-44 payload, fetching if stale. Shape mirrors the
+ * server's /banshee: { source, present, location, weapons[] }. null if no URL /
+ * unreachable.
+ */
+export async function getBanshee(store, { force = false } = {}) {
+  const url = baseUrl(store)
+  if (!url) return null
+  if (!force && cache.banshee && Date.now() - cache.bansheeAt < TTL_MS) return cache.banshee
+  try {
+    cache.banshee = await getJson(`${url}/banshee`)
+    cache.bansheeAt = Date.now()
+  } catch (err) {
+    console.error('[data-api] banshee fetch failed:', err.message)
+    if (!cache.banshee) return null // nothing cached to fall back on
+  }
+  return cache.banshee
 }
 
 /**

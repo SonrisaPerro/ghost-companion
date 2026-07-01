@@ -2,8 +2,12 @@
 // notifier.js — desktop notifications
 // Turns the data the app already fetches into push alerts:
 //   • a tracked Eververse ornament rotating into Tess Everis' shop,
+//   • Xûr arriving in town (once per weekly visit), regardless of tracked items,
 //   • a tracked item showing up in Xûr's weekly stock,
+//   • a tracked item in Banshee-44's weekly weapon rotation,
 //   • the Tuesday weekly reset.
+// (The daily Lost Sector is intentionally NOT covered: post-Edge-of-Fate no
+//  Bungie endpoint exposes it, so there's nothing authoritative to poll.)
 // All vendor data comes from the public Railway data API (no Bungie auth), so
 // the notifier runs independently of login. Everything is gated by the user's
 // `notificationsEnabled` preference and de-duplicated so a given rotation only
@@ -113,14 +117,23 @@ export class Notifier {
       }
     }
 
-    // --- Xûr: tracked items in his weekly stock ------------------------------
+    // --- Xûr: arrival + tracked items in his weekly stock --------------------
     const trackedItems = this.store.get('tracking.items') || []
-    if (trackedItems.length) {
-      const xd = await dataApi.getXur(this.store, { force: true })
-      if (xd?.source === 'live' && xd.xur?.present) {
+    const xd = await dataApi.getXur(this.store, { force: true })
+    if (xd?.source === 'live' && xd.xur?.present) {
+      const week = xd.weekOf || ''
+
+      // "Xûr has arrived" — fire once per weekly visit, independent of tracking.
+      // He arrives Friday and stays until the Tuesday reset, so one alert per
+      // weekOf is exactly one per visit.
+      if (this.filterUnsent([`xur-arrived:${week}`]).has(`xur-arrived:${week}`)) {
+        const loc = xd.xur.location ? ` (${xd.xur.location})` : ''
+        this.notify('Xûr has arrived', `Xûr is in town this weekend${loc}. Check his exotic stock.`)
+      }
+
+      if (trackedItems.length) {
         const stock = [...(xd.xur.weapons || []), ...(xd.xur.armor || [])]
         const stockByHash = new Map(stock.map((s) => [Number(s.itemHash), s]))
-        const week = xd.weekOf || ''
         const hits = trackedItems.filter((t) => stockByHash.has(Number(t.itemHash)))
         const fresh = this.filterUnsent(hits.map((h) => `xur:${week}:${h.itemHash}`))
         for (const h of hits) {
@@ -128,6 +141,25 @@ export class Notifier {
           const s = stockByHash.get(Number(h.itemHash))
           const name = h.name || s?.name || 'A tracked item'
           this.notify('Xûr has a tracked item', `${name} is in Xûr's stock this week.`, {
+            scan: name
+          })
+        }
+      }
+    }
+
+    // --- Banshee-44: tracked item in his weekly weapon rotation --------------
+    if (trackedItems.length) {
+      const bd = await dataApi.getBanshee(this.store, { force: true })
+      if (bd?.source === 'live' && bd.present) {
+        const stockByHash = new Map((bd.weapons || []).map((w) => [Number(w.itemHash), w]))
+        const week = bd.weekOf || new Date().toISOString().slice(0, 10)
+        const hits = trackedItems.filter((t) => stockByHash.has(Number(t.itemHash)))
+        const fresh = this.filterUnsent(hits.map((h) => `banshee:${week}:${h.itemHash}`))
+        for (const h of hits) {
+          if (!fresh.has(`banshee:${week}:${h.itemHash}`)) continue
+          const s = stockByHash.get(Number(h.itemHash))
+          const name = h.name || s?.name || 'A tracked item'
+          this.notify('Banshee-44 has a tracked weapon', `${name} is for sale at Banshee-44 this week.`, {
             scan: name
           })
         }
