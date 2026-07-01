@@ -1245,11 +1245,25 @@ function resetCountdown(iso) {
   return `${m}M`;
 }
 
-function WeekSection({ title, color, children }) {
+function WeekSection({ title, color, children, collapsible = false, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
+  if (!collapsible) {
+    return (
+      <div style={{ marginBottom:13 }}>
+        <Lbl color={color} mb={6}>{title}</Lbl>
+        {children}
+      </div>
+    );
+  }
   return (
     <div style={{ marginBottom:13 }}>
-      <Lbl color={color} mb={6}>{title}</Lbl>
-      {children}
+      <div onClick={() => setOpen(o => !o)} title={open ? "Collapse" : "Expand"}
+        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8,
+          cursor:"pointer", userSelect:"none", marginBottom: open ? 6 : 0 }}>
+        <Lbl color={color} mb={0}>{title}</Lbl>
+        <span style={{ color, fontSize:11, fontFamily:"'Barlow Condensed',sans-serif", flexShrink:0 }}>{open ? "▲" : "▼"}</span>
+      </div>
+      {open && children}
     </div>
   );
 }
@@ -1295,7 +1309,11 @@ function ThisWeekPanel({ data, onScan, onRefresh }) {
         )}
       </WeekSection>
 
-      <WeekSection title="Eververse — Tess Everis" color={C.purple}>
+      <WeekSection
+        title={`Eververse — Tess Everis${eLive && inShop.length ? ` · ${inShop.length}` : ""}`}
+        color={C.purple}
+        collapsible={eLive && inShop.length > 0}
+      >
         {eLive && inShop.length ? (
           <EververseSection items={inShop} onScan={onScan}/>
         ) : (
