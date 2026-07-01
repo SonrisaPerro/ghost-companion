@@ -23,6 +23,33 @@ import { XUR_VENDOR_HASHES, lastResetISO } from './config.js'
 import { classifyGear, shapeItem } from './gear.js'
 
 /**
+ * Is Xûr physically in-world right now? He arrives at the Friday daily reset
+ * (17:00 UTC) and departs at the Tuesday weekly reset (17:00 UTC), so he's gone
+ * Tue 17:00 → Fri 17:00 (i.e. Tue-afternoon, all Wed, all Thu, Fri-morning).
+ *
+ * We need this because Bungie's Vendors `enabled` flag is NOT a reliable presence
+ * signal during his absence window — it stays true and keeps serving his last
+ * appearance's stock even though he isn't standing in the Tower. Resets are fixed
+ * at 17:00 UTC year-round (DST-independent), so a UTC day/hour gate is exact.
+ */
+export function isXurInWindow(now = new Date()) {
+  const day = now.getUTCDay() // 0 Sun … 6 Sat
+  const hour = now.getUTCHours()
+  switch (day) {
+    case 6: // Sat
+    case 0: // Sun
+    case 1: // Mon
+      return true
+    case 5: // Fri — arrives at the 17:00 UTC daily reset
+      return hour >= 17
+    case 2: // Tue — departs at the 17:00 UTC weekly reset
+      return hour < 17
+    default: // Wed (3), Thu (4)
+      return false
+  }
+}
+
+/**
  * Reads Xûr's live state across all his vendor screens and splits out the exotic
  * weapons/armor he's selling. Presence comes from the Vendors `enabled` flag (via
  * getVendorState), NOT from "did any item come back". Exotic-only (engrams,
@@ -79,16 +106,19 @@ export async function resolveXur() {
     source: 'fallback',
     // Xûr's weekly exotic stock. present is only ever true on an authoritative,
     // live read (source:'live'); on 'fallback' the UI must not assert presence.
-    xur: { label: 'Xûr', location: 'The Tower (near Ikora)', present: false, weapons: [], armor: [] }
+    xur: { label: 'Xûr', location: 'The Tower (Hangar)', present: false, weapons: [], armor: [] }
   }
 
   try {
     const { access_token } = await refreshAccessToken()
     const character = await getPrimaryCharacter(access_token)
     const stock = await xurStock(access_token, character)
+    // Presence requires BOTH an authoritative in-stock read AND his physical
+    // schedule window — Bungie's `enabled` flag keeps serving last appearance's
+    // stock after he's left (Tue 17:00 → Fri 17:00 UTC), so gate on the window too.
     result.xur = {
       ...result.xur,
-      present: stock.present,
+      present: stock.present && isXurInWindow(),
       weapons: stock.weapons,
       armor: stock.armor
     }
