@@ -1474,7 +1474,7 @@ function ThisWeekPanel({ data, onScan, onRefresh, trackedNames }) {
             <div style={{ marginTop:10, paddingTop:9, borderTop:`1px solid ${C.greenLo}` }}>
               <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:5 }}>
                 <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, color:C.green,
-                  letterSpacing:"0.08em" }}>CHASE WEAPONS HERE</span>
+                  letterSpacing:"0.08em" }}>CHASE WEAPONS</span>
                 {trackedChaseCount > 0 && <Badge label={`${trackedChaseCount} TRACKED`} color={C.gold} bg={C.goldLo}/>}
               </div>
               {chaseGroups.map(g => (
