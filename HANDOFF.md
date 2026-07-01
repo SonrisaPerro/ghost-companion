@@ -115,6 +115,38 @@ An always-on-top Destiny 2 loot-farming overlay.
   weapon's paths entry — none of the curated weapons surfaced any (all their ornaments
   are Eververse), so nothing static was added.
 
+## This Week concierge (`/weekly`) — Stages 1–2 (2026-06-30)
+- **What:** one-fetch Tower concierge aggregating everything a player checks each
+  reset. Client **WEEK tab** (`ThisWeekPanel` in `GhostCompanion.jsx`) renders it.
+  Server `getWeekly()` in `server/index.js` composes sub-sources; 15-min edge cache,
+  `?force=1` bypasses (and reloads `rotations.json`).
+- **Stage 1 (live API sources), each self-gated by its own `source` flag:**
+  - **Xûr** (`/xur` resolver) — live stock + presence.
+  - **Eververse** (`trimEververse` of `/eververse`) — tracked ornaments in shop.
+    WEEK-tab list is **collapsible** (`WeekSection collapsible`), count in header.
+  - **Activities** (`resolveActivities`, `src/milestones.js`) — raids/dungeons from
+    the PUBLIC milestones (API-key only, no OAuth). Lists which raids are *available*
+    + reset end time; the public API does NOT expose *featured/farmable*.
+- **Stage 2 (deterministic rotations — `src/rotations.js` + `data/rotations.json`):**
+  the featured raid pair, featured dungeon pair, and GM Nightfall (+reward) are NOT
+  in any Bungie endpoint. `resolveRotations()` reads an **explicit per-week lookup
+  table** keyed by weekly-reset ISO (Tue 17:00 UTC) — deliberately **no forward
+  extrapolation** until a verified community ordered-list exists (honest-over-clever:
+  a fabricated ordering looks right for one week then silently drifts). Returns
+  `source:'computed'` for entered weeks, `'unknown'` otherwise. Folded into `/weekly`
+  as `rotations`; WEEK tab shows a **"Featured · Farmable This Week"** section
+  (`FeaturedRow` chips + GM line), self-hiding when unknown. **7 node:test cases**
+  (`server/scripts/rotations.test.mjs`, `node --test`) pin the 2026-06-30 ground
+  truth (Crota's End + Vault of Glass / Warlord's Ruin + Grasp of Avarice / Sunless
+  Cell → Null Composure) incl. reset-boundary math. Verified live on Railway.
+  - **To add a week:** append an entry to `server/data/rotations.json` (verify the
+    values first), `git push` → Railway. No code change.
+- **OAuth is now TWO apps (hard-won):** desktop = PUBLIC client 53408 (no refresh
+  token). The Railway server uses a SEPARATE **CONFIDENTIAL** app (client_id +
+  secret + refresh_token + api_key, all same app) that MUST have the "Read your
+  Destiny vendor and advisor data" scope or vendor reads 2108. Minting + error
+  decoder documented in the `ghost_companion_bungie_oauth_architecture` memory.
+
 ## Architecture quick map
 - `src/main/index.js` — Electron main: creates the overlay window, tray, IPC,
   starts AutoTracker. **Window bounds now validated against connected displays
@@ -258,6 +290,11 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
+- _(this session, 2026-06-30)_ — **This Week concierge Stages 1–2.** `/weekly`
+  aggregator (Xûr + Eververse + activities + rotations); collapsible Eververse list;
+  window-sizing fix (width 460, capped default height, wrapping header); **Stage 2**
+  deterministic rotation resolver + table + 7 tests + WEEK-tab Featured section
+  (`d4d8256`). All deployed + verified live on Railway.
 - **`v1.0.1`** — brand Windows installer as **SmileCo** (`build.win.publisherName`,
   `copyright`, `nsis.uninstallDisplayName`); version bump. Release workflow.
 - **`v1.0.0`** — first distributed release. Public Bungie OAuth client + regenerated
