@@ -246,6 +246,19 @@ function registerIpc() {
     }
   })
 
+  // Live Triumph-record progress for specific record hashes (catalyst % and
+  // craftable pattern x/N). One Bungie read is cached in memory and reused; we
+  // return only the requested hashes so the payload stays tiny.
+  ipcMain.handle('get-record-progress', async (_e, { hashes, force } = {}) => {
+    if (!bungie.getAuthStatus(store).loggedIn) return { records: {}, loggedIn: false }
+    try {
+      await bungie.getPlayerRecords(store, { force })
+    } catch (err) {
+      console.error('[records] fetch failed:', err.message) // fall back to cache (maybe empty)
+    }
+    return { records: bungie.lookupRecords(hashes), loggedIn: true }
+  })
+
   // Open an external URL in the user's real browser (light.gg / DIM / Bungie
   // deep links). Restricted to http(s) so a bad payload can't launch anything.
   ipcMain.handle('open-external', async (_e, url) => {

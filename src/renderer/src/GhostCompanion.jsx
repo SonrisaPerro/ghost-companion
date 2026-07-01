@@ -1301,6 +1301,41 @@ function WeekSection({ title, color, children, collapsible = false, defaultOpen 
   );
 }
 
+// Normalize an activity/location string for loose matching (case, curly quotes,
+// whitespace). Catalog `location` values are often "<Activity> — detail", so we
+// match by substring against the canonical featured names.
+function normActivity(s) {
+  return String(s || "").toLowerCase().replace(/[’‘]/g, "'").replace(/\s+/g, " ").trim();
+}
+
+// Theme 2 join: given this week's featured/farmable activity names, return the
+// catalog chase items that drop in each — grouped in featured order, tracked
+// items first + flagged. Pure; `catalog` defaults to the bundled dropRates so
+// the whole join runs client-side with no server dependency.
+function featuredChaseItems(featuredNames, trackedNames, catalog = dropRates) {
+  const targets = (featuredNames || [])
+    .filter(Boolean)
+    .map(n => ({ name: n, norm: normActivity(n) }))
+    .filter(t => t.norm);
+  if (!targets.length) return [];
+  const byAct = new Map(targets.map(t => [t.name, []]));
+  for (const [name, entry] of Object.entries(catalog)) {
+    if (name.startsWith("_") || !entry || !Array.isArray(entry.acquisitionPaths)) continue;
+    for (const t of targets) {
+      if (entry.acquisitionPaths.some(p => normActivity(p.location).includes(t.norm))) {
+        byAct.get(t.name).push({ name, tracked: !!(trackedNames && trackedNames.has(name)) });
+        break; // list an item under the first featured activity it drops in
+      }
+    }
+  }
+  return targets
+    .map(t => ({
+      activity: t.name,
+      items: byAct.get(t.name).sort((a, b) => (b.tracked - a.tracked) || a.name.localeCompare(b.name)),
+    }))
+    .filter(g => g.items.length);
+}
+
 // A labeled row of featured (farmable) activity chips for the weekly rotation.
 function FeaturedRow({ label, items }) {
   return (
@@ -1318,7 +1353,7 @@ function FeaturedRow({ label, items }) {
   );
 }
 
-function ThisWeekPanel({ data, onScan, onRefresh }) {
+function ThisWeekPanel({ data, onScan, onRefresh, trackedNames }) {
   if (!data) {
     return (
       <Panel bc={C.blue} style={{ marginBottom:14 }}>
@@ -1337,6 +1372,11 @@ function ThisWeekPanel({ data, onScan, onRefresh }) {
   const rot = data.rotations, rotOn = rot?.source === "computed";
   const featRaids = rot?.featuredRaids || [], featDungeons = rot?.featuredDungeons || [], gm = rot?.grandmasterAlert || rot?.grandmasterNightfall;
   const hasFeatured = rotOn && (featRaids.length || featDungeons.length || gm);
+  // Theme 2: which of our catalog chase weapons drop in a featured activity now.
+  const chaseGroups = rotOn
+    ? featuredChaseItems([...featRaids, ...featDungeons, ...(gm?.activity ? [gm.activity] : [])], trackedNames)
+    : [];
+  const trackedChaseCount = chaseGroups.reduce((n, g) => n + g.items.filter(i => i.tracked).length, 0);
   const countdown = resetCountdown(data.resetsAt);
   const anyLive = xLive || eLive || bLive || a?.source === "live";
   const week = data.weekOf ? new Date(data.weekOf).toLocaleDateString() : null;
@@ -1428,6 +1468,36 @@ function ThisWeekPanel({ data, onScan, onRefresh }) {
                   </span>
                 )}
               </div>
+            </div>
+          )}
+          {chaseGroups.length > 0 && (
+            <div style={{ marginTop:10, paddingTop:9, borderTop:`1px solid ${C.greenLo}` }}>
+              <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:5 }}>
+                <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, color:C.green,
+                  letterSpacing:"0.08em" }}>CHASE WEAPONS HERE</span>
+                {trackedChaseCount > 0 && <Badge label={`${trackedChaseCount} TRACKED`} color={C.gold} bg={C.goldLo}/>}
+              </div>
+              {chaseGroups.map(g => (
+                <div key={g.activity} style={{ display:"flex", alignItems:"flex-start", flexWrap:"wrap",
+                  gap:6, marginBottom:4 }}>
+                  <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, color:C.sub,
+                    letterSpacing:"0.04em", minWidth:96, paddingTop:3 }}>{g.activity}</span>
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:5 }}>
+                    {g.items.map(it => (
+                      <span key={it.name} onClick={() => onScan?.(it.name)} title={`Look up ${it.name}`}
+                        style={{ display:"flex", alignItems:"center", gap:4, cursor:onScan?"pointer":"default",
+                          border:`1px solid ${it.tracked ? C.gold : C.greenLo}`,
+                          background:it.tracked ? C.goldLo : C.panelAlt, padding:"3px 7px",
+                          fontFamily:"'Barlow Condensed',sans-serif", fontSize:11,
+                          color:it.tracked ? C.gold : C.text, letterSpacing:"0.03em", WebkitAppRegion:"no-drag" }}>
+                        {it.tracked && <span style={{ fontSize:9 }}>★</span>}{it.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <div style={{ fontSize:9, color:C.muted, letterSpacing:"0.06em", marginTop:5,
+                fontFamily:"'Barlow Condensed',sans-serif" }}>★ TRACKED · CLICK TO LOOK UP</div>
             </div>
           )}
           <div style={{ fontSize:9, color:C.muted, letterSpacing:"0.1em", marginTop:8,
@@ -1610,19 +1680,32 @@ function GuidesPanel({ guides }) {
    This is NOT a god-roll recommendation — those are community opinion; the
    light.gg deep link above is the honest source for "best" picks. Collapsed by
    default since the pool can be long. Self-hides for non-weapons. */
-function WeaponPerksPanel({ data }) {
+function WeaponPerksPanel({ data, progress }) {
   const [openPerks, setOpenPerks] = useState(false);
   if (!data) return null;
-  const { catalyst, intrinsic, columns } = data;
-  if (!catalyst && !intrinsic && !(columns?.length)) return null;
+  const { catalyst, pattern, intrinsic, columns } = data;
+  if (!catalyst && !pattern && !intrinsic && !(columns?.length)) return null;
   const hasRandom = (columns || []).some((c) => c.random);
+  // Live objective progress for this catalyst (empty when logged out / uncached).
+  const catRec = catalyst && progress ? progress[catalyst.recordHash] : null;
+  const objProg = new Map((catRec?.objectives || []).map((o) => [o.objectiveHash, o]));
+  const catDone = !!catRec?.complete;
+  // Live crafting-pattern progress (single objective; empty when logged out).
+  const patRec = pattern && progress ? progress[pattern.recordHash] : null;
+  const patObj = patRec?.objectives?.find((o) => o.objectiveHash === pattern?.objectiveHash)
+    || patRec?.objectives?.[0] || null;
+  const patTarget = pattern?.target || patObj?.completionValue || 0;
+  const patDone = !!patObj?.complete;
   return (
     <>
       {catalyst && (
         <Panel bc={C.gold} style={{ marginBottom:10 }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
             <Lbl color={C.gold} mb={0}>Catalyst</Lbl>
-            <Badge label="EXOTIC" color={C.gold} bg={C.goldLo}/>
+            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+              {catDone && <Badge label="✓ COMPLETE" color={C.green} bg={C.greenLo}/>}
+              <Badge label="EXOTIC" color={C.gold} bg={C.goldLo}/>
+            </div>
           </div>
           <div style={{ display:"flex", gap:10, alignItems:"flex-start" }}>
             {catalyst.icon && (
@@ -1642,21 +1725,41 @@ function WeaponPerksPanel({ data }) {
           {catalyst.objectives?.length > 0 && (
             <>
               <div style={{ marginTop:8, display:"flex", flexDirection:"column", gap:5 }}>
-                {catalyst.objectives.map((o, i) => (
-                  <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8,
-                    background:C.panelAlt, border:`1px solid ${C.muted}`, padding:"4px 8px" }}>
-                    <span style={{ display:"flex", alignItems:"center", gap:7, minWidth:0 }}>
-                      {o.checkbox && (
-                        <span style={{ color:C.gold, fontSize:11, flexShrink:0 }}>☐</span>
+                {catalyst.objectives.map((o, i) => {
+                  const p = objProg.get(o.objectiveHash);           // live progress, if any
+                  const target = o.target || p?.completionValue || 0;
+                  const done = p?.complete;
+                  const pct = p && !o.checkbox && target > 1
+                    ? Math.max(0, Math.min(1, p.progress / target)) : null;
+                  return (
+                    <div key={i} style={{ background:C.panelAlt,
+                      border:`1px solid ${done ? C.green : C.muted}`, padding:"4px 8px" }}>
+                      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
+                        <span style={{ display:"flex", alignItems:"center", gap:7, minWidth:0 }}>
+                          {o.checkbox && (
+                            <span style={{ color:done ? C.green : C.gold, fontSize:11, flexShrink:0 }}>
+                              {done ? "☑" : "☐"}
+                            </span>
+                          )}
+                          <span style={{ fontSize:12, color:C.sub, lineHeight:1.3 }}>{o.description}</span>
+                        </span>
+                        {!o.checkbox && target > 1 && (
+                          <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, fontWeight:700,
+                            color:done ? C.green : C.gold, flexShrink:0, whiteSpace:"nowrap" }}>
+                            {p ? `${p.progress.toLocaleString()} / ${target.toLocaleString()}`
+                               : target.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                      {pct !== null && (
+                        <div style={{ marginTop:4, height:3, background:C.muted }}>
+                          <div style={{ height:"100%", width:`${pct * 100}%`,
+                            background:done ? C.green : C.gold }}/>
+                        </div>
                       )}
-                      <span style={{ fontSize:12, color:C.sub, lineHeight:1.3 }}>{o.description}</span>
-                    </span>
-                    {!o.checkbox && o.target > 1 && (
-                      <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, fontWeight:700,
-                        color:C.gold, flexShrink:0 }}>{o.target.toLocaleString()}</span>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
               <div style={{ fontSize:11, color:C.sub, fontStyle:"italic", lineHeight:1.5, marginTop:8,
                 borderLeft:`2px solid ${C.border}`, paddingLeft:8 }}>
@@ -1665,6 +1768,32 @@ function WeaponPerksPanel({ data }) {
                 objectives to unlock the masterwork upgrade.
               </div>
             </>
+          )}
+        </Panel>
+      )}
+
+      {pattern && (
+        <Panel bc={C.purple} style={{ marginBottom:10 }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
+            marginBottom: patObj ? 7 : 6 }}>
+            <Lbl color={C.purple} mb={0}>Craftable Pattern</Lbl>
+            {patDone
+              ? <Badge label="✓ UNLOCKED" color={C.green} bg={C.greenLo}/>
+              : <Badge label={patObj ? `${patObj.progress.toLocaleString()} / ${patTarget}` : `${patTarget} NEEDED`}
+                  color={C.purple} bg={C.purpleLo}/>}
+          </div>
+          {patObj && !patDone && (
+            <div style={{ height:4, background:C.muted }}>
+              <div style={{ height:"100%",
+                width:`${Math.max(0, Math.min(1, patObj.progress / (patTarget || 1))) * 100}%`,
+                background:C.purple }}/>
+            </div>
+          )}
+          {!patObj && (
+            <div style={{ fontSize:11, color:C.sub, fontStyle:"italic", lineHeight:1.5 }}>
+              Extract {patTarget} Deepsight {patTarget === 1 ? "pattern" : "patterns"} to craft this at
+              the Enclave{patDone ? "" : " — sign in with Bungie to track your progress"}.
+            </div>
           )}
         </Panel>
       )}
@@ -1762,9 +1891,13 @@ export default function GhostCompanion() {
   // the user's persisted set of tracked ornaments (drives the shop-alert merge).
   const [weaponOrnaments,  setWeaponOrnaments]  = useState([]);
   const [trackedOrnaments, setTrackedOrnaments] = useState([]);
+  // Persisted tracked farm items (drives the WEEK tab's "chase weapons" join).
+  const [trackedItems,     setTrackedItems]     = useState([]);
 
   // Factual catalyst + per-column perk pool for the on-screen weapon (per scan).
   const [weaponPerks,      setWeaponPerks]      = useState(null);
+  // Live Triumph-record progress (catalyst % + pattern x/N), keyed by recordHash.
+  const [recordProgress,   setRecordProgress]   = useState({});
 
   // Collection ownership: a Set of owned collectibleHashes (from Bungie, when
   // logged in) so item cards can show a COLLECTED / MISSING badge.
@@ -1802,6 +1935,7 @@ export default function GhostCompanion() {
   useEffect(() => { window.api?.getDataApiUrl?.().then(v => setApiUrl(v || "")).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getAlwaysOnTop?.().then(v => setAlwaysOnTop(v !== false)).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getTrackedOrnaments?.().then(v => setTrackedOrnaments(v || [])).catch(()=>{}); }, []);
+  useEffect(() => { window.api?.getTrackedItems?.().then(v => setTrackedItems(v || [])).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getGuides?.().then(v => setGuides(v || [])).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getNotificationsEnabled?.().then(v => setNotifyEnabled(v !== false)).catch(()=>{}); }, []);
 
@@ -1945,9 +2079,18 @@ export default function GhostCompanion() {
         .catch(() => setWeaponOrnaments([]));
 
       // Walk the weapon's catalyst + perk pool (null/empty for non-weapons → panel hides).
+      // Then pull LIVE record progress for its catalyst + pattern (no-op when logged out).
       window.api?.getWeaponPerks?.(hit.itemHash)
-        .then(p => setWeaponPerks(p || null))
-        .catch(() => setWeaponPerks(null));
+        .then(p => {
+          setWeaponPerks(p || null);
+          const hashes = [p?.catalyst?.recordHash, p?.pattern?.recordHash].filter(Boolean);
+          if (hashes.length) {
+            window.api?.getRecordProgress?.({ hashes })
+              .then(r => setRecordProgress(r?.records || {}))
+              .catch(() => setRecordProgress({}));
+          } else setRecordProgress({});
+        })
+        .catch(() => { setWeaponPerks(null); setRecordProgress({}); });
 
       // Hydrate any previously-logged (or auto-tracked) run counts from store.
       const counts = (await window.api.getRunCounts?.()) || {};
@@ -2086,6 +2229,7 @@ export default function GhostCompanion() {
       next = [...list, descriptor];
     }
     await window.api.setTrackedItems(next);
+    setTrackedItems(next); // keep the WEEK-tab chase join in sync
     setIsTracked(!exists);
   }, []);
 
@@ -2178,6 +2322,9 @@ export default function GhostCompanion() {
 
   const trackedOrnamentSet = useMemo(
     () => new Set(trackedOrnaments.map(t => t.itemHash)), [trackedOrnaments]);
+  // Names of tracked farm items, for the WEEK-tab featured-activity join.
+  const trackedItemNames = useMemo(
+    () => new Set(trackedItems.map(t => t.name || t.key).filter(Boolean)), [trackedItems]);
 
   const best    = itemData ? bestPathId(itemData.acquisitionPaths) : null;
   const itemRar = rar(itemData?.rarity);
@@ -2308,7 +2455,7 @@ export default function GhostCompanion() {
 
       {/* ── This Week (Tower concierge: Xûr + Eververse + raid slate) ── */}
       {showWeek && (
-        <ThisWeekPanel data={weeklyData} onScan={(name) => scan(name)}
+        <ThisWeekPanel data={weeklyData} onScan={(name) => scan(name)} trackedNames={trackedItemNames}
           onRefresh={() => window.api.getWeekly?.({ force: true }).then(setWeeklyData).catch(()=>{})}/>
       )}
 
@@ -2509,7 +2656,7 @@ export default function GhostCompanion() {
           />
 
           {/* Catalyst + factual perk pool for this weapon */}
-          <WeaponPerksPanel data={weaponPerks}/>
+          <WeaponPerksPanel data={weaponPerks} progress={recordProgress}/>
 
           {/* Imported guides / secret-chest walkthroughs for this item */}
           <GuidesPanel guides={itemGuides}/>

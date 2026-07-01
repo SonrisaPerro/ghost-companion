@@ -15,6 +15,7 @@ const api = {
   logout: () => ipcRenderer.invoke('bungie-logout'),
   getAuthStatus: () => ipcRenderer.invoke('get-auth-status'),
   getCollectionStatus: (opts) => ipcRenderer.invoke('get-collection-status', opts || {}),
+  getRecordProgress: (opts) => ipcRenderer.invoke('get-record-progress', opts || {}),
 
   // --- External links (light.gg / DIM / Bungie) --------------------------
   openExternal: (url) => ipcRenderer.invoke('open-external', url),

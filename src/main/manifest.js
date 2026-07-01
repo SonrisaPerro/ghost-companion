@@ -395,17 +395,61 @@ function resolveCatalyst(weaponName) {
     // counter, so its completionValue is meaningless to display as a number.
     const checkbox = o.valueStyle === 2 || o.completedValueStyle === 2
     objectives.push({
+      objectiveHash: (oh >>> 0), // matches the profile Records (900) progress read
       description: (o.progressDescription || '').trim() || 'Progress',
       target: o.completionValue || 0,
       checkbox
     })
   }
   return {
+    recordHash: (rec.hash >>> 0), // key for live objective progress from component 900
     name: rec.displayProperties.name,
     description: (rec.displayProperties.description || '').trim(),
     icon: rec.displayProperties.icon ? `${BUNGIE_ROOT}${rec.displayProperties.icon}` : null,
     objectives
   }
+}
+
+/**
+ * Lazily-built index of crafting *pattern* records, keyed by lowercased weapon
+ * name. A pattern record carries an objective whose progress text is exactly
+ * "Pattern progress" (target = deepsight extractions needed to craft, usually 5,
+ * or 1 for exotic-mission weapons). Verified collision-free across the Manifest
+ * (183 records, unique names). One objective + one record scan, built once.
+ */
+let patternIndex = null
+function getPatternIndex() {
+  if (patternIndex) return patternIndex
+  patternIndex = new Map()
+  try {
+    const db = getDb()
+    const patternObj = new Map() // objectiveHash -> completionValue (the pattern target)
+    for (const row of db.prepare(`SELECT json FROM DestinyObjectiveDefinition`).all()) {
+      const o = parseRow(row)
+      if (o && (o.progressDescription || '').trim().toLowerCase() === 'pattern progress') {
+        patternObj.set(o.hash >>> 0, o.completionValue || 0)
+      }
+    }
+    for (const row of db.prepare(`SELECT json FROM DestinyRecordDefinition`).all()) {
+      const d = parseRow(row)
+      const name = d?.displayProperties?.name || ''
+      if (!name || / Catalyst$/.test(name)) continue
+      const oh = (d.objectiveHashes || []).find((h) => patternObj.has(h >>> 0))
+      if (oh == null) continue
+      const key = name.toLowerCase()
+      if (!patternIndex.has(key)) {
+        patternIndex.set(key, { recordHash: d.hash >>> 0, objectiveHash: oh >>> 0, target: patternObj.get(oh >>> 0) })
+      }
+    }
+  } catch {
+    /* leave the (possibly partial) index; lookups just miss */
+  }
+  return patternIndex
+}
+
+/** Resolves a craftable weapon's pattern record (for live x/N progress), or null. */
+function resolvePattern(weaponName) {
+  return getPatternIndex().get((weaponName || '').toLowerCase()) || null
 }
 
 /** Shapes a plug item def into a perk-pool entry, or null if it's not a real perk. */
@@ -442,11 +486,11 @@ function columnLabel(category) {
  * real per-column perk pool (random rolls when present, else the fixed/curated
  * perks), and the exotic catalyst's objectives. Returns empty for non-weapons.
  *
- * @returns {{ catalyst: object|null, intrinsic: object|null, columns: Array<{label,random,perks:object[]}> }}
+ * @returns {{ catalyst: object|null, pattern: object|null, intrinsic: object|null, columns: Array<{label,random,perks:object[]}> }}
  */
 export function getWeaponPerks(weaponHash) {
   const weapon = getItemByHash(weaponHash)
-  const empty = { catalyst: null, intrinsic: null, columns: [] }
+  const empty = { catalyst: null, pattern: null, intrinsic: null, columns: [] }
   if (!weapon || weapon.itemType !== 3 || !weapon.sockets) return empty // itemType 3 = weapon
 
   const db = getDb()
@@ -508,5 +552,6 @@ export function getWeaponPerks(weaponHash) {
     }
   }
 
-  return { catalyst: resolveCatalyst(weapon.displayProperties?.name), intrinsic, columns }
+  const name = weapon.displayProperties?.name
+  return { catalyst: resolveCatalyst(name), pattern: resolvePattern(name), intrinsic, columns }
 }

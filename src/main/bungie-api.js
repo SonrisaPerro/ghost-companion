@@ -486,4 +486,75 @@ export function getCachedCollectibles(store) {
   return store.get(COLLECTION_KEY) || { hashes: [], fetchedAt: 0 }
 }
 
+// ---------------------------------------------------------------------------
+// Records (live objective progress — powers catalyst % and pattern x/N)
+// ---------------------------------------------------------------------------
+
+// The Records component is large, so we hold it in memory (not electron-store)
+// with a short TTL and hand out only the specific record hashes a card needs.
+const RECORDS_TTL = 10 * 60 * 1000
+let recordsCache = null // { map: Map<recordHash, {objectives, complete, _total}>, fetchedAt }
+
+/**
+ * Fetches (or serves from the in-memory cache) the player's Triumph records with
+ * live objective progress. Catalysts and craftable patterns are both records, so
+ * one read powers both features. Merges profile + character scope, keeping the
+ * scope with the most total progress per record.
+ * @returns {Promise<{ fetchedAt:number }>} — data lives in the module cache; read
+ *   it via lookupRecords().
+ */
+export async function getPlayerRecords(store, { force = false } = {}) {
+  if (!force && recordsCache && Date.now() - recordsCache.fetchedAt < RECORDS_TTL) {
+    return { fetchedAt: recordsCache.fetchedAt }
+  }
+  const accessToken = await getValidAccessToken(store)
+  const profile = getCachedProfile(store)
+  if (!profile) throw new Error('Profile not loaded.')
+
+  // components=900 => DestinyRecordComponent (profile + per character).
+  const data = await bungieFetch(
+    `/Destiny2/${profile.membershipType}/Profile/${profile.membershipId}/?components=900`,
+    { accessToken }
+  )
+
+  const map = new Map()
+  const scan = (records) => {
+    for (const [hash, rec] of Object.entries(records || {})) {
+      const objectives = (rec?.objectives || []).map((o) => ({
+        objectiveHash: Number(o.objectiveHash) >>> 0,
+        progress: Number(o.progress) || 0,
+        completionValue: Number(o.completionValue) || 0,
+        complete: !!o.complete
+      }))
+      if (!objectives.length) continue
+      const total = objectives.reduce((n, o) => n + o.progress, 0)
+      const key = Number(hash) >>> 0
+      const prev = map.get(key)
+      if (!prev || total > prev._total) {
+        map.set(key, { objectives, complete: objectives.every((o) => o.complete), _total: total })
+      }
+    }
+  }
+  scan(data?.profileRecords?.data?.records)
+  for (const c of Object.values(data?.characterRecords?.data || {})) scan(c?.records)
+
+  recordsCache = { map, fetchedAt: Date.now() }
+  return { fetchedAt: recordsCache.fetchedAt }
+}
+
+/**
+ * Returns live progress for the requested record hashes from the in-memory cache
+ * (call getPlayerRecords first). Shape: { [recordHash]: { objectives, complete } }.
+ * Unknown/uncached hashes are simply omitted.
+ */
+export function lookupRecords(hashes) {
+  const out = {}
+  if (!recordsCache) return out
+  for (const h of hashes || []) {
+    const r = recordsCache.map.get(Number(h) >>> 0)
+    if (r) out[Number(h) >>> 0] = { objectives: r.objectives, complete: r.complete }
+  }
+  return out
+}
+
 export { MEMBERSHIP_TYPE_ALL, STORE_KEYS, COLLECTION_KEY }
