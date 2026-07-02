@@ -1,6 +1,6 @@
 # Ghost Companion — Session Handoff
 
-_Last updated: 2026-07-01. Read this first when resuming work on this tool._
+_Last updated: 2026-07-02. Read this first when resuming work on this tool._
 
 ## What this is
 An always-on-top Destiny 2 loot-farming overlay.
@@ -167,7 +167,11 @@ An always-on-top Destiny 2 loot-farming overlay.
   - `resolveRotations()` = sync read of current known state; `ensureRotations()` =
     async (fetch-if-missing) used by `/weekly`. **12 node:test cases** pin the
     2026-06-30 seed ground truth + the parser rails (fixture-based, no network).
-  - **GM Alert weapon** has no stable source page → only present for hand-seeded weeks.
+  - **GM Alert weapon:** `fetchGmWeapon()` (`rotations-source.js`) now attempts a
+    best-effort parallel scrape of Kyber's GM page (`GM_SOURCE_URL`). Extracts the
+    `(Adept)` weapon name with staleness rail + plausibility check; null on any failure
+    (safe). Merged into the `fetchWeek()` result automatically — `rotations.js` needs
+    no changes. Will populate `grandmasterAlert.weapon` when Kyber's page has data.
   - **Refresh weeks:** `node scripts/refresh-rotations.mjs [--write] [--week ISO]`
     (dry-run prints, `--write` upserts raids/dungeons; add `grandmasterAlert` by hand;
     refuses to overwrite a `verified` seed). Or just let the runtime auto-refresh fill
@@ -252,7 +256,7 @@ An always-on-top Destiny 2 loot-farming overlay.
 - `server/data/paths.json` — served by the API (`/paths`).
 - Both keyed by item **NAME**, each with `acquisitionPaths[]`. Drop rates are
   community estimates (explicitly disclaimed in the UI).
-- **Current state: 49 items each.** Includes:
+- **Current state: 60 items each (expanded v1.0.8).** Includes:
   - **15 Monument to Lost Lights exotics** (added 2026-06-29) — Ace of Spades,
     Thorn, The Last Word, Witherhoard, Izanagi's Burden, Jötunn, Truth, Sleeper
     Simulant, Le Monarque, Ticuu's Divination, Lorentz Driver, Lumina, Bad Juju,
@@ -354,13 +358,9 @@ An always-on-top Destiny 2 loot-farming overlay.
      (`git push` → Railway) before the client library browser shows anything.
    **Reminder: shipping any client change now requires a new tagged release**
    (bump version → tag → publish draft).
-6. **All releases through v1.0.7 are published + live — nothing pending.** (This
-   thread used to track publishing the v1.0.1 draft; that and every draft since
-   have been published, and v1.0.6+ auto-publish.) No known open build work:
-   tray/pin, ornaments-on-card, data-packages, guide library, the This Week
-   concierge (Stages 1–4), and the v1.0.7 live catalyst/pattern progress + chase
-   weapons + Xûr schedule-gate are all shipped. The only structural dead-end is #2
-   (set-piece enumeration), which no data source can satisfy.
+6. **All releases through v1.0.8 are published + live — nothing pending.** Auto-publish
+   has been reliable since v1.0.6. No known open build work. The only structural dead-end
+   is #2 (set-piece enumeration), which no data source can satisfy.
 
 ## SECURITY — do not slip on this
 - **Bungie secret rotation — DONE 2026-06-30.** Resolved by switching the Bungie
@@ -387,6 +387,23 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
+- **`v1.0.8`** (2026-07-02, live) — monolith extraction + new-hunt flow + catalog
+  expansion + GM scraper + cold-start UX. Details:
+  - `GhostCompanion.jsx` 2278 → 1638 lines: `GuidePanels.jsx`
+    (CommunityLibrary/CreateGuideForm/GuidesPanel/Guides) + `ThisWeekPanel.jsx`
+    extracted; `inputStyle` moved to `theme.js`; `data-api.js` 161→74 lines via
+    `cachedEndpoint()` factory.
+  - **ResetConfirm** two-step reset button (arm→confirm) on CombinedSummary + single-path
+    acquired button — zeroes all `pathRuns` + clears acquired for a fresh hunt, no
+    `window.confirm()`.
+  - **ThisWeekPanel cold-start** now distinguishes unconfigured ("OPEN ACCOUNT SETTINGS →")
+    from unreachable ("↻ RETRY").
+  - **Catalog expanded** to 60 items: 6 DSC legendaries (Trustee/Heritage/Succession/
+    Posterity/Bequest/Commemoration, all craftable + encounter-drop paths) + 5 Warlord's
+    Ruin legendaries (Lost Signal/Naeem's Lance/Indebted Kindness/Dragoncult Sickle/Greasy
+    Luck, weekly-locked). Both files kept identical.
+  - **GM scraper:** `fetchGmWeapon()` in `rotations-source.js` fires in parallel inside
+    `fetchWeek()`; null-safe on any failure.
 - _(session, 2026-07-02)_ — **Code quality pass (not a release — no user-facing change):**
   `d08e7f9` split the 2729-line `GhostCompanion.jsx` monolith into `theme.js`,
   `format.js`, `components/primitives.jsx`, `components/VendorPanels.jsx`,
