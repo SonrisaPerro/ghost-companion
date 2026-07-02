@@ -387,6 +387,19 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
+- _(session, 2026-07-02)_ — **Code quality pass (not a release — no user-facing change):**
+  `d08e7f9` split the 2729-line `GhostCompanion.jsx` monolith into `theme.js`,
+  `format.js`, `components/primitives.jsx`, `components/VendorPanels.jsx`,
+  `components/WeaponPerksPanel.jsx`; deleted orphaned `TrackedCard.jsx` /
+  `SearchResult.jsx`; perf: SQL LIKE prefilter in `searchManifest` /
+  `searchActivities` (C-side scan over ~39k rows instead of full-JS parse),
+  single-pass `buildRecordIndexes()` for catalyst + pattern indexes, 300ms debounce
+  on both search inputs. `b8dfeb5` added ESLint (flat config, react-hooks plugin,
+  `no-undef` as error — catches dead refs esbuild silently bundles; `npm run lint`
+  clean) + prepared-statement cache (`stmt()` in `manifest.js`) + lint-driven
+  cleanup of unused imports/variables across 5 files. **2 commits ahead of
+  `origin/main`, not yet pushed.** No version bump — these are internal; ship next
+  time there's a user-visible fix or feature.
 - **`v1.0.7`** (2026-07-01, live) — bump `8b773a3`/`006b379`, tag pushed, CI green +
   auto-published. Contents: `6ae92cb` feat — live catalyst/pattern progress (profile
   Records 900) + "CHASE WEAPONS HERE" rotation join; `8b773a3` fix(xur) — presence
