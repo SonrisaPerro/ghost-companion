@@ -1402,7 +1402,7 @@
   },
 
   "Trustee": {
-    "itemHash": 2296085594,
+    "itemHash": 2313489324,
     "acquisitionPaths": [
       {
         "id": "encounter",
@@ -1498,7 +1498,7 @@
   },
 
   "Posterity": {
-    "itemHash": 3787124006,
+    "itemHash": 3281285075,
     "acquisitionPaths": [
       {
         "id": "encounter",
@@ -1594,7 +1594,7 @@
   },
 
   "Lost Signal": {
-    "itemHash": 3415767495,
+    "itemHash": 3013473326,
     "acquisitionPaths": [
       {
         "id": "encounter",
@@ -1607,13 +1607,26 @@
         "weeklyLimitPerCharacter": 3,
         "estimatedMinutesPerRun": 45,
         "description": "Grenade launcher. Drops from encounters in Warlord's Ruin — 3 drops per character per week.",
-        "notes": "Not craftable — weekly drop only."
+        "notes": null
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn's Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Extract Deepsight from red-border copies dropped in Warlord's Ruin, then shape at the Enclave.",
+        "notes": "Pattern needs 5 Deepsight extractions. Once unlocked, reshapeable for enhanced perks."
       }
     ]
   },
 
   "Naeem's Lance": {
-    "itemHash": 1489373625,
+    "itemHash": 2806569825,
     "acquisitionPaths": [
       {
         "id": "encounter",
@@ -1625,14 +1638,14 @@
         "farmable": false,
         "weeklyLimitPerCharacter": 3,
         "estimatedMinutesPerRun": 45,
-        "description": "Linear fusion rifle. Drops from encounters in Warlord's Ruin — 3 drops per character per week.",
+        "description": "Sniper rifle. Drops from encounters in Warlord's Ruin — 3 drops per character per week.",
         "notes": "Not craftable — weekly drop only."
       }
     ]
   },
 
   "Indebted Kindness": {
-    "itemHash": 3440052066,
+    "itemHash": 2554513694,
     "acquisitionPaths": [
       {
         "id": "encounter",
@@ -1651,7 +1664,26 @@
   },
 
   "Dragoncult Sickle": {
-    "itemHash": 2547044957,
+    "itemHash": 2525261820,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Warlord's Ruin",
+        "sourceActivityHashes": [2004855007, 2534833093],
+        "dropRate": 0.2,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 45,
+        "description": "Sword. Drops from encounters in Warlord's Ruin — 3 drops per character per week.",
+        "notes": "Not craftable — weekly drop only."
+      }
+    ]
+  },
+
+  "Greasy Luck": {
+    "itemHash": 2934305134,
     "acquisitionPaths": [
       {
         "id": "encounter",
@@ -1664,25 +1696,6 @@
         "weeklyLimitPerCharacter": 3,
         "estimatedMinutesPerRun": 45,
         "description": "Glaive. Drops from encounters in Warlord's Ruin — 3 drops per character per week.",
-        "notes": "Not craftable — weekly drop only."
-      }
-    ]
-  },
-
-  "Greasy Luck": {
-    "itemHash": 1399891007,
-    "acquisitionPaths": [
-      {
-        "id": "encounter",
-        "method": "Encounter Drops",
-        "pathType": "encounter_drop",
-        "location": "Warlord's Ruin",
-        "sourceActivityHashes": [2004855007, 2534833093],
-        "dropRate": 0.2,
-        "farmable": false,
-        "weeklyLimitPerCharacter": 3,
-        "estimatedMinutesPerRun": 45,
-        "description": "Submachine gun. Drops from encounters in Warlord's Ruin — 3 drops per character per week.",
         "notes": "Not craftable — weekly drop only."
       }
     ]
