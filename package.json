@@ -1,6 +1,6 @@
 {
   "name": "ghost-companion",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Ghost Companion — an always-on-top Destiny 2 loot & vendor overlay: a live weekly concierge (Xûr, Eververse ornaments, Banshee-44, featured raids & dungeons) plus loot acquisition paths, ornament shop alerts, and auto-tracked completions — via the Bungie API.",
   "main": "./out/main/index.js",
   "author": "Ghost Companion",

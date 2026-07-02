@@ -1,6 +1,6 @@
 # Ghost Companion — Session Handoff
 
-_Last updated: 2026-07-02 (v1.2.0). Read this first when resuming work on this tool._
+_Last updated: 2026-07-02 (v1.3.0). Read this first when resuming work on this tool._
 
 ## What this is
 An always-on-top Destiny 2 loot-farming overlay.
@@ -50,9 +50,8 @@ An always-on-top Destiny 2 loot-farming overlay.
 - **To ship a change:** bump `version` in `package.json`, commit to `main`,
   `git tag -a vX.Y.Z && git push origin main --tags`, wait for green, publish the
   draft. Secrets must already exist before tagging (else a credential-less binary).
-- **Shipped:** `v1.0.0`–`v1.2.0` all live (published). **`v1.2.0` (2026-07-02) is
-  the current latest** = true four-tab navigation (SCAN / WEEK / GUIDES / ACCT) replacing
-  the old toggle-injected panel system (see "Recent commits"). `v1.0.6` = sustainable rotation pipeline
+- **Shipped:** `v1.0.0`–`v1.3.0` all live (published). **`v1.3.0` (2026-07-02) is
+  the current latest** = My Hunts farming queue in the SCAN empty state (see "Recent commits"). `v1.0.6` = sustainable rotation pipeline
   (seed + auto-refresh), notifier cache-efficiency, and the `releaseType:"release"`
   auto-publish flip. `v1.0.5` = This Week concierge Stages 1–4. `/releases/latest`
   resolves to v1.0.7 (auto-published; workflow run went green + not-draft, verified).
@@ -357,7 +356,7 @@ An always-on-top Destiny 2 loot-farming overlay.
      (`git push` → Railway) before the client library browser shows anything.
    **Reminder: shipping any client change now requires a new tagged release**
    (bump version → tag → publish draft).
-6. **All releases through v1.2.0 are published + live — nothing pending.** Auto-publish
+6. **All releases through v1.3.0 are published + live — nothing pending.** Auto-publish
    has been reliable since v1.0.6. No known open build work. The only structural dead-end
    is #2 (set-piece enumeration), which no data source can satisfy.
 
@@ -386,6 +385,15 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
+- **`v1.3.0`** (2026-07-02, live) — My Hunts farming queue in the SCAN tab empty state.
+  When the user has tracked items, the blank search screen is replaced by a **My Hunts**
+  panel listing each tracked item with its icon, name, total runs logged, and combined
+  acquisition probability % (colour-coded by threshold: blue → gold → red). Clicking any
+  row immediately re-scans the item. First-time users (no tracked items) still see the
+  original ghost + example chips. `allRunCounts` state mirrors the electron-store run
+  counts on mount and stays live as `addRun` / `subRun` / `resetHunt` /
+  `onCompletionDetected` fire — probability updates the moment a run is logged without
+  requiring a re-scan.
 - **`v1.2.0`** (2026-07-02, live) — true four-tab navigation + UI polish.
   - **Tab bar:** `showWeek`/`showGuides`/`showAccount` booleans replaced by a single
     `activeTab` enum (`'scan'|'week'|'guides'|'acct'`). Persistent `TabBar` component
