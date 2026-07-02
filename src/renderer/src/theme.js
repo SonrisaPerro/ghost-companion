@@ -14,3 +14,9 @@ export const C = {
   red: "#C83030",    redLo: "#3A0E0E",
   purple: "#8A5ABE", purpleLo: "#1E1030",
 };
+
+export const inputStyle = {
+  width:"100%", background:C.panelAlt, border:`1px solid ${C.border}`, color:C.text,
+  fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, letterSpacing:"0.04em",
+  padding:"7px 9px", marginBottom:8,
+};

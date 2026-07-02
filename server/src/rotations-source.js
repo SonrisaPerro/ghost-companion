@@ -26,9 +26,10 @@
 // "Featured" card — graceful, never incorrect.
 // =============================================================================
 
-// Stable page that carries the current week's featured raids + dungeons.
-export const SOURCE_URL = 'https://kyberscorner.com/destiny2/weekly-featured-raids-and-dungeons/'
-export const SOURCE_NAME = 'kyberscorner'
+// Stable pages used as sources.
+export const SOURCE_URL    = 'https://kyberscorner.com/destiny2/weekly-featured-raids-and-dungeons/'
+export const GM_SOURCE_URL = 'https://kyberscorner.com/destiny2/grandmaster-nightfall/'
+export const SOURCE_NAME   = 'kyberscorner'
 
 // Known activity pools, used only to CLASSIFY/VALIDATE scraped titles (a title
 // is emitted only if it appears on the page AND is a recognized activity).
@@ -106,31 +107,69 @@ export function parseWeek(html, resetISO, sourceUrl = SOURCE_URL) {
   }
 }
 
-/**
- * Fetch + parse the current week's featured rotators from the vetted source.
- * @param {string} resetISO — the weekly-reset ISO this data will be keyed under.
- * @returns validated week object, or null on network/parse/validation failure.
- */
-export async function fetchWeek(resetISO, { fetchImpl = fetch, timeoutMs = 8000 } = {}) {
+// ── Shared network helper ────────────────────────────────────────────────────
+async function _fetchHtml(url, { fetchImpl = fetch, timeoutMs = 8000 } = {}) {
   const ac = new AbortController()
   const timer = setTimeout(() => ac.abort(), timeoutMs)
   try {
-    const res = await fetchImpl(SOURCE_URL, {
+    const res = await fetchImpl(url, {
       headers: { 'User-Agent': 'GhostCompanion/1.0 (+https://github.com/SonrisaPerro/ghost-companion)' },
       signal: ac.signal
     })
-    if (!res.ok) {
-      console.error('[rotations-source] HTTP', res.status, 'from', SOURCE_URL)
-      return null
-    }
-    const html = await res.text()
-    const week = parseWeek(html, resetISO)
-    if (!week) console.error('[rotations-source] page did not validate for week', resetISO)
-    return week
+    if (!res.ok) { console.error('[rotations-source] HTTP', res.status, 'from', url); return null }
+    return await res.text()
   } catch (e) {
-    console.error('[rotations-source] fetch failed:', e.message)
+    console.error('[rotations-source] fetch failed:', url, e.message)
     return null
   } finally {
     clearTimeout(timer)
   }
+}
+
+// ── GM Nightfall weapon (best-effort) ────────────────────────────────────────
+
+/**
+ * Pure parser: extract this week's GM weapon from Kyber's GM page HTML.
+ * Returns weapon name string (e.g. "Palindrome") or null.
+ */
+export function parseGmWeapon(html, resetISO) {
+  if (typeof html !== 'string' || !html) return null
+  const modified = pageModifiedAt(html)
+  if (!Number.isFinite(modified) || modified < Date.parse(resetISO)) return null
+  // GM weapons always drop Adept; find the name immediately before "(Adept)"
+  const m = html.match(/([A-Za-z][A-Za-z0-9 ''’\-]{1,48}?)\s*\(Adept\)/i)
+  if (!m) return null
+  const name = decode(m[1]).trim()
+  if (!name || name.length < 3 || name.length > 50 || /<|>|http|www/.test(name)) return null
+  return name
+}
+
+/**
+ * Fetch + parse the current GM nightfall weapon. Best-effort; returns null on
+ * any failure so callers can fire it unconditionally in Promise.all.
+ */
+export async function fetchGmWeapon(resetISO, opts = {}) {
+  const html = await _fetchHtml(GM_SOURCE_URL, opts)
+  return html ? parseGmWeapon(html, resetISO) : null
+}
+
+// ── Main featured-rotations fetch ────────────────────────────────────────────
+
+/**
+ * Fetch + parse the current week's featured rotators from the vetted source.
+ * Also attempts to scrape the GM weapon in parallel; merged into the result if
+ * found. Never blocks on GM failure — returns the week object either way.
+ * @param {string} resetISO — the weekly-reset ISO this data will be keyed under.
+ * @returns validated week object, or null on network/parse/validation failure.
+ */
+export async function fetchWeek(resetISO, opts = {}) {
+  const [html, gmWeapon] = await Promise.all([
+    _fetchHtml(SOURCE_URL, opts),
+    fetchGmWeapon(resetISO, opts).catch(() => null)
+  ])
+  if (!html) return null
+  const week = parseWeek(html, resetISO)
+  if (!week) { console.error('[rotations-source] page did not validate for week', resetISO); return null }
+  if (gmWeapon) week.grandmasterAlert = { weapon: gmWeapon }
+  return week
 }

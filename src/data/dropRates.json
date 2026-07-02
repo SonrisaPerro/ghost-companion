@@ -1399,5 +1399,292 @@
         "notes": "Not auto-trackable (no activity) — a targeted Rahool decryption, not a drop. Cost: 1 Exotic Cipher + 1 Exotic engram. Farm Exotic engrams via Master Lost Sectors and Portal weekly rewards."
       }
     ]
+  },
+
+  "Trustee": {
+    "itemHash": 2296085594,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Deep Stone Crypt",
+        "sourceActivityHashes": [910380154, 3976949817],
+        "dropRate": 0.2,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 50,
+        "description": "Scout rifle. Drops from any encounter in Deep Stone Crypt — 3 drops per character per week.",
+        "notes": null
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn's Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Extract Deepsight from 5 red-border copies dropped in Deep Stone Crypt, then shape it at the Enclave.",
+        "notes": "Pattern needs 5 Deepsight extractions. Once unlocked, shaping is guaranteed and reshapeable for enhanced perks."
+      }
+    ]
+  },
+
+  "Heritage": {
+    "itemHash": 4248569242,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Deep Stone Crypt",
+        "sourceActivityHashes": [910380154, 3976949817],
+        "dropRate": 0.2,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 50,
+        "description": "Kinetic slug shotgun. Drops from any encounter in Deep Stone Crypt — 3 drops per character per week.",
+        "notes": null
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn's Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Extract Deepsight from 5 red-border copies dropped in Deep Stone Crypt, then shape at the Enclave.",
+        "notes": "Pattern needs 5 Deepsight extractions. Once unlocked, reshapeable for enhanced perks."
+      }
+    ]
+  },
+
+  "Succession": {
+    "itemHash": 2990047042,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Deep Stone Crypt",
+        "sourceActivityHashes": [910380154, 3976949817],
+        "dropRate": 0.2,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 50,
+        "description": "Kinetic sniper rifle. Drops from any encounter in Deep Stone Crypt — 3 drops per character per week.",
+        "notes": null
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn's Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Extract Deepsight from 5 red-border copies dropped in Deep Stone Crypt, then shape at the Enclave.",
+        "notes": "Pattern needs 5 Deepsight extractions. Once unlocked, reshapeable for enhanced perks."
+      }
+    ]
+  },
+
+  "Posterity": {
+    "itemHash": 3787124006,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Deep Stone Crypt",
+        "sourceActivityHashes": [910380154, 3976949817],
+        "dropRate": 0.2,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 50,
+        "description": "Hand cannon. Drops from any encounter in Deep Stone Crypt — 3 drops per character per week.",
+        "notes": null
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn's Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Extract Deepsight from 5 red-border copies dropped in Deep Stone Crypt, then shape at the Enclave.",
+        "notes": "Pattern needs 5 Deepsight extractions. Once unlocked, reshapeable for enhanced perks."
+      }
+    ]
+  },
+
+  "Bequest": {
+    "itemHash": 3366545721,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Deep Stone Crypt",
+        "sourceActivityHashes": [910380154, 3976949817],
+        "dropRate": 0.2,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 50,
+        "description": "Sword. Drops from any encounter in Deep Stone Crypt — 3 drops per character per week.",
+        "notes": null
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn's Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Extract Deepsight from 5 red-border copies dropped in Deep Stone Crypt, then shape at the Enclave.",
+        "notes": "Pattern needs 5 Deepsight extractions. Once unlocked, reshapeable for enhanced perks."
+      }
+    ]
+  },
+
+  "Commemoration": {
+    "itemHash": 4230965989,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Deep Stone Crypt",
+        "sourceActivityHashes": [910380154, 3976949817],
+        "dropRate": 0.2,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 50,
+        "description": "Machine gun. Drops from any encounter in Deep Stone Crypt — 3 drops per character per week.",
+        "notes": null
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn's Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Extract Deepsight from 5 red-border copies dropped in Deep Stone Crypt, then shape at the Enclave.",
+        "notes": "Pattern needs 5 Deepsight extractions. Once unlocked, reshapeable for enhanced perks."
+      }
+    ]
+  },
+
+  "Lost Signal": {
+    "itemHash": 3415767495,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Warlord's Ruin",
+        "sourceActivityHashes": [2004855007, 2534833093],
+        "dropRate": 0.2,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 45,
+        "description": "Grenade launcher. Drops from encounters in Warlord's Ruin — 3 drops per character per week.",
+        "notes": "Not craftable — weekly drop only."
+      }
+    ]
+  },
+
+  "Naeem's Lance": {
+    "itemHash": 1489373625,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Warlord's Ruin",
+        "sourceActivityHashes": [2004855007, 2534833093],
+        "dropRate": 0.2,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 45,
+        "description": "Linear fusion rifle. Drops from encounters in Warlord's Ruin — 3 drops per character per week.",
+        "notes": "Not craftable — weekly drop only."
+      }
+    ]
+  },
+
+  "Indebted Kindness": {
+    "itemHash": 3440052066,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Warlord's Ruin",
+        "sourceActivityHashes": [2004855007, 2534833093],
+        "dropRate": 0.2,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 45,
+        "description": "Auto-loading sidearm. Drops from encounters in Warlord's Ruin — 3 drops per character per week.",
+        "notes": "Not craftable — weekly drop only."
+      }
+    ]
+  },
+
+  "Dragoncult Sickle": {
+    "itemHash": 2547044957,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Warlord's Ruin",
+        "sourceActivityHashes": [2004855007, 2534833093],
+        "dropRate": 0.2,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 45,
+        "description": "Glaive. Drops from encounters in Warlord's Ruin — 3 drops per character per week.",
+        "notes": "Not craftable — weekly drop only."
+      }
+    ]
+  },
+
+  "Greasy Luck": {
+    "itemHash": 1399891007,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Warlord's Ruin",
+        "sourceActivityHashes": [2004855007, 2534833093],
+        "dropRate": 0.2,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 45,
+        "description": "Submachine gun. Drops from encounters in Warlord's Ruin — 3 drops per character per week.",
+        "notes": "Not craftable — weekly drop only."
+      }
+    ]
   }
 }
