@@ -200,6 +200,8 @@ export function ThisWeekPanel({ data, onScan, onRefresh, trackedNames, apiUrl, o
         )}
       </WeekSection>
 
+      <div style={{ borderTop:`1px solid ${C.border}`, margin:"0 0 13px" }}/>
+
       <WeekSection title={`Raids Available${raids.length ? ` · ${raids.length}` : ""}`} color={C.blue}>
         {a?.source === "live" && raids.length ? (
           <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>

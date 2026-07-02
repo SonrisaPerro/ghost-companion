@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import dropRates from "../../data/dropRates.json";
 import { C, inputStyle } from "./theme";
 import { Panel, Lbl, Badge, Chip, Ghost, Diamond } from "./components/primitives";
-import { XurSection, BansheeSection, XurPanel, EververseSection, EverversePanel } from "./components/VendorPanels";
+import { XurSection, BansheeSection, EververseSection } from "./components/VendorPanels";
 import { WeaponPerksPanel } from "./components/WeaponPerksPanel";
 import { GuidesPanel, Guides } from "./components/GuidePanels";
 import { ThisWeekPanel } from "./components/ThisWeekPanel";
@@ -642,14 +642,7 @@ function AddPathForm({ onSave, onCancel }) {
   );
 }
 
-/* ── Xûr panel ────────────────────────────────────────────────────────
-   Xûr's live weekly exotic stock. The old Nightfall/Trials rotation was
-   removed (Edge of Fate has no targetable featured weapon). XurPanel renders
-   ONLY when the server reports an authoritative live read AND Xûr is verified
-   present — never a possibly-stale "IN TOWN". */
-
-// XurSection / BansheeSection / XurPanel / EververseSection / EverversePanel
-// moved to ./components/VendorPanels.jsx (imported above).
+// XurSection / BansheeSection / EververseSection → ./components/VendorPanels.jsx
 
 
 /* ── Ornaments-on-card panel ──────────────────────────────────────────
@@ -754,6 +747,40 @@ function DeepLinks({ itemHash }) {
 
 // WeaponPerksPanel moved to ./components/WeaponPerksPanel.jsx (imported above).
 
+/* ── Tab navigation bar ───────────────────────────────────────────── */
+function TabBar({ active, onSelect, weekBadge, guideCount }) {
+  const tabs = [
+    { id:"scan",   label:"SCAN",   color:C.orange },
+    { id:"week",   label:"WEEK",   color:C.blue,   badge:weekBadge },
+    { id:"guides", label:"GUIDES", color:C.gold,   count:guideCount },
+    { id:"acct",   label:"ACCT",   color:C.sub },
+  ];
+  return (
+    <div style={{ display:"flex", marginBottom:14 }}>
+      {tabs.map(t => {
+        const on = active === t.id;
+        return (
+          <button key={t.id} onClick={() => onSelect(t.id)} style={{
+            flex:1, padding:"8px 0", background:"none", border:"none",
+            borderBottom:`2px solid ${on ? t.color : C.border}`,
+            color: on ? t.color : C.sub, cursor:"pointer", position:"relative",
+            fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, fontWeight:700,
+            letterSpacing:"0.14em", WebkitAppRegion:"no-drag" }}>
+            {t.label}
+            {t.count > 0 && (
+              <span style={{ marginLeft:4, fontSize:8, color: on ? t.color : C.muted }}>{t.count}</span>
+            )}
+            {t.badge && !t.count && (
+              <span style={{ position:"absolute", top:5, right:"18%", width:5, height:5,
+                borderRadius:"50%", background:t.color }}/>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ── Main App ─────────────────────────────────────────────────────── */
 export default function GhostCompanion() {
   const [query,       setQuery]       = useState("");
@@ -766,9 +793,7 @@ export default function GhostCompanion() {
   // Bungie auth (replaces the old Anthropic API-key state).
   const [auth,        setAuth]        = useState({ loggedIn:false, displayName:null });
   const [authBusy,    setAuthBusy]    = useState(false);
-  const [showAccount, setShowAccount] = useState(false);
-  const [showGuides,  setShowGuides]  = useState(false);
-  const [showWeek,    setShowWeek]    = useState(false);
+  const [activeTab,   setActiveTab]   = useState("scan"); // 'scan' | 'week' | 'guides' | 'acct'
 
   // Overlay window controls (frameless window — its own pin/tray buttons).
   const [alwaysOnTop, setAlwaysOnTop] = useState(true);
@@ -928,7 +953,7 @@ export default function GhostCompanion() {
   // ── Auth actions ────────────────────────────────────────────────────────
   const handleLogin = async () => {
     setAuthBusy(true); setError(null);
-    try { setAuth(await window.api.login()); setShowAccount(false); }
+    try { setAuth(await window.api.login()); setActiveTab("scan"); }
     catch (e) { setError(`Bungie sign-in failed: ${e.message}`); }
     finally { setAuthBusy(false); }
   };
@@ -1014,7 +1039,7 @@ export default function GhostCompanion() {
   useEffect(() => {
     if (!window.api?.onNotificationScan) return;
     const unsubscribe = window.api.onNotificationScan((q) => {
-      if (typeof q === "string" && q.trim()) scan(q.trim());
+      if (typeof q === "string" && q.trim()) { setActiveTab("scan"); scan(q.trim()); }
     });
     return unsubscribe;
   }, [scan]);
@@ -1313,74 +1338,69 @@ export default function GhostCompanion() {
             WebkitAppRegion:"no-drag" }}>
             TRAY ▾
           </button>
-          {/* This Week toggle — Tower concierge (Xûr, Eververse, raids). */}
-          <button onClick={() => { setShowWeek(s => !s); setShowGuides(false); setShowAccount(false); }}
-            title="This week in Destiny — Xûr, Eververse, raid slate" style={{
-            background:"none", border:`1px solid ${showWeek ? C.blue : C.muted}`,
-            color: showWeek ? C.blue : C.muted, padding:"3px 8px", cursor:"pointer",
-            fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700, letterSpacing:"0.14em",
-            WebkitAppRegion:"no-drag" }}>
-            WEEK
-          </button>
-          {/* Guides toggle — dedicated home for imported / authored walkthroughs. */}
-          <button onClick={() => { setShowGuides(s => !s); setShowAccount(false); setShowWeek(false); }}
-            title="Guides & secret-chest walkthroughs" style={{
-            background:"none", border:`1px solid ${showGuides ? C.gold : C.muted}`,
-            color: showGuides ? C.gold : C.muted, padding:"3px 8px", cursor:"pointer",
-            fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700, letterSpacing:"0.14em",
-            WebkitAppRegion:"no-drag" }}>
-            {guides.length ? "GUIDES ◆" : "GUIDES ○"}
-          </button>
-          {/* Account toggle (was the API-key button) */}
-          <button onClick={() => { setShowAccount(s => !s); setShowGuides(false); setShowWeek(false); }} title="Bungie sign-in & data settings" style={{
-            background:"none", border:`1px solid ${showAccount ? C.orange : C.muted}`,
-            color: showAccount ? C.orange : C.muted, padding:"3px 8px", cursor:"pointer",
-            fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700, letterSpacing:"0.14em",
-            WebkitAppRegion:"no-drag" }}>
-            {auth.loggedIn ? "ACCT ◆" : "ACCT ○"}
-          </button>
         </div>
       </div>
 
-      {/* ── Account ── */}
-      {showAccount && (
-        <Account auth={auth} busy={authBusy} onLogin={handleLogin} onLogout={handleLogout}
-          apiUrl={apiUrl} onSaveApiUrl={saveApiUrl}
-          notifyEnabled={notifyEnabled} onToggleNotifications={toggleNotifications}/>
+      {/* ── Tab navigation ── */}
+      <TabBar
+        active={activeTab}
+        onSelect={setActiveTab}
+        weekBadge={(xurData?.source === "live" && xurData?.xur?.present) || eververseInShop.length > 0}
+        guideCount={guides.length}
+      />
+
+      {/* ── WEEK tab ── */}
+      {activeTab === "week" && (
+        <ThisWeekPanel data={weeklyData} onScan={(name) => scan(name)} trackedNames={trackedItemNames}
+          apiUrl={apiUrl} onOpenAccount={() => setActiveTab("acct")}
+          onRefresh={() => window.api.getWeekly?.({ force: true }).then(setWeeklyData).catch(()=>{})}/>
       )}
 
-      {/* ── Guides (imported / authored walkthroughs + community library) ── */}
-      {showGuides && (
+      {/* ── GUIDES tab ── */}
+      {activeTab === "guides" && (
         <Guides guides={guides} onImportGuideFile={importGuideFile}
           onExportGuides={exportGuides} onDeleteGuide={deleteGuide}
           onBrowseLibrary={browseLibrary} onImportCommunityGuide={importCommunityGuide}
           onCreateGuide={createGuide}/>
       )}
 
-      {/* ── This Week (Tower concierge: Xûr + Eververse + raid slate) ── */}
-      {showWeek && (
-        <ThisWeekPanel data={weeklyData} onScan={(name) => scan(name)} trackedNames={trackedItemNames}
-          apiUrl={apiUrl} onOpenAccount={() => setShowAccount(true)}
-          onRefresh={() => window.api.getWeekly?.({ force: true }).then(setWeeklyData).catch(()=>{})}/>
+      {/* ── ACCT tab ── */}
+      {activeTab === "acct" && (
+        <Account auth={auth} busy={authBusy} onLogin={handleLogin} onLogout={handleLogout}
+          apiUrl={apiUrl} onSaveApiUrl={saveApiUrl}
+          notifyEnabled={notifyEnabled} onToggleNotifications={toggleNotifications}/>
       )}
 
-      {/* ── Xûr (live exotic stock from the data API; only shown when present) ── */}
-      <XurPanel data={xurData} onScan={(name) => scan(name)}/>
+      {/* ── SCAN tab ── */}
+      {activeTab === "scan" && <>
 
-      {/* ── Eververse (tracked ornaments for sale right now; only when in stock) ── */}
-      <EverversePanel items={eververseInShop} location={eververseData?.vendor?.location} onScan={(name) => scan(name)}/>
-
-      {/* ── Path type legend ── */}
-      <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", marginBottom:14 }}>
-        <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700,
-          color:C.sub, letterSpacing:"0.16em" }}>PATH TYPES</span>
-        {Object.entries(PATH_TYPE).slice(0,4).map(([k,v]) => (
-          <div key={k} style={{ display:"flex", alignItems:"center", gap:4 }} title={`${v.label} acquisition`}>
-            <span style={{ color:v.color, fontSize:10 }}>{v.icon}</span>
-            <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.muted, letterSpacing:"0.1em" }}>{v.label}</span>
-          </div>
-        ))}
-      </div>
+      {/* Slim passive alert — Xûr in town */}
+      {xurData?.source === "live" && xurData?.xur?.present && (
+        <button onClick={() => setActiveTab("week")} style={{
+          display:"flex", alignItems:"center", gap:8, width:"100%", marginBottom:8,
+          padding:"5px 10px", background:C.goldLo, border:`1px solid ${C.gold}`,
+          color:C.gold, cursor:"pointer", textAlign:"left",
+          fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, fontWeight:700,
+          letterSpacing:"0.12em", WebkitAppRegion:"no-drag" }}>
+          <span>◆</span> XÛR IS IN TOWN — SEE WEEK TAB
+          <span style={{ marginLeft:"auto" }}>→</span>
+        </button>
+      )}
+      {/* Slim passive alert — tracked ornaments in Eververse shop */}
+      {eververseInShop.length > 0 && (
+        <button onClick={() => setActiveTab("week")} style={{
+          display:"flex", alignItems:"center", gap:8, width:"100%", marginBottom:8,
+          padding:"5px 10px", background:C.purpleLo, border:`1px solid ${C.purple}`,
+          color:C.purple, cursor:"pointer", textAlign:"left",
+          fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, fontWeight:700,
+          letterSpacing:"0.12em", WebkitAppRegion:"no-drag" }}>
+          <span>◆</span>
+          {trackedOrnaments.length > 0
+            ? `${eververseInShop.length} TRACKED ORNAMENT${eververseInShop.length !== 1 ? "S" : ""} IN SHOP — SEE WEEK TAB`
+            : `${eververseInShop.length} NEW ORNAMENT${eververseInShop.length !== 1 ? "S" : ""} IN SHOP — SEE WEEK TAB`}
+          <span style={{ marginLeft:"auto" }}>→</span>
+        </button>
+      )}
 
       {/* ── Search ── */}
       <div style={{ position:"relative", marginBottom:16 }}>
@@ -1393,7 +1413,7 @@ export default function GhostCompanion() {
           <Lbl color={scanning ? C.blue : C.sub} mb={5}>{scanning ? "SEARCHING MANIFEST..." : "ITEM DESIGNATION"}</Lbl>
           <div style={{ display:"flex", gap:10, alignItems:"center" }}>
             <input value={query} onChange={e => setQuery(e.target.value)}
-              onKeyDown={e => e.key==="Enter" && scan()}
+              onKeyDown={e => { if (e.key==="Enter") scan(); else if (e.key==="Escape") { setQuery(""); e.target.blur(); } }}
               placeholder="Name or itemHash — e.g. Touch of Malice, 2575506895"
               style={{ flex:1, minWidth:0, background:"transparent", border:"none", color:C.text,
                 fontFamily:"'Barlow Condensed',sans-serif", fontSize:17, fontWeight:500, letterSpacing:"0.04em" }}/>
@@ -1457,7 +1477,7 @@ export default function GhostCompanion() {
                 Sign in with Bungie.net and the Ghost will auto-count your runs from in-game
                 activity completions — no manual tallying.
               </div>
-              <Chip color={C.orange} onClick={() => setShowAccount(true)}>
+              <Chip color={C.orange} onClick={() => setActiveTab("acct")}>
                 SIGN IN WITH BUNGIE →
               </Chip>
             </div>
@@ -1468,6 +1488,18 @@ export default function GhostCompanion() {
       {/* ── Results ── */}
       {itemData && (
         <div style={{ animation:"fadeUp 0.4s ease" }}>
+          {/* Path type legend — only shown when results are present */}
+          <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", marginBottom:14 }}>
+            <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700,
+              color:C.sub, letterSpacing:"0.16em" }}>PATH TYPES</span>
+            {Object.entries(PATH_TYPE).slice(0,4).map(([k,v]) => (
+              <div key={k} style={{ display:"flex", alignItems:"center", gap:4 }} title={`${v.label} acquisition`}>
+                <span style={{ color:v.color, fontSize:10 }}>{v.icon}</span>
+                <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.muted, letterSpacing:"0.1em" }}>{v.label}</span>
+              </div>
+            ))}
+          </div>
+
           {/* Item header */}
           <Panel bc={itemRar.color} style={{ marginBottom:10, background:`linear-gradient(135deg,${C.panel} 70%,${itemRar.bg}60)` }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:10 }}>
@@ -1633,6 +1665,8 @@ export default function GhostCompanion() {
           </div>
         </div>
       )}
+
+      </>}
     </div>
   );
 }
