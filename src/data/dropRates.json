@@ -1699,5 +1699,94 @@
         "notes": "Not craftable — weekly drop only."
       }
     ]
+  },
+
+  "Wicked Implement": {
+    "itemHash": 940371471,
+    "acquisitionPaths": [
+      {
+        "id": "monument",
+        "method": "Exotic Archive — Monument to Lost Lights",
+        "pathType": "vendor",
+        "location": "The Tower (Monument to Lost Lights)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": true,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Exotic strand scout rifle. Originally from the Deep Dive exotic mission (Season of the Deep). Purchasable from the Exotic Archive at the Tower — requires an Exotic Cipher + Glimmer + Legendary Shards.",
+        "notes": "May also be available in the Exotic Mission rotator if Deep Dive cycles back in. Monument is the reliable standing source."
+      }
+    ]
+  },
+
+  "Techeun Force": {
+    "itemHash": 2683864852,
+    "acquisitionPaths": [
+      {
+        "id": "encounter",
+        "method": "Encounter Drops",
+        "pathType": "encounter_drop",
+        "location": "Last Wish",
+        "sourceActivityHashes": [2122313384, 1661734046],
+        "dropRate": 0.2,
+        "farmable": false,
+        "weeklyLimitPerCharacter": 3,
+        "estimatedMinutesPerRun": 30,
+        "description": "Arc fusion rifle. Drops from any encounter in Last Wish — 3 drops per character per week.",
+        "notes": null
+      },
+      {
+        "id": "craftable",
+        "method": "Craft at the Enclave",
+        "pathType": "craftable",
+        "location": "The Enclave (Savathûn's Throne World)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 5,
+        "description": "Craftable. Extract Deepsight from 5 red-border copies dropped in Last Wish, then shape at the Enclave.",
+        "notes": "Pattern needs 5 Deepsight extractions. Once unlocked, reshapeable for enhanced perks."
+      }
+    ]
+  },
+
+  "Ashes to Assets": {
+    "itemHash": 856936828,
+    "acquisitionPaths": [
+      {
+        "id": "vendor",
+        "method": "Ada-1 — Weekly Mod Stock",
+        "pathType": "vendor",
+        "location": "The Tower (Ada-1)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Helmet mod — grenade kills grant Super energy. Purchase from Ada-1 when she stocks it (rotates weekly each Tuesday reset). Once bought, permanently unlocked in Collections.",
+        "notes": "One-time unlock — buy it once and it's yours permanently. Check Ada-1's stock each reset."
+      }
+    ]
+  },
+
+  "Reaper": {
+    "itemHash": 4149682173,
+    "acquisitionPaths": [
+      {
+        "id": "vendor",
+        "method": "Ada-1 — Weekly Mod Stock",
+        "pathType": "vendor",
+        "location": "The Tower (Ada-1)",
+        "sourceActivityHashes": [],
+        "dropRate": 1.0,
+        "farmable": false,
+        "weeklyLimitPerCharacter": null,
+        "estimatedMinutesPerRun": 1,
+        "description": "Class item mod — spawns a Heavy ammo brick after using your class ability near enemies. Purchase from Ada-1 when she stocks it (rotates weekly each Tuesday reset). Once bought, permanently unlocked in Collections.",
+        "notes": "One-time unlock — buy it once and it's yours permanently. Check Ada-1's stock each reset."
+      }
+    ]
   }
 }
