@@ -1,6 +1,6 @@
 # Ghost Companion — Session Handoff
 
-_Last updated: 2026-07-02 (v1.1.1). Read this first when resuming work on this tool._
+_Last updated: 2026-07-02 (v1.2.0). Read this first when resuming work on this tool._
 
 ## What this is
 An always-on-top Destiny 2 loot-farming overlay.
@@ -50,10 +50,9 @@ An always-on-top Destiny 2 loot-farming overlay.
 - **To ship a change:** bump `version` in `package.json`, commit to `main`,
   `git tag -a vX.Y.Z && git push origin main --tags`, wait for green, publish the
   draft. Secrets must already exist before tagging (else a credential-less binary).
-- **Shipped:** `v1.0.0`–`v1.0.7` all live (published). **`v1.0.7` (2026-07-01) is
-  the current latest** = live catalyst/pattern progress on item cards + "CHASE
-  WEAPONS HERE" rotation join (WEEK tab) + the Xûr schedule-window presence fix
-  (see the two dedicated sections below). `v1.0.6` = sustainable rotation pipeline
+- **Shipped:** `v1.0.0`–`v1.2.0` all live (published). **`v1.2.0` (2026-07-02) is
+  the current latest** = true four-tab navigation (SCAN / WEEK / GUIDES / ACCT) replacing
+  the old toggle-injected panel system (see "Recent commits"). `v1.0.6` = sustainable rotation pipeline
   (seed + auto-refresh), notifier cache-efficiency, and the `releaseType:"release"`
   auto-publish flip. `v1.0.5` = This Week concierge Stages 1–4. `/releases/latest`
   resolves to v1.0.7 (auto-published; workflow run went green + not-draft, verified).
@@ -358,7 +357,7 @@ An always-on-top Destiny 2 loot-farming overlay.
      (`git push` → Railway) before the client library browser shows anything.
    **Reminder: shipping any client change now requires a new tagged release**
    (bump version → tag → publish draft).
-6. **All releases through v1.1.1 are published + live — nothing pending.** Auto-publish
+6. **All releases through v1.2.0 are published + live — nothing pending.** Auto-publish
    has been reliable since v1.0.6. No known open build work. The only structural dead-end
    is #2 (set-piece enumeration), which no data source can satisfy.
 
@@ -387,6 +386,23 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
+- **`v1.2.0`** (2026-07-02, live) — true four-tab navigation + UI polish.
+  - **Tab bar:** `showWeek`/`showGuides`/`showAccount` booleans replaced by a single
+    `activeTab` enum (`'scan'|'week'|'guides'|'acct'`). Persistent `TabBar` component
+    sits below the header; each tab owns the full content area. Header now contains only
+    window controls (PIN + TRAY) and the auth dot.
+  - **WEEK tab badge:** dot appears when Xûr is in town or Eververse shop has items.
+    **GUIDES tab badge:** shows guide count.
+  - **Passive alerts on SCAN:** slim chip above the search when Xûr is present ("XÛR IS
+    IN TOWN — SEE WEEK TAB", gold) or when Eververse has items ("N NEW ORNAMENTS IN SHOP"
+    before user tracks any; "N TRACKED ORNAMENTS IN SHOP" after). Both click through to
+    the WEEK tab.
+  - **Removed** redundant top-level `XurPanel` + `EverversePanel` (data already in
+    `ThisWeekPanel` on the WEEK tab — was being shown twice).
+  - **PATH TYPES legend** now only renders when scan results are present, not on every load.
+  - **Escape key** clears and blurs the search input.
+  - **Active tab highlight:** background tint on the active tab button (was border/color only).
+  - **WEEK tab divider:** subtle `C.border` line between Eververse and Raids Available sections.
 - **`v1.1.1`** (2026-07-02, live) — GUIDES tab now groups by activity: collapsible
   headers (Deep Stone Crypt, Last Wish, Vault of Glass, Warlord's Ruin, Vesper's Host)
   instead of a flat list of 24 rows. useMemo groups by `g.activity`, alphabetically
