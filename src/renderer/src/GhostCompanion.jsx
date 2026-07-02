@@ -2,19 +2,11 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 // Community acquisition data (drop rates, paths, steps). The Manifest gives us
 // the canonical item identity; dropRates.json supplies the farming metadata.
 import dropRates from "../../data/dropRates.json";
-
-/* ── Palette ──────────────────────────────────────────────────────── */
-const C = {
-  bg: "#05080F", panel: "#091420", panelAlt: "#0C1B2A",
-  border: "#142840", borderHi: "#1E3D5C",
-  orange: "#F07030", orangeLo: "#5A2510",
-  gold: "#C09030",   goldLo: "#3A2A08",
-  blue: "#38AACE",   blueLo: "#0E2F40",
-  text: "#C8D8E8",   sub: "#4A6880", muted: "#1E3048",
-  green: "#3AAA60",  greenLo: "#0E2A18",
-  red: "#C83030",    redLo: "#3A0E0E",
-  purple: "#8A5ABE", purpleLo: "#1E1030",
-};
+import { C } from "./theme";
+import { Brackets, Panel, Lbl, Badge, Chip, Ghost, Diamond } from "./components/primitives";
+import { XurSection, BansheeSection, XurPanel, EververseSection, EverversePanel } from "./components/VendorPanels";
+import { WeaponPerksPanel } from "./components/WeaponPerksPanel";
+import { costColor, formatQty } from "./format";
 
 const PATH_TYPE = {
   secret_chest:   { icon:"◈", label:"Secret Chest",   color:C.gold,   bg:C.goldLo   },
@@ -62,72 +54,8 @@ function bestPathId(paths) {
 }
 
 /* ── Shared atoms ─────────────────────────────────────────────────── */
-function Brackets({ color=C.orange, pad=8, size=10 }) {
-  const b = { position:"absolute", width:size, height:size, borderColor:color, borderStyle:"solid", borderWidth:0 };
-  return (<>
-    <div style={{ ...b, top:pad, left:pad,  borderTopWidth:1.5, borderLeftWidth:1.5  }}/>
-    <div style={{ ...b, top:pad, right:pad, borderTopWidth:1.5, borderRightWidth:1.5 }}/>
-    <div style={{ ...b, bottom:pad, left:pad,  borderBottomWidth:1.5, borderLeftWidth:1.5  }}/>
-    <div style={{ ...b, bottom:pad, right:pad, borderBottomWidth:1.5, borderRightWidth:1.5 }}/>
-  </>);
-}
-
-function Panel({ children, style={}, bc=C.orange, noBrackets=false }) {
-  return (
-    <div style={{ background:C.panel, border:`1px solid ${C.border}`, position:"relative", padding:14, ...style }}>
-      {!noBrackets && <Brackets color={bc}/>}
-      {children}
-    </div>
-  );
-}
-
-function Lbl({ children, color=C.sub, mb=4 }) {
-  return <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700, letterSpacing:"0.18em", textTransform:"uppercase", color, marginBottom:mb }}>{children}</div>;
-}
-
-function Badge({ label, color, bg }) {
-  return (
-    <div style={{ padding:"2px 7px", background:bg, border:`1px solid ${color}`,
-      fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, fontWeight:700,
-      letterSpacing:"0.12em", color, display:"inline-block" }}>
-      {label}
-    </div>
-  );
-}
-
-// Clickable pill — used for the empty-state example searches and the sign-in nudge.
-function Chip({ children, onClick, color=C.blue, title }) {
-  return (
-    <button onClick={onClick} title={title} style={{
-      background:C.panelAlt, border:`1px solid ${color}`, color,
-      fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, fontWeight:600,
-      letterSpacing:"0.06em", padding:"5px 11px", cursor:"pointer", WebkitAppRegion:"no-drag" }}>
-      {children}
-    </button>
-  );
-}
-
-function Ghost({ size=28, color=C.blue, spin=false }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32"
-      style={{ display:"block", ...(spin ? { animation:"ghostSpin 8s linear infinite" } : {}) }}>
-      <polygon points="16,2 30,16 16,30 2,16"  fill="none" stroke={color} strokeWidth="1.5"/>
-      <polygon points="16,6 26,16 16,26 6,16"  fill={color} opacity="0.12"/>
-      <polygon points="16,10 22,16 16,22 10,16" fill="none" stroke={color} strokeWidth="0.8" opacity="0.5"/>
-      <circle cx="16" cy="16" r="2.8" fill={color}/>
-      <circle cx="16" cy="16" r="1.2" fill="#fff" opacity="0.6"/>
-    </svg>
-  );
-}
-
-function Diamond({ n, color=C.orange, bg=C.orangeLo }) {
-  return (
-    <div style={{ width:26, height:26, transform:"rotate(45deg)", background:bg,
-      border:`1.5px solid ${color}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-      <span style={{ transform:"rotate(-45deg)", fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, fontWeight:700, color }}>{n}</span>
-    </div>
-  );
-}
+// Brackets / Panel / Lbl / Badge / Chip / Ghost / Diamond moved to
+// ./components/primitives.jsx (imported above).
 
 /* ── Community guide library browser ──────────────────────────────────
    Lists the curated packages served by the data API's /guides index and lets
@@ -242,12 +170,19 @@ function CreateGuideForm({ onCreate }) {
   const [msg, setMsg]           = useState(null);
   const [saving, setSaving]     = useState(false);
 
-  const searchItem = useCallback(async (q) => {
-    setItemQuery(q);
-    if (q.trim().length < 2) { setItemHits([]); return; }
-    try { setItemHits(((await window.api?.searchManifest?.(q)) || []).slice(0, 6)); }
-    catch { setItemHits([]); }
-  }, []);
+  const searchItem = useCallback((q) => setItemQuery(q), []);
+
+  // Debounced Manifest item search (300ms) — mirrors the activity picker so we
+  // don't fire a full-table scan on every keystroke.
+  useEffect(() => {
+    const q = itemQuery.trim();
+    if (q.length < 2) { setItemHits([]); return; }
+    const t = setTimeout(async () => {
+      try { setItemHits(((await window.api?.searchManifest?.(q)) || []).slice(0, 6)); }
+      catch { setItemHits([]); }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [itemQuery]);
 
   const setStep = (i, key, val) =>
     setSteps(s => s.map((st, j) => j === i ? { ...st, [key]:val } : st));
@@ -1062,207 +997,8 @@ function AddPathForm({ onSave, onCancel }) {
    ONLY when the server reports an authoritative live read AND Xûr is verified
    present — never a possibly-stale "IN TOWN". */
 
-function XurSection({ xur, onScan }) {
-  const weapons = xur.weapons || [];
-  const armorCount = (xur.armor || []).length;
-  return (
-    <div>
-      {xur.location && (
-        <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.12em", marginBottom:weapons.length?8:0 }}>
-          {xur.location.toUpperCase()}
-        </div>
-      )}
-      {weapons.map(w => (
-        <div key={w.itemHash} onClick={() => onScan?.(w.name)} title="Scan this item"
-          style={{ display:"flex", alignItems:"center", gap:9, padding:"5px 0", cursor:"pointer" }}
-          onMouseEnter={e => e.currentTarget.style.opacity = 0.8}
-          onMouseLeave={e => e.currentTarget.style.opacity = 1}>
-          {w.icon
-            ? <img src={w.icon} alt="" width={28} height={28} style={{ border:`1px solid ${C.gold}`, flexShrink:0 }}/>
-            : <div style={{ width:28, height:28, background:C.goldLo, border:`1px solid ${C.gold}`, flexShrink:0 }}/>}
-          <div style={{ minWidth:0 }}>
-            <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, fontWeight:700,
-              color:C.gold, letterSpacing:"0.04em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
-              {w.name}
-            </div>
-            <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.1em" }}>
-              EXOTIC · {(w.type || "WEAPON").toUpperCase()}
-            </div>
-          </div>
-        </div>
-      ))}
-      {armorCount > 0 && (
-        <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, color:C.sub, letterSpacing:"0.1em", marginTop:6 }}>
-          + {armorCount} exotic armor piece{armorCount !== 1 ? "s" : ""} in stock
-        </div>
-      )}
-      {weapons.length === 0 && armorCount === 0 && (
-        <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, color:C.sub, letterSpacing:"0.06em" }}>
-          Xûr is here, but no exotic gear could be read from his stock this refresh.
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Banshee-44's live weekly weapon rotation (legendary buyables). Same row idiom
-// as XurSection but blue, and each weapon is scannable.
-function BansheeSection({ weapons, location, onScan }) {
-  return (
-    <div>
-      {location && (
-        <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.12em", marginBottom:weapons.length?8:0 }}>
-          {location.toUpperCase()}
-        </div>
-      )}
-      {weapons.map(w => (
-        <div key={w.itemHash} onClick={() => onScan?.(w.name)} title="Scan this item"
-          style={{ display:"flex", alignItems:"center", gap:9, padding:"5px 0", cursor:"pointer" }}
-          onMouseEnter={e => e.currentTarget.style.opacity = 0.8}
-          onMouseLeave={e => e.currentTarget.style.opacity = 1}>
-          {w.icon
-            ? <img src={w.icon} alt="" width={26} height={26} style={{ border:`1px solid ${C.blue}`, flexShrink:0 }}/>
-            : <div style={{ width:26, height:26, background:C.blueLo, border:`1px solid ${C.blue}`, flexShrink:0 }}/>}
-          <div style={{ minWidth:0 }}>
-            <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, fontWeight:700,
-              color:C.blue, letterSpacing:"0.04em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
-              {w.name}
-            </div>
-            <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.1em" }}>
-              {(w.tier || "LEGENDARY").toUpperCase()} · {(w.type || "WEAPON").toUpperCase()}
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function XurPanel({ data, onScan }) {
-  // Only ever surface Xûr when the server gave an AUTHORITATIVE live read AND he
-  // is verified present. Away or unknown (fallback) → render nothing at all.
-  // Starts COLLAPSED — the header still shows the count so it stays discoverable.
-  const [open, setOpen] = useState(false);
-  if (!data || data.source !== "live" || !data.xur?.present) return null;
-  const week = data.weekOf ? new Date(data.weekOf).toLocaleDateString() : null;
-  const n = (data.xur.weapons || []).length + (data.xur.armor || []).length;
-  return (
-    <Panel bc={C.gold} style={{ marginBottom:14 }}>
-      <div onClick={() => setOpen(o => !o)} title={open ? "Collapse" : "Expand"}
-        style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
-          gap:8, cursor:"pointer", userSelect:"none", marginBottom:open ? 8 : 0 }}>
-        <Lbl color={C.gold} mb={0}>{data.xur.label || "Xûr"} · {n} Exotic{n !== 1 ? "s" : ""} In Stock</Lbl>
-        <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
-          <Badge label="IN TOWN · LIVE" color={C.green} bg={C.greenLo}/>
-          <span style={{ color:C.gold, fontSize:11, fontFamily:"'Barlow Condensed',sans-serif" }}>{open ? "▲" : "▼"}</span>
-        </div>
-      </div>
-      {open && (
-        <>
-          <XurSection xur={data.xur} onScan={onScan}/>
-          {week && (
-            <div style={{ textAlign:"center", fontFamily:"'Barlow Condensed',sans-serif",
-              fontSize:9, color:C.muted, letterSpacing:"0.14em", marginTop:12 }}>
-              WEEK OF {week} · VERIFIED LIVE
-            </div>
-          )}
-        </>
-      )}
-    </Panel>
-  );
-}
-
-/* ── Eververse panel ──────────────────────────────────────────────────
-   Surfaces tracked weapon ornaments that are FOR SALE in Tess Everis' shop
-   right now, so the user can go buy them before they rotate out. Mirrors the
-   XurPanel discipline: render ONLY on an authoritative live read with at least
-   one tracked ornament actually in stock — never on a fallback/unknown read. */
-
-// A cost line ({name, quantity, kind}) → colour by currency. Bright Dust is
-// grindable (blue), Silver is real money (gold), Glimmer is trivial (green).
-function costColor(kind) {
-  return kind === "silver" ? C.gold : kind === "glimmer" ? C.green : C.blue;
-}
-function formatQty(n) {
-  return typeof n === "number" ? n.toLocaleString() : n;
-}
-
-function EververseSection({ items, onScan }) {
-  return (
-    <div>
-      {items.map((o) => {
-        const cost = (o.cost || [])[0]; // ornaments cost a single currency
-        const col = costColor(cost?.kind);
-        return (
-          <div key={o.itemHash} onClick={() => onScan?.(o.weapon)} title={`Scan ${o.weapon}`}
-            style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 0", cursor:"pointer",
-              borderBottom:`1px solid ${C.muted}` }}
-            onMouseEnter={e => e.currentTarget.style.opacity = 0.8}
-            onMouseLeave={e => e.currentTarget.style.opacity = 1}>
-            <div style={{ width:26, height:26, background:C.purpleLo, border:`1px solid ${C.purple}`,
-              display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0,
-              fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, color:C.purple }}>◈</div>
-            <div style={{ minWidth:0, flex:1 }}>
-              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:14, fontWeight:700,
-                color:C.text, letterSpacing:"0.04em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
-                {o.name}
-              </div>
-              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.1em" }}>
-                {(o.weapon || "ORNAMENT").toUpperCase()} · ORNAMENT
-              </div>
-            </div>
-            {cost && (
-              <div style={{ textAlign:"right", flexShrink:0 }}>
-                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:14, fontWeight:700, color:col, lineHeight:1 }}>
-                  {formatQty(cost.quantity)}
-                </div>
-                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:8, color:col, letterSpacing:"0.1em" }}>
-                  {(cost.name || "").toUpperCase()}
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function EverversePanel({ items, location, onScan }) {
-  // `items` is the already-merged in-shop list (curated registry + the user's own
-  // tracked ornaments matched against the live sales). The parent only builds it
-  // from an AUTHORITATIVE live read, so an empty list here means nothing to show.
-  // Starts COLLAPSED — the header still shows the count so it stays discoverable.
-  const [open, setOpen] = useState(false);
-  if (!items?.length) return null;
-  const n = items.length;
-  return (
-    <Panel bc={C.purple} style={{ marginBottom:14 }}>
-      <div onClick={() => setOpen(o => !o)} title={open ? "Collapse" : "Expand"}
-        style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
-          gap:8, cursor:"pointer", userSelect:"none", marginBottom:open ? 6 : 0 }}>
-        <Lbl color={C.purple} mb={0}>🛒 Eververse · {n} Suggested Ornament{n !== 1 ? "s" : ""} In Stock</Lbl>
-        <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
-          <Badge label="IN SHOP · LIVE" color={C.green} bg={C.greenLo}/>
-          <span style={{ color:C.purple, fontSize:11, fontFamily:"'Barlow Condensed',sans-serif" }}>{open ? "▲" : "▼"}</span>
-        </div>
-      </div>
-      {open && (
-        <>
-          <div style={{ fontSize:11, color:C.sub, lineHeight:1.5, marginBottom:8 }}>
-            {n === 1 ? "A suggested ornament is" : `${n} suggested ornaments are`} for sale at Tess Everis right now —
-            grab {n === 1 ? "it" : "them"} before the shop rotates.
-          </div>
-          <EververseSection items={items} onScan={onScan}/>
-          <div style={{ textAlign:"center", fontFamily:"'Barlow Condensed',sans-serif",
-            fontSize:9, color:C.muted, letterSpacing:"0.14em", marginTop:10 }}>
-            {(location || "THE TOWER").toUpperCase()} · VERIFIED LIVE
-          </div>
-        </>
-      )}
-    </Panel>
-  );
-}
+// XurSection / BansheeSection / XurPanel / EververseSection / EverversePanel
+// moved to ./components/VendorPanels.jsx (imported above).
 
 /* ── This Week (Tower concierge) ──────────────────────────────────────
    One-glance view of what you'd otherwise run around the Tower to check —
@@ -1674,193 +1410,7 @@ function GuidesPanel({ guides }) {
   );
 }
 
-/* ── Weapon catalyst + perk pool (factual, Manifest-sourced) ──────────
-   Shows the exotic catalyst (objective + effect), the weapon's intrinsic, and
-   the real per-column perk pool (random rolls when present, else fixed perks).
-   This is NOT a god-roll recommendation — those are community opinion; the
-   light.gg deep link above is the honest source for "best" picks. Collapsed by
-   default since the pool can be long. Self-hides for non-weapons. */
-function WeaponPerksPanel({ data, progress }) {
-  const [openPerks, setOpenPerks] = useState(false);
-  if (!data) return null;
-  const { catalyst, pattern, intrinsic, columns } = data;
-  if (!catalyst && !pattern && !intrinsic && !(columns?.length)) return null;
-  const hasRandom = (columns || []).some((c) => c.random);
-  // Live objective progress for this catalyst (empty when logged out / uncached).
-  const catRec = catalyst && progress ? progress[catalyst.recordHash] : null;
-  const objProg = new Map((catRec?.objectives || []).map((o) => [o.objectiveHash, o]));
-  const catDone = !!catRec?.complete;
-  // Live crafting-pattern progress (single objective; empty when logged out).
-  const patRec = pattern && progress ? progress[pattern.recordHash] : null;
-  const patObj = patRec?.objectives?.find((o) => o.objectiveHash === pattern?.objectiveHash)
-    || patRec?.objectives?.[0] || null;
-  const patTarget = pattern?.target || patObj?.completionValue || 0;
-  const patDone = !!patObj?.complete;
-  return (
-    <>
-      {catalyst && (
-        <Panel bc={C.gold} style={{ marginBottom:10 }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
-            <Lbl color={C.gold} mb={0}>Catalyst</Lbl>
-            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              {catDone && <Badge label="✓ COMPLETE" color={C.green} bg={C.greenLo}/>}
-              <Badge label="EXOTIC" color={C.gold} bg={C.goldLo}/>
-            </div>
-          </div>
-          <div style={{ display:"flex", gap:10, alignItems:"flex-start" }}>
-            {catalyst.icon && (
-              <img src={catalyst.icon} alt="" width={30} height={30}
-                style={{ border:`1px solid ${C.gold}`, flexShrink:0 }}/>
-            )}
-            <div style={{ minWidth:0 }}>
-              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:15, fontWeight:700,
-                color:C.text, letterSpacing:"0.04em" }}>{catalyst.name}</div>
-              {catalyst.description && (
-                <div style={{ fontSize:12, color:C.sub, fontStyle:"italic", lineHeight:1.5, marginTop:2 }}>
-                  {catalyst.description}
-                </div>
-              )}
-            </div>
-          </div>
-          {catalyst.objectives?.length > 0 && (
-            <>
-              <div style={{ marginTop:8, display:"flex", flexDirection:"column", gap:5 }}>
-                {catalyst.objectives.map((o, i) => {
-                  const p = objProg.get(o.objectiveHash);           // live progress, if any
-                  const target = o.target || p?.completionValue || 0;
-                  const done = p?.complete;
-                  const pct = p && !o.checkbox && target > 1
-                    ? Math.max(0, Math.min(1, p.progress / target)) : null;
-                  return (
-                    <div key={i} style={{ background:C.panelAlt,
-                      border:`1px solid ${done ? C.green : C.muted}`, padding:"4px 8px" }}>
-                      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
-                        <span style={{ display:"flex", alignItems:"center", gap:7, minWidth:0 }}>
-                          {o.checkbox && (
-                            <span style={{ color:done ? C.green : C.gold, fontSize:11, flexShrink:0 }}>
-                              {done ? "☑" : "☐"}
-                            </span>
-                          )}
-                          <span style={{ fontSize:12, color:C.sub, lineHeight:1.3 }}>{o.description}</span>
-                        </span>
-                        {!o.checkbox && target > 1 && (
-                          <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:13, fontWeight:700,
-                            color:done ? C.green : C.gold, flexShrink:0, whiteSpace:"nowrap" }}>
-                            {p ? `${p.progress.toLocaleString()} / ${target.toLocaleString()}`
-                               : target.toLocaleString()}
-                          </span>
-                        )}
-                      </div>
-                      {pct !== null && (
-                        <div style={{ marginTop:4, height:3, background:C.muted }}>
-                          <div style={{ height:"100%", width:`${pct * 100}%`,
-                            background:done ? C.green : C.gold }}/>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{ fontSize:11, color:C.sub, fontStyle:"italic", lineHeight:1.5, marginTop:8,
-                borderLeft:`2px solid ${C.border}`, paddingLeft:8 }}>
-                Earn the catalyst in-game, then <span style={{ color:C.text }}>insert it</span> into
-                the weapon's catalyst slot (☐ steps) to start tracking. Complete the remaining
-                objectives to unlock the masterwork upgrade.
-              </div>
-            </>
-          )}
-        </Panel>
-      )}
-
-      {pattern && (
-        <Panel bc={C.purple} style={{ marginBottom:10 }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
-            marginBottom: patObj ? 7 : 6 }}>
-            <Lbl color={C.purple} mb={0}>Craftable Pattern</Lbl>
-            {patDone
-              ? <Badge label="✓ UNLOCKED" color={C.green} bg={C.greenLo}/>
-              : <Badge label={patObj ? `${patObj.progress.toLocaleString()} / ${patTarget}` : `${patTarget} NEEDED`}
-                  color={C.purple} bg={C.purpleLo}/>}
-          </div>
-          {patObj && !patDone && (
-            <div style={{ height:4, background:C.muted }}>
-              <div style={{ height:"100%",
-                width:`${Math.max(0, Math.min(1, patObj.progress / (patTarget || 1))) * 100}%`,
-                background:C.purple }}/>
-            </div>
-          )}
-          {!patObj && (
-            <div style={{ fontSize:11, color:C.sub, fontStyle:"italic", lineHeight:1.5 }}>
-              Extract {patTarget} Deepsight {patTarget === 1 ? "pattern" : "patterns"} to craft this at
-              the Enclave{patDone ? "" : " — sign in with Bungie to track your progress"}.
-            </div>
-          )}
-        </Panel>
-      )}
-
-      {(intrinsic || columns?.length > 0) && (
-        <Panel bc={C.blue} style={{ marginBottom:10 }}>
-          <div onClick={() => setOpenPerks((s) => !s)} style={{ display:"flex", alignItems:"center",
-            justifyContent:"space-between", cursor:"pointer" }}>
-            <Lbl color={C.blue} mb={0}>
-              {hasRandom ? "Perk Pool · What Can Roll" : "Perks"}
-            </Lbl>
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              {hasRandom && <Badge label="RANDOM ROLLS" color={C.blue} bg={C.blueLo}/>}
-              <span style={{ color:C.sub, fontSize:11 }}>{openPerks ? "▲" : "▼"}</span>
-            </div>
-          </div>
-
-          {intrinsic && (
-            <div style={{ display:"flex", gap:9, alignItems:"flex-start", marginTop:8 }}>
-              {intrinsic.icon && (
-                <img src={intrinsic.icon} alt="" width={26} height={26}
-                  style={{ border:`1px solid ${C.blue}`, flexShrink:0 }}/>
-              )}
-              <div style={{ minWidth:0 }}>
-                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.blue, letterSpacing:"0.14em" }}>
-                  INTRINSIC
-                </div>
-                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:14, fontWeight:700,
-                  color:C.text, letterSpacing:"0.03em" }}>{intrinsic.name}</div>
-                {openPerks && intrinsic.description && (
-                  <div style={{ fontSize:11, color:C.sub, lineHeight:1.5, marginTop:2 }}>{intrinsic.description}</div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {openPerks && columns?.map((col, ci) => (
-            <div key={ci} style={{ marginTop:10 }}>
-              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub,
-                letterSpacing:"0.14em", marginBottom:5 }}>
-                {col.label.toUpperCase()} · {col.perks.length}
-              </div>
-              <div style={{ display:"flex", flexWrap:"wrap", gap:5 }}>
-                {col.perks.map((p) => (
-                  <span key={p.itemHash} title={p.description || p.name}
-                    style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:12, color:C.text,
-                    background:C.panelAlt, border:`1px solid ${C.border}`, padding:"3px 7px",
-                    letterSpacing:"0.02em", whiteSpace:"nowrap" }}>
-                    {p.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-
-          {openPerks && hasRandom && (
-            <div style={{ fontSize:11, color:C.sub, fontStyle:"italic", lineHeight:1.5, marginTop:10,
-              borderLeft:`2px solid ${C.border}`, paddingLeft:8 }}>
-              This is the full roll pool from the Manifest — not a recommendation. For
-              community god-roll picks, use the light.gg link above.
-            </div>
-          )}
-        </Panel>
-      )}
-    </>
-  );
-}
+// WeaponPerksPanel moved to ./components/WeaponPerksPanel.jsx (imported above).
 
 /* ── Main App ─────────────────────────────────────────────────────── */
 export default function GhostCompanion() {

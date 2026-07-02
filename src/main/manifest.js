@@ -165,8 +165,10 @@ function parseRow(row) {
  * Full-text-ish search over DestinyInventoryItemDefinition by display name.
  * Backs the "search-manifest" IPC channel.
  *
- * Note: the manifest has no name index, so we scan and filter in JS. We cap the
- * scan with a reasonable LIMIT after JSON filtering to stay responsive.
+ * Note: the manifest has no name index. We prefilter in SQLite with a LIKE on the
+ * raw JSON text (case-insensitive for ASCII, done in C over ~39k rows) so only the
+ * handful of blobs containing the term reach JS for parsing; JS still does the
+ * precise name match, so LIKE over-matches (e.g. term in a description) are dropped.
  *
  * @param {string} query
  * @param {number} [limit]
@@ -176,7 +178,7 @@ export function searchManifest(query, limit = 40) {
   const term = (query || '').trim().toLowerCase()
   if (term.length < 2) return []
 
-  const rows = getDb().prepare(`SELECT json FROM ${ITEM_TABLE}`).all()
+  const rows = getDb().prepare(`SELECT json FROM ${ITEM_TABLE} WHERE json LIKE '%' || ? || '%'`).all(term)
   const results = []
 
   for (const row of rows) {
@@ -241,7 +243,9 @@ export function searchActivities(query, limit = 25) {
   const term = (query || '').trim().toLowerCase()
   if (term.length < 2) return []
 
-  const rows = getDb().prepare(`SELECT json FROM DestinyActivityDefinition`).all()
+  const rows = getDb()
+    .prepare(`SELECT json FROM DestinyActivityDefinition WHERE json LIKE '%' || ? || '%'`)
+    .all(term)
   const results = []
   for (const row of rows) {
     const def = parseRow(row)
@@ -357,28 +361,51 @@ export function getWeaponOrnaments(weaponHash) {
 // shaders, crafting bookkeeping) — filtered out of the perk-pool walk.
 const NON_PERK_PLUG = /empty_socket|tracker|memento|shader|deprecated|masterworks\.stat/i
 
-/**
- * Lazily-built index of exotic *catalyst* Triumph records, keyed by the lowercased
- * weapon name (records are named "<Weapon> Catalyst"). Built once per process from
- * DestinyRecordDefinition — the catalyst's source/effect and completion objectives
- * live on the Triumph, not on the weapon's masterwork plug.
- */
+// Lazily-built record indexes, both keyed by lowercased weapon name and built
+// together in a SINGLE DestinyRecordDefinition pass (they're mutually exclusive —
+// catalyst records are named "<Weapon> Catalyst", pattern records are named
+// exactly "<Weapon>"). The catalyst's source/effect + completion objectives live
+// on the Triumph, not the weapon's masterwork plug; a pattern record carries a
+// "Pattern progress" objective (target = deepsight extractions to craft).
 let catalystIndex = null
-function getCatalystIndex() {
-  if (catalystIndex) return catalystIndex
+let patternIndex = null
+function buildRecordIndexes() {
+  if (catalystIndex && patternIndex) return
   catalystIndex = new Map()
+  patternIndex = new Map()
   try {
-    const rows = getDb().prepare(`SELECT json FROM DestinyRecordDefinition`).all()
-    for (const row of rows) {
+    const db = getDb()
+    // Objective hashes whose progress text is exactly "Pattern progress" (+ target).
+    const patternObj = new Map() // objectiveHash -> completionValue
+    for (const row of db.prepare(`SELECT json FROM DestinyObjectiveDefinition`).all()) {
+      const o = parseRow(row)
+      if (o && (o.progressDescription || '').trim().toLowerCase() === 'pattern progress') {
+        patternObj.set(o.hash >>> 0, o.completionValue || 0)
+      }
+    }
+    for (const row of db.prepare(`SELECT json FROM DestinyRecordDefinition`).all()) {
       const d = parseRow(row)
       const name = d?.displayProperties?.name || ''
-      const m = /^(.+) Catalyst$/.exec(name)
-      if (!m || !(d.objectiveHashes || []).length) continue
-      catalystIndex.set(m[1].toLowerCase(), d)
+      if (!name) continue
+      const cat = /^(.+) Catalyst$/.exec(name)
+      if (cat) {
+        if ((d.objectiveHashes || []).length) catalystIndex.set(cat[1].toLowerCase(), d)
+        continue
+      }
+      const oh = (d.objectiveHashes || []).find((h) => patternObj.has(h >>> 0))
+      if (oh == null) continue
+      const key = name.toLowerCase()
+      if (!patternIndex.has(key)) {
+        patternIndex.set(key, { recordHash: d.hash >>> 0, objectiveHash: oh >>> 0, target: patternObj.get(oh >>> 0) })
+      }
     }
   } catch {
-    /* leave the (possibly partial) index; lookups just miss */
+    /* leave the (possibly partial) indexes; lookups just miss */
   }
+}
+
+function getCatalystIndex() {
+  buildRecordIndexes()
   return catalystIndex
 }
 
@@ -410,40 +437,10 @@ function resolveCatalyst(weaponName) {
   }
 }
 
-/**
- * Lazily-built index of crafting *pattern* records, keyed by lowercased weapon
- * name. A pattern record carries an objective whose progress text is exactly
- * "Pattern progress" (target = deepsight extractions needed to craft, usually 5,
- * or 1 for exotic-mission weapons). Verified collision-free across the Manifest
- * (183 records, unique names). One objective + one record scan, built once.
- */
-let patternIndex = null
+// Pattern index (collision-free across the Manifest: 183 records, unique names)
+// is built alongside the catalyst index in buildRecordIndexes().
 function getPatternIndex() {
-  if (patternIndex) return patternIndex
-  patternIndex = new Map()
-  try {
-    const db = getDb()
-    const patternObj = new Map() // objectiveHash -> completionValue (the pattern target)
-    for (const row of db.prepare(`SELECT json FROM DestinyObjectiveDefinition`).all()) {
-      const o = parseRow(row)
-      if (o && (o.progressDescription || '').trim().toLowerCase() === 'pattern progress') {
-        patternObj.set(o.hash >>> 0, o.completionValue || 0)
-      }
-    }
-    for (const row of db.prepare(`SELECT json FROM DestinyRecordDefinition`).all()) {
-      const d = parseRow(row)
-      const name = d?.displayProperties?.name || ''
-      if (!name || / Catalyst$/.test(name)) continue
-      const oh = (d.objectiveHashes || []).find((h) => patternObj.has(h >>> 0))
-      if (oh == null) continue
-      const key = name.toLowerCase()
-      if (!patternIndex.has(key)) {
-        patternIndex.set(key, { recordHash: d.hash >>> 0, objectiveHash: oh >>> 0, target: patternObj.get(oh >>> 0) })
-      }
-    }
-  } catch {
-    /* leave the (possibly partial) index; lookups just miss */
-  }
+  buildRecordIndexes()
   return patternIndex
 }
 
