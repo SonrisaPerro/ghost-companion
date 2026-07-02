@@ -1,6 +1,6 @@
 # Ghost Companion — Session Handoff
 
-_Last updated: 2026-07-02 (v1.3.0). Read this first when resuming work on this tool._
+_Last updated: 2026-07-02 (v1.3.1). Read this first when resuming work on this tool._
 
 ## What this is
 An always-on-top Destiny 2 loot-farming overlay.
@@ -50,8 +50,8 @@ An always-on-top Destiny 2 loot-farming overlay.
 - **To ship a change:** bump `version` in `package.json`, commit to `main`,
   `git tag -a vX.Y.Z && git push origin main --tags`, wait for green, publish the
   draft. Secrets must already exist before tagging (else a credential-less binary).
-- **Shipped:** `v1.0.0`–`v1.3.0` all live (published). **`v1.3.0` (2026-07-02) is
-  the current latest** = My Hunts farming queue in the SCAN empty state (see "Recent commits"). `v1.0.6` = sustainable rotation pipeline
+- **Shipped:** `v1.0.0`–`v1.3.1` all live (published). **`v1.3.1` (2026-07-02) is
+  the current latest** = persistent quick-jump hunt strip above the search bar (see "Recent commits"). `v1.0.6` = sustainable rotation pipeline
   (seed + auto-refresh), notifier cache-efficiency, and the `releaseType:"release"`
   auto-publish flip. `v1.0.5` = This Week concierge Stages 1–4. `/releases/latest`
   resolves to v1.0.7 (auto-published; workflow run went green + not-draft, verified).
@@ -356,7 +356,7 @@ An always-on-top Destiny 2 loot-farming overlay.
      (`git push` → Railway) before the client library browser shows anything.
    **Reminder: shipping any client change now requires a new tagged release**
    (bump version → tag → publish draft).
-6. **All releases through v1.3.0 are published + live — nothing pending.** Auto-publish
+6. **All releases through v1.3.1 are published + live — nothing pending.** Auto-publish
    has been reliable since v1.0.6. No known open build work. The only structural dead-end
    is #2 (set-piece enumeration), which no data source can satisfy.
 
@@ -385,6 +385,11 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
+- **`v1.3.1`** (2026-07-02, live) — persistent quick-jump hunt strip above the search bar.
+  Horizontal scrollable row of tracked-item chips (icon + truncated name) pinned between
+  the alert chips and the search bar on the SCAN tab. Always visible whether the search is
+  empty or a result is showing. Active item highlighted in orange. Clicking any chip
+  immediately re-scans. Scrollbar hidden via CSS (`.hunt-strip::-webkit-scrollbar`).
 - **`v1.3.0`** (2026-07-02, live) — My Hunts farming queue in the SCAN tab empty state.
   When the user has tracked items, the blank search screen is replaced by a **My Hunts**
   panel listing each tracked item with its icon, name, total runs logged, and combined
