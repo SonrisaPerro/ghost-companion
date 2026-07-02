@@ -1384,6 +1384,7 @@ export default function GhostCompanion() {
         button:hover:not(:disabled) { filter:brightness(1.15); }
         input::placeholder { color:#1E3A50; }
         input:focus { outline:none; }
+        .hunt-strip::-webkit-scrollbar { display:none; }
       `}</style>
 
       {/* ── Header (draggable region for the frameless window) ── */}
@@ -1488,6 +1489,37 @@ export default function GhostCompanion() {
             : `${eververseInShop.length} NEW ORNAMENT${eververseInShop.length !== 1 ? "S" : ""} IN SHOP — SEE WEEK TAB`}
           <span style={{ marginLeft:"auto" }}>→</span>
         </button>
+      )}
+
+      {/* ── Quick-jump hunt strip — always visible when tracking items ── */}
+      {trackedItems.length > 0 && (
+        <div className="hunt-strip" style={{
+          display:"flex", gap:6, overflowX:"auto", marginBottom:8,
+          scrollbarWidth:"none", msOverflowStyle:"none" }}>
+          {trackedItems.map(item => {
+            const active = itemData?.itemName === item.name;
+            return (
+              <button key={item.itemHash} onClick={() => scan(item.name)} title={item.name}
+                style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0,
+                  padding:"3px 8px 3px 4px",
+                  background: active ? C.orangeLo : C.panelAlt,
+                  border:`1px solid ${active ? C.orange : C.border}`,
+                  color: active ? C.orange : C.sub,
+                  cursor:"pointer", WebkitAppRegion:"no-drag",
+                  fontFamily:"'Barlow Condensed',sans-serif", fontSize:10,
+                  fontWeight:700, letterSpacing:"0.06em" }}>
+                {item.icon && (
+                  <img src={item.icon} alt="" width={18} height={18}
+                    style={{ border:`1px solid ${active ? C.orange : C.border}`, flexShrink:0 }}/>
+                )}
+                <span style={{ maxWidth:90, whiteSpace:"nowrap",
+                  overflow:"hidden", textOverflow:"ellipsis" }}>
+                  {item.name.toUpperCase()}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       )}
 
       {/* ── Search ── */}
