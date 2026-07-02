@@ -1,6 +1,6 @@
 # Ghost Companion — Session Handoff
 
-_Last updated: 2026-07-02. Read this first when resuming work on this tool._
+_Last updated: 2026-07-02 (v1.0.9). Read this first when resuming work on this tool._
 
 ## What this is
 An always-on-top Destiny 2 loot-farming overlay.
@@ -256,7 +256,7 @@ An always-on-top Destiny 2 loot-farming overlay.
 - `server/data/paths.json` — served by the API (`/paths`).
 - Both keyed by item **NAME**, each with `acquisitionPaths[]`. Drop rates are
   community estimates (explicitly disclaimed in the UI).
-- **Current state: 60 items each (expanded v1.0.8).** Includes:
+- **Current state: 60 items each (expanded v1.0.8, hashes verified v1.0.9).** Includes:
   - **15 Monument to Lost Lights exotics** (added 2026-06-29) — Ace of Spades,
     Thorn, The Last Word, Witherhoard, Izanagi's Burden, Jötunn, Truth, Sleeper
     Simulant, Le Monarque, Ticuu's Divination, Lorentz Driver, Lumina, Bad Juju,
@@ -358,7 +358,7 @@ An always-on-top Destiny 2 loot-farming overlay.
      (`git push` → Railway) before the client library browser shows anything.
    **Reminder: shipping any client change now requires a new tagged release**
    (bump version → tag → publish draft).
-6. **All releases through v1.0.8 are published + live — nothing pending.** Auto-publish
+6. **All releases through v1.0.9 are published + live — nothing pending.** Auto-publish
    has been reliable since v1.0.6. No known open build work. The only structural dead-end
    is #2 (set-piece enumeration), which no data source can satisfy.
 
@@ -387,6 +387,12 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
+- **`v1.0.9`** (2026-07-02, live) — data fix: 7 wrong item hashes corrected against
+  the Manifest (`npm run audit`); 3 weapon-type descriptions wrong (Naeem's Lance:
+  linear fusion → sniper rifle; Dragoncult Sickle: glaive → sword; Greasy Luck: SMG →
+  glaive); Lost Signal was missing its craftable path (Manifest marks it craftable).
+  `resetHunt` reviewed — no code bug; `itemRef.current` is always `itemData` (line 812),
+  which always has `acquisitionPaths`. Both data files re-synced and verified identical.
 - **`v1.0.8`** (2026-07-02, live) — monolith extraction + new-hunt flow + catalog
   expansion + GM scraper + cold-start UX. Details:
   - `GhostCompanion.jsx` 2278 → 1638 lines: `GuidePanels.jsx`
