@@ -6,7 +6,7 @@
 //   Guides            — full GUIDES tab listing all imported/authored walkthroughs
 // =============================================================================
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { C, inputStyle } from "../theme";
 import { Panel, Lbl, Badge } from "./primitives";
 
@@ -342,13 +342,39 @@ export function GuidesPanel({ guides }) {
 }
 
 /* ── Guides section (dedicated home for imported / authored walkthroughs) ─────
-   Unlike the on-item GuidesPanel (which only renders guides whose itemHash
-   matches the scanned item), this lists EVERY imported guide as an expandable
-   reader — so itemHash-less secret-chest routes are actually readable here. */
+   Guides are grouped by activity so the list stays navigable as more packs are
+   added. Within each activity group, guides expand individually as before.
+   ItemHash-less secret-chest routes are readable here even without a linked item. */
 export function Guides({ guides, onImportGuideFile, onExportGuides, onDeleteGuide,
   onBrowseLibrary, onImportCommunityGuide, onCreateGuide }) {
-  const [openId, setOpenId] = useState(null);
-  const toggle = (id) => setOpenId((cur) => (cur === id ? null : id));
+  const [openGroups, setOpenGroups] = useState(() => new Set());
+  const [openId, setOpenId]         = useState(null);
+
+  const toggleGroup = useCallback((key) => {
+    setOpenGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const toggle = (id) => setOpenId(cur => cur === id ? null : id);
+
+  // Group by activity; guides with no activity go last under "Other"
+  const groups = useMemo(() => {
+    const map = new Map();
+    for (const g of (guides || [])) {
+      const key = g.activity || "Other";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(g);
+    }
+    return [...map.entries()].sort(([a], [b]) => {
+      if (a === "Other") return 1;
+      if (b === "Other") return -1;
+      return a.localeCompare(b);
+    });
+  }, [guides]);
+
   return (
     <Panel bc={C.gold} style={{ marginBottom:10 }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
@@ -379,58 +405,81 @@ export function Guides({ guides, onImportGuideFile, onExportGuides, onDeleteGuid
         </button>
       </div>
 
-      {/* Expandable reader list — works for itemHash-less secret chests. */}
-      {guides?.length ? guides.map((g) => {
-        const open = openId === g.id;
+      {/* Activity-grouped guide list */}
+      {groups.length ? groups.map(([activity, items]) => {
+        const groupOpen = openGroups.has(activity);
         return (
-          <div key={g.id} style={{ borderBottom:`1px solid ${C.muted}`, paddingBottom:open?8:0 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 0" }}>
-              <div onClick={() => toggle(g.id)} style={{ display:"flex", alignItems:"center", gap:8,
-                minWidth:0, flex:1, cursor:"pointer" }}>
-                <span style={{ color:C.gold, fontSize:10, flexShrink:0 }}>
-                  {g.type === "secret_chest" ? "▣" : "◈"}
-                </span>
-                <div style={{ minWidth:0, flex:1 }}>
-                  <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:14, fontWeight:700,
-                    color:C.text, letterSpacing:"0.04em", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
-                    {g.title}
-                  </div>
-                  {(g.item || g.activity || g.source) && (
-                    <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9, color:C.sub, letterSpacing:"0.1em" }}>
-                      {[g.item || g.activity, g.source].filter(Boolean).join(" · ").toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <span style={{ color:C.sub, fontSize:11, flexShrink:0 }}>{open ? "▲" : "▼"}</span>
-              </div>
-              <button onClick={() => onDeleteGuide?.(g.id)} title="Remove guide" style={{
-                background:"none", border:`1px solid ${C.border}`, color:C.sub,
-                fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, fontWeight:700,
-                letterSpacing:"0.1em", padding:"3px 8px", cursor:"pointer", flexShrink:0,
-                WebkitAppRegion:"no-drag" }}>
-                ✕
-              </button>
+          <div key={activity} style={{ marginBottom:2 }}>
+            <div onClick={() => toggleGroup(activity)} style={{
+              display:"flex", alignItems:"center", gap:8, padding:"7px 0",
+              cursor:"pointer", borderBottom:`1px solid ${groupOpen ? C.border : C.muted}`,
+              WebkitAppRegion:"no-drag" }}>
+              <span style={{ color:C.gold, fontSize:8, flexShrink:0, lineHeight:1 }}>
+                {groupOpen ? "▼" : "▶"}
+              </span>
+              <span style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:11,
+                fontWeight:700, letterSpacing:"0.12em", color:C.sub, flex:1,
+                textTransform:"uppercase" }}>{activity}</span>
+              <Badge label={`${items.length}`} color={C.gold} bg={C.goldLo}/>
             </div>
-            {open && (
-              <div style={{ paddingLeft:18 }}>
-                {g.steps?.length > 0 ? g.steps.map((s, i) => (
-                  <div key={i} style={{ display:"flex", gap:8, marginBottom:7, alignItems:"flex-start" }}>
-                    <span style={{ color:C.gold, fontFamily:"'Barlow Condensed',sans-serif", fontSize:11,
-                      fontWeight:700, flexShrink:0, marginTop:1 }}>{i+1}.</span>
-                    <div style={{ minWidth:0 }}>
-                      {s.title && <div style={{ fontSize:12, fontWeight:600, color:C.text, lineHeight:1.4 }}>{s.title}</div>}
-                      {s.description && <div style={{ fontSize:12, color:C.sub, lineHeight:1.5 }}>{s.description}</div>}
+            {groupOpen && (
+              <div style={{ paddingLeft:8, borderLeft:`2px solid ${C.muted}`, marginBottom:4 }}>
+                {items.map((g) => {
+                  const open = openId === g.id;
+                  return (
+                    <div key={g.id} style={{ borderBottom:`1px solid ${C.muted}`, paddingBottom:open?8:0 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 0" }}>
+                        <div onClick={() => toggle(g.id)} style={{ display:"flex", alignItems:"center",
+                          gap:8, minWidth:0, flex:1, cursor:"pointer" }}>
+                          <span style={{ color:C.gold, fontSize:10, flexShrink:0 }}>
+                            {g.type === "secret_chest" ? "▣" : "◈"}
+                          </span>
+                          <div style={{ minWidth:0, flex:1 }}>
+                            <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:14,
+                              fontWeight:700, color:C.text, letterSpacing:"0.04em",
+                              whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                              {g.title}
+                            </div>
+                            {(g.item || g.source) && (
+                              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9,
+                                color:C.sub, letterSpacing:"0.1em" }}>
+                                {[g.item, g.source].filter(Boolean).join(" · ").toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+                          <span style={{ color:C.sub, fontSize:11, flexShrink:0 }}>{open ? "▲" : "▼"}</span>
+                        </div>
+                        <button onClick={() => onDeleteGuide?.(g.id)} title="Remove guide" style={{
+                          background:"none", border:`1px solid ${C.border}`, color:C.sub,
+                          fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, fontWeight:700,
+                          letterSpacing:"0.1em", padding:"3px 8px", cursor:"pointer", flexShrink:0,
+                          WebkitAppRegion:"no-drag" }}>✕</button>
+                      </div>
+                      {open && (
+                        <div style={{ paddingLeft:18 }}>
+                          {g.steps?.length > 0 ? g.steps.map((s, i) => (
+                            <div key={i} style={{ display:"flex", gap:8, marginBottom:7, alignItems:"flex-start" }}>
+                              <span style={{ color:C.gold, fontFamily:"'Barlow Condensed',sans-serif",
+                                fontSize:11, fontWeight:700, flexShrink:0, marginTop:1 }}>{i+1}.</span>
+                              <div style={{ minWidth:0 }}>
+                                {s.title && <div style={{ fontSize:12, fontWeight:600, color:C.text, lineHeight:1.4 }}>{s.title}</div>}
+                                {s.description && <div style={{ fontSize:12, color:C.sub, lineHeight:1.5 }}>{s.description}</div>}
+                              </div>
+                            </div>
+                          )) : (
+                            <div style={{ fontSize:12, color:C.sub, lineHeight:1.5, paddingBottom:6 }}>
+                              {g.notes || "No steps provided."}
+                            </div>
+                          )}
+                          {g.steps?.length > 0 && g.notes && (
+                            <div style={{ fontSize:11, color:C.sub, fontStyle:"italic", lineHeight:1.5,
+                              borderLeft:`2px solid ${C.border}`, paddingLeft:8, marginTop:4 }}>{g.notes}</div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )) : (
-                  <div style={{ fontSize:12, color:C.sub, lineHeight:1.5, paddingBottom:6 }}>
-                    {g.notes || "No steps provided."}
-                  </div>
-                )}
-                {g.steps?.length > 0 && g.notes && (
-                  <div style={{ fontSize:11, color:C.sub, fontStyle:"italic", lineHeight:1.5,
-                    borderLeft:`2px solid ${C.border}`, paddingLeft:8, marginTop:4 }}>{g.notes}</div>
-                )}
+                  );
+                })}
               </div>
             )}
           </div>

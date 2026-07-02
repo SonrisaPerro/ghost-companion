@@ -137,7 +137,7 @@ export function parseGmWeapon(html, resetISO) {
   const modified = pageModifiedAt(html)
   if (!Number.isFinite(modified) || modified < Date.parse(resetISO)) return null
   // GM weapons always drop Adept; find the name immediately before "(Adept)"
-  const m = html.match(/([A-Za-z][A-Za-z0-9 ''’\-]{1,48}?)\s*\(Adept\)/i)
+  const m = html.match(/([A-Za-z][A-Za-z0-9 ‘’’-]{1,48}?)\s*\(Adept\)/i)
   if (!m) return null
   const name = decode(m[1]).trim()
   if (!name || name.length < 3 || name.length > 50 || /<|>|http|www/.test(name)) return null
