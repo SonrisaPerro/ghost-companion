@@ -1538,12 +1538,12 @@ export default function GhostCompanion() {
           <Lbl color={scanning ? C.blue : C.sub} mb={5}>{scanning ? "SEARCHING MANIFEST..." : "ITEM DESIGNATION"}</Lbl>
           <div style={{ display:"flex", gap:10, alignItems:"center" }}>
             <input value={query} onChange={e => setQuery(e.target.value)}
-              onKeyDown={e => { if (e.key==="Enter") scan(); else if (e.key==="Escape") { setQuery(""); e.target.blur(); } }}
+              onKeyDown={e => { if (e.key==="Enter") scan(); else if (e.key==="Escape") { setQuery(""); setItemData(null); setError(null); e.target.blur(); } }}
               placeholder="Name or itemHash — e.g. Touch of Malice, 2575506895"
               style={{ flex:1, minWidth:0, background:"transparent", border:"none", color:C.text,
                 fontFamily:"'Barlow Condensed',sans-serif", fontSize:17, fontWeight:500, letterSpacing:"0.04em" }}/>
             {query && !scanning && (
-              <button onClick={() => setQuery("")} title="Clear" aria-label="Clear search" style={{
+              <button onClick={() => { setQuery(""); setItemData(null); setError(null); }} title="Clear" aria-label="Clear search" style={{
                 background:"none", border:"none", color:C.sub, fontSize:18, lineHeight:1,
                 cursor:"pointer", padding:"0 2px", flexShrink:0 }}>×</button>
             )}
