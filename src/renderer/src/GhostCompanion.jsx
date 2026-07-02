@@ -747,6 +747,78 @@ function DeepLinks({ itemHash }) {
 
 // WeaponPerksPanel moved to ./components/WeaponPerksPanel.jsx (imported above).
 
+/* ── My Hunts panel (empty-state farming queue) ───────────────────── */
+function MyHuntsPanel({ items, allRunCounts, userRates, communityRates, onScan }) {
+  return (
+    <Panel bc={C.border} style={{ marginBottom:14, animation:"fadeUp 0.4s ease" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+        <Lbl color={C.sub} mb={0}>My Hunts</Lbl>
+        <Badge label={`${items.length} ACTIVE`} color={C.sub} bg={C.muted}/>
+      </div>
+      {items.map((item, idx) => {
+        const entry =
+          userRates[String(item.itemHash)] ||
+          communityRates[String(item.itemHash)] ||
+          communityRates[item.name] ||
+          dropRates[String(item.itemHash)] ||
+          dropRates[item.name];
+        const catalogPaths = (entry?.acquisitionPaths || []).map((p, i) => ({ ...p, id: p.id || `path_${i}` }));
+        const pathRuns = {};
+        let totalRuns = 0;
+        for (const p of (item.paths || [])) {
+          const n = allRunCounts[`${item.name}::${p.id}`] || 0;
+          pathRuns[p.id] = n;
+          totalRuns += n;
+        }
+        const prob = catalogPaths.length && totalRuns > 0
+          ? combinedProb(catalogPaths, pathRuns)
+          : null;
+        const probCol = prob == null ? C.muted
+          : prob >= 80 ? C.red : prob >= 55 ? C.gold : C.blue;
+        return (
+          <div key={item.itemHash} onClick={() => onScan(item.name)}
+            title={`Scan ${item.name}`}
+            style={{ display:"flex", alignItems:"center", gap:10,
+              padding:"8px 0", cursor:"pointer", WebkitAppRegion:"no-drag",
+              borderTop:`1px solid ${C.border}`,
+              marginTop: idx === 0 ? 0 : 0 }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.72"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+            {item.icon
+              ? <img src={item.icon} alt="" width={32} height={32}
+                  style={{ border:`1px solid ${C.border}`, flexShrink:0 }}/>
+              : <div style={{ width:32, height:32, background:C.muted, flexShrink:0 }}/>}
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:14, fontWeight:700,
+                color:C.text, letterSpacing:"0.04em",
+                whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                {item.name}
+              </div>
+              <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:9,
+                color:C.sub, letterSpacing:"0.1em", marginTop:1 }}>
+                {totalRuns} RUN{totalRuns !== 1 ? "S" : ""} LOGGED
+              </div>
+            </div>
+            <div style={{ textAlign:"right", flexShrink:0 }}>
+              {prob != null ? (
+                <div style={{ fontFamily:"'Barlow Condensed',sans-serif", fontSize:18,
+                  fontWeight:700, color:probCol, lineHeight:1 }}>
+                  {prob.toFixed(1)}<span style={{ fontSize:10, opacity:0.7 }}>%</span>
+                </div>
+              ) : (
+                <span style={{ fontFamily:"'Barlow Condensed',sans-serif",
+                  fontSize:9, color:C.muted, letterSpacing:"0.1em" }}>
+                  {totalRuns === 0 ? "NO RUNS YET" : "—"}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </Panel>
+  );
+}
+
 /* ── Tab navigation bar ───────────────────────────────────────────── */
 function TabBar({ active, onSelect, weekBadge, guideCount }) {
   const tabs = [
@@ -823,6 +895,8 @@ export default function GhostCompanion() {
   const [guides,           setGuides]           = useState([]);
   // Desktop notifications master toggle.
   const [notifyEnabled,    setNotifyEnabled]    = useState(true);
+  // All persisted run counts (keyed "itemName::pathId") — drives the My Hunts panel.
+  const [allRunCounts,     setAllRunCounts]     = useState({});
 
   // Remote data (from the Railway data API): community paths + Xûr live stock.
   const [communityRates, setCommunityRates] = useState({});
@@ -855,6 +929,7 @@ export default function GhostCompanion() {
   useEffect(() => { window.api?.getTrackedItems?.().then(v => setTrackedItems(v || [])).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getGuides?.().then(v => setGuides(v || [])).catch(()=>{}); }, []);
   useEffect(() => { window.api?.getNotificationsEnabled?.().then(v => setNotifyEnabled(v !== false)).catch(()=>{}); }, []);
+  useEffect(() => { window.api?.getRunCounts?.().then(v => setAllRunCounts(v || {})).catch(()=>{}); }, []);
 
   // Load collection ownership whenever auth state flips to logged-in (cached
   // first for instant paint, then a live refresh). No-op when logged out.
@@ -921,6 +996,10 @@ export default function GhostCompanion() {
         // main sends the authoritative new count; fall back to +1 if absent.
         [payload.pathId]: payload.newCount ?? ((r[payload.pathId] || 0) + 1),
       }));
+      setAllRunCounts(c => {
+        const key = `${cur.itemName}::${payload.pathId}`;
+        return { ...c, [key]: payload.newCount ?? ((c[key] || 0) + 1) };
+      });
     });
     return unsubscribe; // preload returns an unsubscribe fn
   }, []);
@@ -932,21 +1011,30 @@ export default function GhostCompanion() {
     }
   }, []);
   const addRun = (id) => setPathRuns(r => {
-    const v = (r[id] || 0) + 1; persistCount(id, v); return { ...r, [id]: v };
+    const v = (r[id] || 0) + 1;
+    persistCount(id, v);
+    if (itemRef.current) setAllRunCounts(c => ({ ...c, [`${itemRef.current.itemName}::${id}`]: v }));
+    return { ...r, [id]: v };
   });
   const subRun = (id) => setPathRuns(r => {
-    const v = Math.max(0, (r[id] || 0) - 1); persistCount(id, v); return { ...r, [id]: v };
+    const v = Math.max(0, (r[id] || 0) - 1);
+    persistCount(id, v);
+    if (itemRef.current) setAllRunCounts(c => ({ ...c, [`${itemRef.current.itemName}::${id}`]: v }));
+    return { ...r, [id]: v };
   });
   // Zeros out all path run counts and un-marks acquired — starts a fresh hunt.
   const resetHunt = useCallback(() => {
     const cur = itemRef.current;
     if (!cur) return;
     const zeroed = {};
+    const countUpdates = {};
     for (const p of (cur.acquisitionPaths || [])) {
       zeroed[p.id] = 0;
       persistCount(p.id, 0);
+      countUpdates[`${cur.itemName}::${p.id}`] = 0;
     }
     setPathRuns(zeroed);
+    setAllRunCounts(c => ({ ...c, ...countUpdates }));
     setAcquired(false);
   }, [persistCount]);
 
@@ -1450,39 +1538,59 @@ export default function GhostCompanion() {
 
       {/* ── Empty state ── */}
       {!itemData && !scanning && !error && (
-        <div style={{ textAlign:"center", padding:"36px 16px 24px", animation:"fadeUp 0.5s ease" }}>
-          <Ghost size={48} color={C.muted}/>
-          <div style={{ marginTop:14, fontFamily:"'Barlow Condensed',sans-serif", fontSize:13,
-            color:C.sub, letterSpacing:"0.1em", lineHeight:1.7, maxWidth:300, margin:"14px auto 0" }}>
-            SEARCH ANY DESTINY 2 WEAPON OR ARMOR TO SEE EVERY WAY TO FARM IT —
-            WITH LIVE DROP-CHANCE MATH AND AUTO-TRACKED RUN COUNTS.
-          </div>
-
-          {/* One-tap examples so a first scan is obvious. */}
-          <div style={{ marginTop:18 }}>
-            <Lbl color={C.muted} mb={8}>Try an example</Lbl>
-            <div style={{ display:"flex", flexWrap:"wrap", gap:8, justifyContent:"center" }}>
-              {QUICK_SCANS.map(name => (
-                <Chip key={name} color={C.gold} title={`Scan ${name}`} onClick={() => scan(name)}>
-                  {name}
+        trackedItems.length > 0 ? (
+          <>
+            <MyHuntsPanel
+              items={trackedItems}
+              allRunCounts={allRunCounts}
+              userRates={userRates}
+              communityRates={communityRates}
+              onScan={scan}
+            />
+            {!auth.loggedIn && (
+              <div style={{ textAlign:"center", paddingBottom:16 }}>
+                <div style={{ fontSize:11, color:C.sub, lineHeight:1.6, marginBottom:10 }}>
+                  Sign in with Bungie.net to auto-count runs from activity completions.
+                </div>
+                <Chip color={C.orange} onClick={() => setActiveTab("acct")}>
+                  SIGN IN WITH BUNGIE →
                 </Chip>
-              ))}
-            </div>
-          </div>
-
-          {/* Nudge sign-in only when it would actually add something (auto-track). */}
-          {!auth.loggedIn && (
-            <div style={{ marginTop:20, paddingTop:18, borderTop:`1px solid ${C.border}`, maxWidth:320, margin:"20px auto 0" }}>
-              <div style={{ fontSize:11, color:C.sub, lineHeight:1.6, marginBottom:10 }}>
-                Sign in with Bungie.net and the Ghost will auto-count your runs from in-game
-                activity completions — no manual tallying.
               </div>
-              <Chip color={C.orange} onClick={() => setActiveTab("acct")}>
-                SIGN IN WITH BUNGIE →
-              </Chip>
+            )}
+          </>
+        ) : (
+          <div style={{ textAlign:"center", padding:"36px 16px 24px", animation:"fadeUp 0.5s ease" }}>
+            <Ghost size={48} color={C.muted}/>
+            <div style={{ marginTop:14, fontFamily:"'Barlow Condensed',sans-serif", fontSize:13,
+              color:C.sub, letterSpacing:"0.1em", lineHeight:1.7, maxWidth:300, margin:"14px auto 0" }}>
+              SEARCH ANY DESTINY 2 WEAPON OR ARMOR TO SEE EVERY WAY TO FARM IT —
+              WITH LIVE DROP-CHANCE MATH AND AUTO-TRACKED RUN COUNTS.
             </div>
-          )}
-        </div>
+
+            <div style={{ marginTop:18 }}>
+              <Lbl color={C.muted} mb={8}>Try an example</Lbl>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:8, justifyContent:"center" }}>
+                {QUICK_SCANS.map(name => (
+                  <Chip key={name} color={C.gold} title={`Scan ${name}`} onClick={() => scan(name)}>
+                    {name}
+                  </Chip>
+                ))}
+              </div>
+            </div>
+
+            {!auth.loggedIn && (
+              <div style={{ marginTop:20, paddingTop:18, borderTop:`1px solid ${C.border}`, maxWidth:320, margin:"20px auto 0" }}>
+                <div style={{ fontSize:11, color:C.sub, lineHeight:1.6, marginBottom:10 }}>
+                  Sign in with Bungie.net and the Ghost will auto-count your runs from in-game
+                  activity completions — no manual tallying.
+                </div>
+                <Chip color={C.orange} onClick={() => setActiveTab("acct")}>
+                  SIGN IN WITH BUNGIE →
+                </Chip>
+              </div>
+            )}
+          </div>
+        )
       )}
 
       {/* ── Results ── */}
