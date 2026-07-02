@@ -1,6 +1,6 @@
 # Ghost Companion — Session Handoff
 
-_Last updated: 2026-07-02 (v1.1.0). Read this first when resuming work on this tool._
+_Last updated: 2026-07-02 (v1.1.1). Read this first when resuming work on this tool._
 
 ## What this is
 An always-on-top Destiny 2 loot-farming overlay.
@@ -358,7 +358,7 @@ An always-on-top Destiny 2 loot-farming overlay.
      (`git push` → Railway) before the client library browser shows anything.
    **Reminder: shipping any client change now requires a new tagged release**
    (bump version → tag → publish draft).
-6. **All releases through v1.1.0 are published + live — nothing pending.** Auto-publish
+6. **All releases through v1.1.1 are published + live — nothing pending.** Auto-publish
    has been reliable since v1.0.6. No known open build work. The only structural dead-end
    is #2 (set-piece enumeration), which no data source can satisfy.
 
@@ -387,6 +387,11 @@ An always-on-top Destiny 2 loot-farming overlay.
   `Set-Content -Encoding utf8` adds a BOM that crashes electron-store's JSON parse.
 
 ## Recent commits
+- **`v1.1.1`** (2026-07-02, live) — GUIDES tab now groups by activity: collapsible
+  headers (Deep Stone Crypt, Last Wish, Vault of Glass, Warlord's Ruin, Vesper's Host)
+  instead of a flat list of 24 rows. useMemo groups by `g.activity`, alphabetically
+  sorted, "Other" last. Pre-existing no-useless-escape lint error fixed in
+  rotations-source.js (hyphen moved to end of character class). 0 lint errors.
 - **`v1.1.0`** (2026-07-02, live) — data: 4 new items (Wicked Implement at Monument
   Light & Dark Saga, Techeun Force craftable from Last Wish, Ashes to Assets mod from
   Ada-1, Reaper mod from Ada-1); Legendary Shards / Ascendant material cost references
