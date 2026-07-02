@@ -1440,7 +1440,7 @@ export default function GhostCompanion() {
 
       {/* ── WEEK tab ── */}
       {activeTab === "week" && (
-        <ThisWeekPanel data={weeklyData} onScan={(name) => scan(name)} trackedNames={trackedItemNames}
+        <ThisWeekPanel data={weeklyData} onScan={(name) => { setActiveTab("scan"); scan(name); }} trackedNames={trackedItemNames}
           apiUrl={apiUrl} onOpenAccount={() => setActiveTab("acct")}
           onRefresh={() => window.api.getWeekly?.({ force: true }).then(setWeeklyData).catch(()=>{})}/>
       )}
