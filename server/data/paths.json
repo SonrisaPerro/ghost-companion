@@ -1708,14 +1708,14 @@
         "id": "monument",
         "method": "Exotic Archive — Monument to Lost Lights",
         "pathType": "vendor",
-        "location": "The Tower (Monument to Lost Lights)",
+        "location": "The Tower (Monument to Lost Lights — Exotic Archive)",
         "sourceActivityHashes": [],
         "dropRate": 1.0,
-        "farmable": true,
+        "farmable": false,
         "weeklyLimitPerCharacter": null,
         "estimatedMinutesPerRun": 5,
-        "description": "Exotic strand scout rifle. Originally from the Deep Dive exotic mission (Season of the Deep). Purchasable from the Exotic Archive at the Tower — requires an Exotic Cipher + Glimmer + Legendary Shards.",
-        "notes": "May also be available in the Exotic Mission rotator if Deep Dive cycles back in. Monument is the reliable standing source."
+        "description": "Exotic strand scout rifle. Buy it directly from the Exotic Archive (Monument to Lost Lights) in the Tower — found in the Light and Dark Saga Exotics section. Cost: 1 Exotic Cipher + 100,000 Glimmer. Originally from the Deep Dive exotic mission (Season of the Deep).",
+        "notes": "Not auto-trackable — it's a purchase, not an activity drop. One-time acquisition."
       }
     ]
   },
