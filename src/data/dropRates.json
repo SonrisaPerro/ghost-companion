@@ -116,7 +116,7 @@
         "sourceActivityHashes": [],
         "dropRate": 1.0,
         "farmable": false,
-        "weeklyLimitPerCharacter": 1,
+        "weeklyLimitPerCharacter": null,
         "estimatedMinutesPerRun": 40,
         "description": "Guaranteed from the exotic quest; complete Grasp of Avarice then the quest steps.",
         "notes": "One-time quest — no farming needed once obtained."
@@ -176,7 +176,7 @@
         "weeklyLimitPerCharacter": null,
         "estimatedMinutesPerRun": 45,
         "description": "Exotic scout. Random drop from King's Fall — now farmable on a single character with no weekly lockout.",
-        "notes": "May also be redeemable with an exotic redemption token after Pantheon encounters."
+        "notes": null
       }
     ]
   },
@@ -297,7 +297,7 @@
         "weeklyLimitPerCharacter": null,
         "estimatedMinutesPerRun": 15,
         "description": "Exotic fusion. Drops from the chest after Riven (Queenswalk).",
-        "notes": "Can be farmed via the Riven cheese / repeated final chest each week per character."
+        "notes": "Can be farmed via the Riven cheese / repeated final chest — fully repeatable, no weekly lockout."
       }
     ]
   },
@@ -351,7 +351,7 @@
         "sourceActivityHashes": [],
         "dropRate": 1.0,
         "farmable": false,
-        "weeklyLimitPerCharacter": 1,
+        "weeklyLimitPerCharacter": null,
         "estimatedMinutesPerRun": 30,
         "description": "Exotic glaive, guaranteed from the Avalon exotic mission quest.",
         "notes": "One-time quest."
@@ -651,7 +651,7 @@
         "sourceActivityHashes": [],
         "dropRate": 1.0,
         "farmable": false,
-        "weeklyLimitPerCharacter": 1,
+        "weeklyLimitPerCharacter": null,
         "estimatedMinutesPerRun": 60,
         "description": "Exotic Trace Rifle, guaranteed from the Divine Fragmentation quest completed inside Garden of Salvation.",
         "notes": "One-time quest; requires solving the in-raid puzzles."
@@ -670,7 +670,7 @@
         "sourceActivityHashes": [896748846, 3214480871, 1013336498],
         "dropRate": 1.0,
         "farmable": false,
-        "weeklyLimitPerCharacter": 1,
+        "weeklyLimitPerCharacter": null,
         "estimatedMinutesPerRun": 40,
         "description": "Exotic Combat Bow, earned through the Starcrossed exotic mission (Manifest source: \"Starcrossed\" Mission).",
         "notes": "One-time acquisition; completing the mission progresses the catalyst."
@@ -702,7 +702,7 @@
         "sourceActivityHashes": [],
         "dropRate": 1.0,
         "farmable": false,
-        "weeklyLimitPerCharacter": 1,
+        "weeklyLimitPerCharacter": null,
         "estimatedMinutesPerRun": 45,
         "description": "Exotic Trace Rifle, guaranteed from the hidden quest started inside Ghosts of the Deep.",
         "notes": "One-time quest."
@@ -1263,7 +1263,7 @@
         "weeklyLimitPerCharacter": null,
         "estimatedMinutesPerRun": 1,
         "description": "Alternate Tower route for the same weapon: the Exotic Archive at the Monument to Lost Lights also stocks Centrifuse.",
-        "notes": "Manifest-verified: listed in the \"Lightfall Exotics\" Exotic Archive vendor (67760598). Purchased with an Exotic Cipher + Glimmer/Ascendant materials, like other Monument exotics. Not auto-trackable."
+        "notes": "Manifest-verified: listed in the \"Lightfall Exotics\" Exotic Archive vendor (67760598). Purchased with an Exotic Cipher + Glimmer (no Legendary Shards or Ascendant materials — removed in The Final Shape). Not auto-trackable."
       }
     ]
   },
