@@ -1484,9 +1484,14 @@ export default function GhostCompanion() {
           fontFamily:"'Barlow Condensed',sans-serif", fontSize:10, fontWeight:700,
           letterSpacing:"0.12em", WebkitAppRegion:"no-drag" }}>
           <span>◆</span>
-          {trackedOrnaments.length > 0
-            ? `${eververseInShop.length} TRACKED ORNAMENT${eververseInShop.length !== 1 ? "S" : ""} IN SHOP — SEE WEEK TAB`
-            : `${eververseInShop.length} NEW ORNAMENT${eververseInShop.length !== 1 ? "S" : ""} IN SHOP — SEE WEEK TAB`}
+          {(() => {
+            const nTracked = eververseInShop.filter(o =>
+              trackedOrnaments.some(t => t.itemHash === o.itemHash)
+            ).length;
+            return nTracked > 0
+              ? `${nTracked} TRACKED ORNAMENT${nTracked !== 1 ? "S" : ""} IN SHOP — SEE WEEK TAB`
+              : `${eververseInShop.length} NEW ORNAMENT${eververseInShop.length !== 1 ? "S" : ""} IN SHOP — SEE WEEK TAB`;
+          })()}
           <span style={{ marginLeft:"auto" }}>→</span>
         </button>
       )}
