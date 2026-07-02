@@ -1,0 +1,124 @@
+{
+  "ghostPackage": 1,
+  "name": "Deep Stone Crypt — craftable weapon farm",
+  "author": "Ghost Companion (starter pack)",
+  "createdAt": "2026-07-02T00:00:00Z",
+  "description": "Red-border farming guide for all six craftable weapons in Deep Stone Crypt: Trustee, Heritage, Succession, Posterity, Bequest, and Commemoration. Covers encounter order, the weekly loot cap, and the secret chest. Accurate as of July 2026.",
+  "guides": [
+    {
+      "id": "dsc-overview",
+      "title": "DSC — full weapon set overview",
+      "type": "guide",
+      "itemHash": 3281285075,
+      "item": "Posterity",
+      "activity": "Deep Stone Crypt",
+      "steps": [
+        {
+          "title": "What you're farming",
+          "description": "Deep Stone Crypt (DSC) drops a six-weapon craftable set: Trustee (scout rifle), Heritage (kinetic slug shotgun), Succession (kinetic sniper), Posterity (hand cannon), Bequest (sword), and Commemoration (machine gun). Every weapon needs 5 red-border (Deepsight Resonance) extractions to unlock its pattern."
+        },
+        {
+          "title": "Weekly loot cap",
+          "description": "Each encounter chest awards at most one weapon drop per character per week across the whole raid — you get 3 drops total per character before the chest locks. Bring up to 3 characters to triple your weekly pulls."
+        },
+        {
+          "title": "Loot-granting encounters (in order)",
+          "description": "The four encounters that award loot chests are: Security (first encounter — suppressor/scanner/operator roles), Atraks-1 (the zero-gravity replication fight), Taniks Reborn (brief encounter in the descent), and Taniks the Abomination (final boss with the nuclear cores mechanic)."
+        },
+        {
+          "title": "All encounters, one loot pool",
+          "description": "Any of the six weapons can drop from any encounter chest — there is no encounter-specific loot targeting in DSC. Play whichever encounters you have time for; each one ticks down your weekly 3-drop budget."
+        },
+        {
+          "title": "After unlock: craft at the Enclave",
+          "description": "Once you've extracted Deepsight from 5 copies of a weapon, open the Enclave on Savathûn's Throne World to shape it. Shaped weapons can be reshaped later for enhanced perks once you've leveled the weapon enough."
+        }
+      ],
+      "notes": "Drop rates are community estimates (~20% per chest). Loot is deterministic per character per week — once the 3-encounter budget is spent, additional chest openings reward materials only."
+    },
+    {
+      "id": "dsc-security-encounter",
+      "title": "Encounter 1 — Security (Crypt Security Protocol)",
+      "type": "guide",
+      "activity": "Deep Stone Crypt",
+      "steps": [
+        {
+          "title": "Roles: Scanner, Operator, Suppressor",
+          "description": "Split your fireteam into three roles. The Scanner (yellow aura) reads the order of panels to shoot. The Operator (blue aura) unlocks the panels. The Suppressor (red aura) disables the Fallen Exo that chases the team. Augment terminals drop augments — pick them up to gain your role's ability."
+        },
+        {
+          "title": "Core loop",
+          "description": "Scanner calls out which security panel is lit. Operator shoots it. Suppressor keeps the security Exo stunned so the other roles can work. After enough panels are disabled, the final security node opens — shoot it to end the encounter."
+        },
+        {
+          "title": "Checkpoint save",
+          "description": "If you want to checkpoint farm later in the week, have one character on a separate account (or a Bungie account alt) hold the Security checkpoint while your main character runs Atraks-1 onward. Not required for normal farming."
+        }
+      ],
+      "notes": "The Security encounter unlocks the elevator to Atraks-1. Its chest counts as one of your 3 weekly drops."
+    },
+    {
+      "id": "dsc-atraks-encounter",
+      "title": "Encounter 2 — Atraks-1",
+      "type": "guide",
+      "activity": "Deep Stone Crypt",
+      "steps": [
+        {
+          "title": "Split: space team and ground team",
+          "description": "Half the fireteam launches to the orbiting station above Europa; the other half stays on the ground below. Atraks-1 splits into replication drones — both sides must destroy their copies in the correct order and pass the Operator buff to dispose of the weakened drones before the timer expires."
+        },
+        {
+          "title": "Key mechanic: the Operator airlock",
+          "description": "When a drone is damaged enough, it glows red. The Operator uses an airlock to eject the weakened drone into space — this is the only way to permanently destroy it. Missing the airlock window before the timer resets wipes the team."
+        },
+        {
+          "title": "Final phase",
+          "description": "After enough drones are destroyed, Atraks-1's core health becomes vulnerable. The team converges damage on the boss to finish the encounter. The loot chest spawns in the station above."
+        }
+      ],
+      "notes": "Atraks-1 is the mechanically complex encounter — practice the augment handoffs and airlock timing. Its chest is your second weekly loot drop."
+    },
+    {
+      "id": "dsc-secret-chest",
+      "title": "Secret Chest — descent after Atraks-1",
+      "type": "secret_chest",
+      "activity": "Deep Stone Crypt",
+      "steps": [
+        {
+          "title": "After Atraks-1: descend to Europa",
+          "description": "Following the Atraks-1 chest, the team descends back down toward the Crypt interior through a long corridor section. Take the descent slowly — the secret chest is off the main path."
+        },
+        {
+          "title": "Watch for the side branch",
+          "description": "During the descent corridor there is a branch away from the main route — typically a separate drop or a doorway to the side. The secret chest is at the end of this branch, inside a small room or alcove."
+        },
+        {
+          "title": "Claim before the encounter starts",
+          "description": "Open the secret chest before continuing to Taniks Reborn. It awards bonus loot on a separate weekly lockout from the main encounter chests — a free extra roll each week per character."
+        }
+      ],
+      "notes": "The secret chest gives bonus loot on its own weekly timer (separate from the 3-encounter cap). Verify the exact branch location in-game — community guides on YouTube have current footage."
+    },
+    {
+      "id": "dsc-taniks-final",
+      "title": "Encounter 4 — Taniks the Abomination (final boss)",
+      "type": "guide",
+      "activity": "Deep Stone Crypt",
+      "steps": [
+        {
+          "title": "Nuclear core mechanic",
+          "description": "Taniks launches nuclear cores at players. Grab a core, carry it to a designated deposit station (there are four around the arena), and deposit it before the debuff stacks too high and kills you. Depositing in the correct order — matching the Scanner's callout — advances the damage phase."
+        },
+        {
+          "title": "Damage phase",
+          "description": "After depositing cores in the right order, Taniks becomes vulnerable. The team unloads everything — use heavy ammo, power weapon supers, and Well of Radiance / Ward of Dawn if available. Repeat the core mechanic between damage phases until Taniks is destroyed."
+        },
+        {
+          "title": "Final chest",
+          "description": "The final chest awards your third (and last) weekly loot drop per character. This is also where raid-specific armor can drop in addition to weapons."
+        }
+      ],
+      "notes": "Taniks the Abomination is a tuned DPS check — bring weapons with strong burst damage. The encounter ends the weekly lockout, so plan your three characters across the week to maximize red-border pulls."
+    }
+  ]
+}

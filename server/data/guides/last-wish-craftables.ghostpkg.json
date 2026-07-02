@@ -1,0 +1,130 @@
+{
+  "ghostPackage": 1,
+  "name": "Last Wish — craftables, 1KV farm & wish-wall",
+  "author": "Ghost Companion (starter pack)",
+  "createdAt": "2026-07-02T00:00:00Z",
+  "description": "Farming guide for Last Wish: the wish-wall shortcut system, red-border farming for Apex Predator and Techeun Force, and efficient One Thousand Voices (exotic fusion) repeatable farm via the Queenswalk / Riven final chest. Accurate as of July 2026.",
+  "guides": [
+    {
+      "id": "lw-overview",
+      "title": "Last Wish — loot overview & wish-wall primer",
+      "type": "guide",
+      "itemHash": 2545083870,
+      "item": "Apex Predator",
+      "activity": "Last Wish",
+      "steps": [
+        {
+          "title": "What drops here",
+          "description": "Last Wish (LW) drops two craftable legendary weapons tracked in this app: Apex Predator (rocket launcher) and Techeun Force (arc fusion rifle). Both need 5 red-border extractions. One Thousand Voices (exotic fusion rifle) drops from the Riven final chest and is farmable with no weekly lockout."
+        },
+        {
+          "title": "The wish-wall: Book of Wishes",
+          "description": "In the first room of the raid, before the Kalli encounter, there is a large wall with a 4×4 grid of symbols — the Book of Wishes. Shooting specific symbol sequences activates wishes that can teleport your team to later encounters, grant buffs, or trigger hidden effects. This is the core speedrunning and farming tool for LW."
+        },
+        {
+          "title": "Key wish for encounter targeting",
+          "description": "Wish 4 skips the Kalli encounter and places the fireteam directly at the Shuro Chi encounter. This is the standard way to start farming the middle and late encounters without running the full raid from the beginning each time. Community sources (D2 Checklist, Raid Secrets subreddit) have current symbol sequences — verify these are still active post-Edge of Fate."
+        },
+        {
+          "title": "Weekly loot cap: 3 drops per character",
+          "description": "Each of the five main encounters (Kalli, Shuro Chi, Morgeth, The Vault, Riven) can drop Apex Predator or Techeun Force from their loot chest — but you are capped at 3 encounter drops per character per week. The Riven exotic chest (1KV) is on a separate, unlimited timer."
+        },
+        {
+          "title": "Efficient weekly route",
+          "description": "Use Wish 4 to start at Shuro Chi → clear Shuro Chi, Morgeth, and The Vault for 3 weekly drops → then run Riven + Queenswalk for repeatable 1KV attempts. This avoids Kalli and saves ~15 minutes per run."
+        }
+      ],
+      "notes": "Wish symbol sequences may need to be looked up in a current community resource (e.g., Raid Secrets subreddit or D2 Checklist) — they are visual inputs not easily reproduced in text. The wish-wall mechanic has been stable since Forsaken-era but verify nothing changed with Edge of Fate."
+    },
+    {
+      "id": "lw-kalli",
+      "title": "Encounter 1 — Kalli, the Corrupted",
+      "type": "guide",
+      "activity": "Last Wish",
+      "steps": [
+        {
+          "title": "Six plates, six players",
+          "description": "Six plates are arranged around the boss room. At the start of each damage phase, all six players must stand on a different plate simultaneously to open Kalli's crit spot. In smaller fireteams, each player covers multiple plates by rotating quickly."
+        },
+        {
+          "title": "Damage phase: shoot the exposed eye",
+          "description": "Once all plates are activated, Kalli kneels and her chest opens to reveal a large crit spot. Focus all DPS there — precision damage is required to maximize the phase. She will swipe players off plates, so stay mobile."
+        },
+        {
+          "title": "Survival between phases",
+          "description": "Between damage phases Kalli casts a room-wide explosion. All players must hide behind one of the walls that rises at the edge of the room. Failing to get behind cover before the explosion wipes the team."
+        }
+      ],
+      "notes": "Kalli is typically skipped via Wish 4 when farming efficiently. Run it only if you want a 4th+ character or haven't used Wish 4 this week."
+    },
+    {
+      "id": "lw-shuro-chi",
+      "title": "Encounter 2 — Shuro Chi, the Corrupted",
+      "type": "guide",
+      "activity": "Last Wish",
+      "steps": [
+        {
+          "title": "Three players per side: the book mechanic",
+          "description": "The arena has two sides. Three players on each side must simultaneously interact with glowing books/runes to match symbols and reveal Shuro Chi's weak points. Mistimed interactions or failing to match symbols prevent a damage phase from opening."
+        },
+        {
+          "title": "Stomp timing: hit the damage window fast",
+          "description": "Shuro Chi periodically stomps. Players must break line-of-sight by hiding behind pillars scattered around the arena immediately when the stomp animation begins. Being in the open during a stomp is lethal."
+        },
+        {
+          "title": "Damage phase",
+          "description": "After correctly activating both sides, Shuro Chi's armor breaks and she takes full damage. Unload everything during the window — she will reset if not defeated within a time limit per phase."
+        }
+      ],
+      "notes": "Shuro Chi is the standard Wish 4 starting point for efficient farming — it's the first encounter you hit after using the skip."
+    },
+    {
+      "id": "lw-morgeth",
+      "title": "Encounter 3 — Morgeth, the Spirekeeper",
+      "type": "guide",
+      "activity": "Last Wish",
+      "steps": [
+        {
+          "title": "Collect Taken Strength stacks, don't overcap",
+          "description": "Taken Strength orbs spawn constantly around the arena. Players must collect them to charge the encounter — but if any individual player collects too many stacks (usually 2), they become immobile. Another player must shoot the overcapped player to transfer their stacks."
+        },
+        {
+          "title": "Two players hold high stacks for the damage phase",
+          "description": "The team works toward having two specific players hold the required number of stacks. Once both reach the threshold, Morgeth becomes vulnerable for the damage phase."
+        },
+        {
+          "title": "Damage phase and repeating",
+          "description": "With Morgeth vulnerable, burn him with everything available. He resets after each damage phase — repeat the orb-collection cycle until he's destroyed. Morgeth is typically one of the faster encounters."
+        }
+      ],
+      "notes": "Third encounter chest, counting toward your 3-drop weekly cap."
+    },
+    {
+      "id": "lw-riven-queenswalk",
+      "title": "Encounter 5 — Riven + Queenswalk (1KV farm)",
+      "type": "guide",
+      "itemHash": 2069224589,
+      "item": "One Thousand Voices",
+      "activity": "Last Wish",
+      "steps": [
+        {
+          "title": "Riven fight: shoot the exposed eye",
+          "description": "Riven is a massive Ahamkara boss who attacks through a series of rooms. During the encounter, Riven will open a large mouth or eye — the team must shoot the glowing weak point inside before she closes it. After multiple damage phases in different rooms, she falls and is pulled through the floor."
+        },
+        {
+          "title": "Queenswalk: carry Riven's heart",
+          "description": "After Riven falls, her heart is left in the bottom of the room. Pick it up and run it through the subsequent platforming section — the Queenswalk — to deposit it at the end of the route. This requires staying alive under sustained debuff stacks (the heart burns the carrier)."
+        },
+        {
+          "title": "One Thousand Voices: the final chest",
+          "description": "At the end of the Queenswalk, a chest opens with a chance to award One Thousand Voices. This chest has no weekly lockout — if you can repeat the Riven + Queenswalk run, you can attempt the chest again on the same character the same week."
+        },
+        {
+          "title": "Shortcut: use a wish to skip straight to Riven",
+          "description": "The wish-wall includes a wish (Wish 7 or similar — verify the current symbol sequence in a community guide) that teleports the fireteam directly to the Riven encounter, bypassing Kalli through The Vault entirely. This is the standard method for pure 1KV farming."
+        }
+      ],
+      "notes": "One Thousand Voices has approximately a 5% drop rate per chest opening. Farming it efficiently means being able to repeat the Riven fight quickly — which requires either a checkpoint on an alt account or knowing the direct-to-Riven wish. Verify the exact wish number/symbols in a current community resource."
+    }
+  ]
+}

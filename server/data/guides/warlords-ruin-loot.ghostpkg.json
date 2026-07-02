@@ -1,0 +1,130 @@
+{
+  "ghostPackage": 1,
+  "name": "Warlord's Ruin — loot & Buried Bloodline farm",
+  "author": "Ghost Companion (starter pack)",
+  "createdAt": "2026-07-02T00:00:00Z",
+  "description": "Farming guide for Warlord's Ruin dungeon: encounter breakdown, the mixed craftable/weekly loot set (Lost Signal, Naeem's Lance, Indebted Kindness, Dragoncult Sickle, Greasy Luck), and repeatable Buried Bloodline exotic farm from the final boss chest. Accurate as of July 2026.",
+  "guides": [
+    {
+      "id": "wr-overview",
+      "title": "Warlord's Ruin — loot overview",
+      "type": "guide",
+      "itemHash": 3886719505,
+      "item": "Buried Bloodline",
+      "activity": "Warlord's Ruin",
+      "steps": [
+        {
+          "title": "What drops here",
+          "description": "Warlord's Ruin (Season of the Wish dungeon) drops five legendary weapons and one exotic. The legendary set: Lost Signal (craftable grenade launcher), Naeem's Lance (sniper rifle, not craftable), Indebted Kindness (auto-loading sidearm, not craftable), Dragoncult Sickle (sword, not craftable), and Greasy Luck (glaive, not craftable). The exotic is Buried Bloodline — a void sidearm that restores health on hits — which drops from the final boss chest and is fully repeatable."
+        },
+        {
+          "title": "Two separate loot modes",
+          "description": "Legendaries are weekly-capped: 3 encounter drops per character per week across all encounters. Buried Bloodline from the final chest has no weekly lockout — you can farm it by repeating the dungeon on the same character."
+        },
+        {
+          "title": "Lost Signal: the only craftable",
+          "description": "Lost Signal is the one craftable weapon in the set and needs 5 red-border extractions. Naeem's Lance, Indebted Kindness, Dragoncult Sickle, and Greasy Luck are traditional RNG drops with no pattern — you are chasing god-rolls directly."
+        },
+        {
+          "title": "Efficient Buried Bloodline farm route",
+          "description": "To farm Buried Bloodline, clear the full dungeon to the final boss, kill it, check the chest, then repeat. The three-encounter structure means a single full clear is roughly 45 minutes. If running with a capable fireteam, the run time drops significantly."
+        },
+        {
+          "title": "Solo-able dungeon",
+          "description": "Warlord's Ruin can be soloed, which is notable for the Buried Bloodline farm — you can run it on a single character without needing a fireteam, though encounter DPS requirements are higher solo."
+        }
+      ],
+      "notes": "Drop rates for legendaries are community estimates (~20% per chest). Buried Bloodline drop rate from the final chest is approximately 10%. Farm it the same way you would a dungeon exotic like Heirloom or Hierarchy of Needs — repeatable clears on one character."
+    },
+    {
+      "id": "wr-first-boss",
+      "title": "Encounter 1 — First Boss",
+      "type": "guide",
+      "activity": "Warlord's Ruin",
+      "steps": [
+        {
+          "title": "Opening traversal",
+          "description": "The dungeon opens with a long traversal section through the ruins — no encounters, just platforming and enemies to clear. Take your time learning the layout on the first run; the route becomes fast once memorized."
+        },
+        {
+          "title": "First boss mechanics",
+          "description": "The first boss encounter uses an add-clear + mechanic loop to open damage phases. Clear the adds that spawn, perform the required mechanic (involving picking up or depositing an object — verify the exact mechanic in-game, as dungeon encounter specifics can vary), then damage the boss when vulnerable."
+        },
+        {
+          "title": "Repeat until the boss falls",
+          "description": "Repeat the add-clear / mechanic / damage cycle until the first boss is destroyed. A loot chest spawns — this is encounter 1 of your 3-drop weekly budget."
+        }
+      ],
+      "notes": "Detailed boss mechanics are best learned in-game or via a current video guide (the encounter loop is easier to understand visually). The loot chest here contributes to the weekly 3-drop cap."
+    },
+    {
+      "id": "wr-second-boss",
+      "title": "Encounter 2 — Second Boss",
+      "type": "guide",
+      "activity": "Warlord's Ruin",
+      "steps": [
+        {
+          "title": "Mid-dungeon traversal",
+          "description": "Between the first and second boss there is another platforming section through the interior of the ruin. Watch for fall hazards and enemy ambushes — particularly Hive Knights and acolytes that can interrupt platforming."
+        },
+        {
+          "title": "Second boss mechanics",
+          "description": "The second boss follows a similar structure to the first: clear adds, trigger the mechanic loop, damage the boss during vulnerability windows. The arena is larger and the boss may have a distinct attack pattern — consult a current community guide for the exact steps."
+        },
+        {
+          "title": "Loot chest",
+          "description": "Second boss chest is encounter 2 of your weekly budget. If running for Buried Bloodline specifically and not legendaries, you can skip this encounter if you have a checkpoint at the final boss (via an alt account or a carried checkpoint)."
+        }
+      ],
+      "notes": "A checkpoint skip to the final boss is the fastest Buried Bloodline farm method once you have one established. The second boss still awards weekly legendary drops if you need the loot."
+    },
+    {
+      "id": "wr-final-boss",
+      "title": "Encounter 3 — Final Boss (Buried Bloodline source)",
+      "type": "guide",
+      "itemHash": 3886719505,
+      "item": "Buried Bloodline",
+      "activity": "Warlord's Ruin",
+      "steps": [
+        {
+          "title": "Pre-boss traversal",
+          "description": "The final section before the boss involves a platforming or enemy-clear segment leading into the final arena. There may be a secret chest in this area on a separate weekly lockout — explore off the main path before entering the boss arena."
+        },
+        {
+          "title": "Final boss mechanics",
+          "description": "The final boss is the most mechanically complex encounter in the dungeon. It follows the dungeon's core loop of add-clearing, mechanic activation, and damage phases. The arena typically has multiple zones or movement requirements. Verify the exact encounter flow in-game or via a current guide."
+        },
+        {
+          "title": "Final chest: Buried Bloodline",
+          "description": "The final boss chest has a chance to drop Buried Bloodline — a void exotic sidearm with the Vampiric Blade exotic perk, which fires a blade of void energy that chains Devour on hits and refunds ammo on kills. It has no weekly lockout, making this chest repeatable on the same character."
+        },
+        {
+          "title": "Repeat for additional attempts",
+          "description": "After looting the final chest, load back into the dungeon to reset. If you have a checkpoint from another account at the final boss, you can jump directly to the fight each attempt rather than clearing from the start."
+        }
+      ],
+      "notes": "Buried Bloodline drops from the final chest at approximately 10% per attempt. Running the full dungeon (~45 min) means roughly 1 in 10 runs yields the exotic — checkpoint farming the final boss is strongly recommended for sustained attempts."
+    },
+    {
+      "id": "wr-secret-chest",
+      "title": "Secret Chest — Warlord's Ruin",
+      "type": "secret_chest",
+      "activity": "Warlord's Ruin",
+      "steps": [
+        {
+          "title": "Look for the off-path branch",
+          "description": "Warlord's Ruin has at least one secret chest hidden off the main traversal route. After the first or second boss encounter, watch for an alternate path — a side corridor, a lower ledge, or a door that is not on the obvious route to the next encounter."
+        },
+        {
+          "title": "Explore before progressing",
+          "description": "Secret chests in dungeons are typically found by exploring areas that are easy to run past. Check dead-end corridors, climbable walls, and lower areas before moving on to the next encounter."
+        },
+        {
+          "title": "Claim and return",
+          "description": "Once located, the secret chest awards bonus loot on its own weekly lockout separate from the 3-encounter boss-chest cap. Loot it each week per character for an extra legendary weapon roll."
+        }
+      ],
+      "notes": "The exact secret chest location in Warlord's Ruin is best verified via a current community video guide — the location is visual and hard to describe precisely in text. Search 'Warlord's Ruin secret chest location 2026' for current footage."
+    }
+  ]
+}

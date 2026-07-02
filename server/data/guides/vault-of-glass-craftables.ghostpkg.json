@@ -1,0 +1,149 @@
+{
+  "ghostPackage": 1,
+  "name": "Vault of Glass — craftable weapon farm",
+  "author": "Ghost Companion (starter pack)",
+  "createdAt": "2026-07-02T00:00:00Z",
+  "description": "Red-border farming guide for all six craftable VoG weapons: Fatebringer, Vision of Confluence, Hezen Vengeance, Corrective Measure, Found Verdict, and Praedyth's Revenge. Covers encounter order, the Gorgon secret chest, and Master mode Timelost drops. Accurate as of July 2026.",
+  "guides": [
+    {
+      "id": "vog-overview",
+      "title": "VoG — full weapon set overview",
+      "type": "guide",
+      "itemHash": 2171478765,
+      "item": "Fatebringer",
+      "activity": "Vault of Glass",
+      "steps": [
+        {
+          "title": "What you're farming",
+          "description": "Vault of Glass (VoG) drops a six-weapon craftable set: Fatebringer (140 hand cannon with Firefly), Vision of Confluence (solar scout rifle), Hezen Vengeance (rocket launcher), Corrective Measure (void machine gun), Found Verdict (aggressive-frame shotgun), and Praedyth's Revenge (rapid-fire sniper rifle). Each needs 5 red-border extractions to unlock its pattern."
+        },
+        {
+          "title": "Weekly loot cap: 3 drops per character",
+          "description": "VoG has five loot-granting encounters; you receive at most 3 weapon drops per character per week across all of them. After 3 drops the chests still open but give materials only. Bring 3 characters to earn up to 9 drops per week total."
+        },
+        {
+          "title": "No encounter targeting — all encounters share one pool",
+          "description": "Unlike some raids, VoG does not have per-encounter weapon targeting. Any of the six weapons can drop from any chest. Play whichever encounters fit your schedule — each one counts toward the weekly 3-drop budget."
+        },
+        {
+          "title": "Master mode: Timelost (Adept) drops",
+          "description": "Running VoG on Master difficulty can award Timelost versions of Fatebringer, Vision of Confluence, Found Verdict, Corrective Measure, Hezen Vengeance, and Praedyth's Revenge. Timelost rolls have access to the Adept perk slot and can be masterworked for enhanced stats. These are bonus rolls on top of the normal loot pool."
+        },
+        {
+          "title": "After unlock: craft at the Enclave",
+          "description": "Once you've extracted Deepsight from 5 copies of a weapon, shape it at the Enclave on Savathûn's Throne World. Shaped weapons can be reshaped later for enhanced perks once leveled."
+        }
+      ],
+      "notes": "Drop rates are community estimates (~15% per chest). The Gorgon maze has a secret chest on a separate weekly timer — a free extra roll per character."
+    },
+    {
+      "id": "vog-confluxes",
+      "title": "Encounter 1 — Confluxes",
+      "type": "guide",
+      "activity": "Vault of Glass",
+      "steps": [
+        {
+          "title": "Defend three Vex portals (confluxes)",
+          "description": "Three confluxes appear in the main chamber. Waves of Vex Goblins, Hobgoblins, and Praetorians rush to sacrifice themselves on the confluxes. If a Vex reaches and sacrifices on a conflux, the team fails. Cover all three simultaneously."
+        },
+        {
+          "title": "Split and call",
+          "description": "Assign players to each conflux. Call out overflow — when your conflux is clear, rotate to help teammates under pressure. Praetorians (shielded elites) require elemental weapons matching their shield type to break efficiently."
+        },
+        {
+          "title": "Completion",
+          "description": "After all three waves are repelled, the encounter completes and a loot chest spawns at the back of the chamber. This is encounter 1 of your weekly 3-drop budget."
+        }
+      ],
+      "notes": "The Confluxes encounter is the fastest in VoG — solid choice if you want to stack up weekly drops quickly."
+    },
+    {
+      "id": "vog-oracles",
+      "title": "Encounter 2 — Oracles",
+      "type": "guide",
+      "activity": "Vault of Glass",
+      "steps": [
+        {
+          "title": "Destroy glowing orbs in sequence",
+          "description": "Oracles are floating glowing spheres that appear in the large chamber. Destroy them in the correct order before they finish singing — missing or destroying them out of order causes a team wipe (Marked for Negation debuff)."
+        },
+        {
+          "title": "Relic holder strips Praetorian shields",
+          "description": "One player carries the Relic (a shield-shaped weapon). The Relic's slam ability (hold melee) removes Praetorian shields, making them vulnerable. The Relic holder also has immunity to the Oracle debuff if needed."
+        },
+        {
+          "title": "Scaling waves",
+          "description": "The number of Oracles increases each wave. Calling out positions (left/middle/right, front/back) is essential as the encounter progresses. Complete all waves to open the loot chest."
+        }
+      ],
+      "notes": "Oracles is heavily communication-dependent. If you're running with fewer than 6 players, the Oracle count may scale down."
+    },
+    {
+      "id": "vog-templar",
+      "title": "Encounter 3 — Templar",
+      "type": "guide",
+      "activity": "Vault of Glass",
+      "steps": [
+        {
+          "title": "Do not let the Templar teleport",
+          "description": "The Templar attempts to teleport away when it loses visibility of all players. If it teleports, it wipes the team. Assign one player to stand on the Templar's teleport pads (glowing circles around the arena) as soon as they appear to prevent each teleport."
+        },
+        {
+          "title": "Damage phase: Relic + DPS",
+          "description": "The Relic holder uses the shield-throw attack (aim + fire with the Relic) to strip the Templar's overshield. Once the shield breaks, the fireteam unloads everything. Repeat until the Templar is destroyed."
+        },
+        {
+          "title": "Minotaur adds — use the Relic slam",
+          "description": "Minotaur reinforcements spawn throughout the encounter. The Relic's slam (hold melee) clears them efficiently and grants temporary invincibility to the Relic holder. Prioritize Minotaurs that threaten teammates or the teleport-blocker."
+        }
+      ],
+      "notes": "The Templar chest is encounter 3 if you run the raid in order. For weekly efficiency, running encounters 1 + 2 + Templar hits your 3-drop cap cleanly."
+    },
+    {
+      "id": "vog-gorgon-chest",
+      "title": "Secret Chest — Gorgon's Labyrinth",
+      "type": "secret_chest",
+      "activity": "Vault of Glass",
+      "steps": [
+        {
+          "title": "Enter the Gorgon maze after the Templar",
+          "description": "After the Templar encounter there's a descending ledge section leading into the Gorgon's Labyrinth — a dark maze patrolled by Gorgon enemies. Do not let a Gorgon see you or look at it — this triggers a wipe."
+        },
+        {
+          "title": "Hug the left wall and drop down",
+          "description": "From the maze entrance, hug the left-side wall and drop down to the lower section of the maze. The secret chest is tucked in an alcove along the left path before you reach the jumping puzzle exit."
+        },
+        {
+          "title": "Open the chest and exit",
+          "description": "Loot the chest, then continue to the exit jumping puzzle (the jumping sequence that leads to the Gatekeeper encounter). The secret chest is on its own separate weekly lockout from the main encounter chests."
+        }
+      ],
+      "notes": "The Gorgon secret chest gives a free bonus drop each week per character on top of the 3-encounter cap. Stealthing past Gorgons is faster — they have a generous detection radius but move slowly. Community video guides show exact pathing."
+    },
+    {
+      "id": "vog-atheon",
+      "title": "Encounter 5 — Atheon, Time's Conflux (final boss)",
+      "type": "guide",
+      "activity": "Vault of Glass",
+      "steps": [
+        {
+          "title": "Three players get teleported each damage cycle",
+          "description": "At the start of each damage phase, Atheon randomly teleports three players into either the Vex past (Mars) or future (Venus) portal. Those players must survive inside, destroy the Oracles that spawn, and exit through the portal before it closes."
+        },
+        {
+          "title": "Relic + Oracle inside the portal",
+          "description": "A Relic spawns inside the portal realm. The Relic holder picks it up and uses the shield (aim + fire) to destroy the Oracles in order — same mechanic as the Oracles encounter. Once all Oracles are destroyed, the portal opens and the three players return to the main arena."
+        },
+        {
+          "title": "Damage phase: unload on Atheon",
+          "description": "When the portal team returns, Atheon stands still and all six players damage it simultaneously. This is your DPS window — use heavy ammo, power supers, Well of Radiance. Repeat the portal/DPS cycle until Atheon falls."
+        },
+        {
+          "title": "Loot and triumph",
+          "description": "The final chest awards your last weekly loot drop for the character and can drop raid armor as well as weapons. Completing Atheon on Master also grants Timelost loot."
+        }
+      ],
+      "notes": "For pure red-border farming, running Confluxes + Oracles + Templar each week per character hits the 3-drop cap in the shortest time without needing to clear the full raid."
+    }
+  ]
+}
