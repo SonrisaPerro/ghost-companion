@@ -87,7 +87,7 @@ async function readShop(accessToken, character) {
     let res
     try {
       res = await getVendorSales(accessToken, character, vendorHash)
-    } catch (e) {
+    } catch {
       vendorsSeen.push({ hash: vendorHash, readable: false, saleCount: 0 })
       continue
     }

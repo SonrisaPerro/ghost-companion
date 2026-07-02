@@ -7,7 +7,6 @@
 // =============================================================================
 
 import { getActivityHistory, getCachedProfile } from './bungie-api.js'
-import { getItemByHash } from './manifest.js'
 
 const POLL_INTERVAL_MS = 60 * 1000 // spec: poll every 60 seconds
 

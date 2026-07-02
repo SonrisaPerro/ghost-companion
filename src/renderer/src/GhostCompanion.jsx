@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 // the canonical item identity; dropRates.json supplies the farming metadata.
 import dropRates from "../../data/dropRates.json";
 import { C } from "./theme";
-import { Brackets, Panel, Lbl, Badge, Chip, Ghost, Diamond } from "./components/primitives";
+import { Panel, Lbl, Badge, Chip, Ghost, Diamond } from "./components/primitives";
 import { XurSection, BansheeSection, XurPanel, EververseSection, EverversePanel } from "./components/VendorPanels";
 import { WeaponPerksPanel } from "./components/WeaponPerksPanel";
 import { costColor, formatQty } from "./format";
@@ -32,7 +32,6 @@ const QUICK_SCANS = ["Touch of Malice", "Thorn", "Gjallarhorn", "Vex Mythoclast"
 
 /* ── Math ─────────────────────────────────────────────────────────── */
 const probN    = (rate,runs) => runs > 0 ? (1 - Math.pow(1 - Math.max(0.001,rate), runs)) * 100 : 0;
-const expRuns  = (rate)      => Math.round(1 / Math.max(0.001,rate));
 
 function combinedProb(paths, pathRuns) {
   if (!paths?.length) return 0;

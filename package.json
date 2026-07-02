@@ -17,6 +17,7 @@
     "icons": "node scripts/gen-icons.mjs",
     "lookup": "node scripts/lookup.mjs",
     "audit": "node scripts/audit-data.mjs",
+    "lint": "eslint .",
     "test": "node --test"
   },
   "build": {
@@ -59,10 +60,15 @@
     "selfsigned": "^2.4.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@vitejs/plugin-react": "^4.3.1",
     "electron": "^31.3.0",
     "electron-builder": "^24.13.3",
     "electron-vite": "^2.3.0",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.7.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "vite": "^5.4.0"

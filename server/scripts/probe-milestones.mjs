@@ -57,7 +57,6 @@ for (const h of hashes) {
       try {
         const ad = await get(`/Destiny2/Manifest/DestinyActivityDefinition/${a.activityHash}/`)
         const an = ad?.displayProperties?.name || a.activityHash
-        const place = ad?.activityTypeHash ? '' : ''
         console.log(`      ↳ ${an} [${a.activityHash}]${a.phases ? ` phases=${a.phases.length}` : ''}`)
       } catch {}
     }

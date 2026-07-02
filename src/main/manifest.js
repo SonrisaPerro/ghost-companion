@@ -134,8 +134,25 @@ function getDb() {
   return db
 }
 
+/**
+ * Prepared-statement cache. Compiling SQL isn't free and several of these run
+ * per scan (getWeaponPerks does a handful; resolveCollectible/getItemByHash one
+ * per item). Keyed by the SQL string, tied to the current db handle — cleared
+ * in closeDb() so a post-update reopen re-prepares against the new file.
+ */
+const stmtCache = new Map()
+function stmt(sql) {
+  let s = stmtCache.get(sql)
+  if (!s) {
+    s = getDb().prepare(sql)
+    stmtCache.set(sql, s)
+  }
+  return s
+}
+
 /** Closes the SQLite handle (used before replacing the file on update). */
 export function closeDb() {
+  stmtCache.clear()
   if (db) {
     try {
       db.close()
@@ -178,7 +195,7 @@ export function searchManifest(query, limit = 40) {
   const term = (query || '').trim().toLowerCase()
   if (term.length < 2) return []
 
-  const rows = getDb().prepare(`SELECT json FROM ${ITEM_TABLE} WHERE json LIKE '%' || ? || '%'`).all(term)
+  const rows = stmt(`SELECT json FROM ${ITEM_TABLE} WHERE json LIKE '%' || ? || '%'`).all(term)
   const results = []
 
   for (const row of rows) {
@@ -243,8 +260,7 @@ export function searchActivities(query, limit = 25) {
   const term = (query || '').trim().toLowerCase()
   if (term.length < 2) return []
 
-  const rows = getDb()
-    .prepare(`SELECT json FROM DestinyActivityDefinition WHERE json LIKE '%' || ? || '%'`)
+  const rows = stmt(`SELECT json FROM DestinyActivityDefinition WHERE json LIKE '%' || ? || '%'`)
     .all(term)
   const results = []
   for (const row of rows) {
@@ -275,9 +291,7 @@ export function searchActivities(query, limit = 25) {
 function resolveSources(collectibleHash) {
   try {
     const signed = collectibleHash | 0 // to signed 32-bit, matching the `id` column
-    const row = getDb()
-      .prepare(`SELECT json FROM DestinyCollectibleDefinition WHERE id = ?`)
-      .get(signed)
+    const row = stmt(`SELECT json FROM DestinyCollectibleDefinition WHERE id = ?`).get(signed)
     const def = parseRow(row)
     // Bungie's sourceString usually starts with "Source:" — strip it so the UI's
     // own "SOURCE:" label doesn't render "SOURCE: Source: …".
@@ -293,7 +307,7 @@ function resolveSources(collectibleHash) {
  */
 export function getItemByHash(itemHash) {
   const signed = itemHash | 0
-  const row = getDb().prepare(`SELECT json FROM ${ITEM_TABLE} WHERE id = ?`).get(signed)
+  const row = stmt(`SELECT json FROM ${ITEM_TABLE} WHERE id = ?`).get(signed)
   return parseRow(row)
 }
 
@@ -315,11 +329,9 @@ export function getWeaponOrnaments(weaponHash) {
   if (!weapon?.sockets) return []
 
   // Resolve which socket indexes belong to the "WEAPON COSMETICS" category.
-  const db = getDb()
   const cosmeticIdx = new Set()
   for (const sc of weapon.sockets.socketCategories || []) {
-    const catRow = db
-      .prepare(`SELECT json FROM DestinySocketCategoryDefinition WHERE id = ?`)
+    const catRow = stmt(`SELECT json FROM DestinySocketCategoryDefinition WHERE id = ?`)
       .get(sc.socketCategoryHash | 0)
     const cat = parseRow(catRow)
     if ((cat?.displayProperties?.name || '').toUpperCase() === 'WEAPON COSMETICS') {
@@ -334,8 +346,7 @@ export function getWeaponOrnaments(weaponHash) {
   for (const idx of cosmeticIdx) {
     const entry = entries[idx]
     if (!entry?.reusablePlugSetHash) continue
-    const psRow = db
-      .prepare(`SELECT json FROM DestinyPlugSetDefinition WHERE id = ?`)
+    const psRow = stmt(`SELECT json FROM DestinyPlugSetDefinition WHERE id = ?`)
       .get(entry.reusablePlugSetHash | 0)
     const plugSet = parseRow(psRow)
     for (const p of plugSet?.reusablePlugItems || []) {
@@ -413,10 +424,9 @@ function getCatalystIndex() {
 function resolveCatalyst(weaponName) {
   const rec = getCatalystIndex().get((weaponName || '').toLowerCase())
   if (!rec) return null
-  const db = getDb()
   const objectives = []
   for (const oh of rec.objectiveHashes || []) {
-    const o = parseRow(db.prepare(`SELECT json FROM DestinyObjectiveDefinition WHERE id = ?`).get(oh | 0))
+    const o = parseRow(stmt(`SELECT json FROM DestinyObjectiveDefinition WHERE id = ?`).get(oh | 0))
     if (!o) continue
     // valueStyle 2 = Checkbox — a binary step (e.g. "Insert the Catalyst"), not a
     // counter, so its completionValue is meaningless to display as a number.
@@ -490,12 +500,11 @@ export function getWeaponPerks(weaponHash) {
   const empty = { catalyst: null, pattern: null, intrinsic: null, columns: [] }
   if (!weapon || weapon.itemType !== 3 || !weapon.sockets) return empty // itemType 3 = weapon
 
-  const db = getDb()
   // Map each socket category name → the socket indexes it owns.
   const idxByCat = {}
   for (const sc of weapon.sockets.socketCategories || []) {
     const cat = parseRow(
-      db.prepare(`SELECT json FROM DestinySocketCategoryDefinition WHERE id = ?`).get(sc.socketCategoryHash | 0)
+      stmt(`SELECT json FROM DestinySocketCategoryDefinition WHERE id = ?`).get(sc.socketCategoryHash | 0)
     )
     const nm = (cat?.displayProperties?.name || '').toUpperCase()
     if (nm) idxByCat[nm] = [...(idxByCat[nm] || []), ...(sc.socketIndexes || [])]
@@ -509,7 +518,7 @@ export function getWeaponPerks(weaponHash) {
     const out = []
     const seen = new Set()
     if (setHash) {
-      const ps = parseRow(db.prepare(`SELECT json FROM DestinyPlugSetDefinition WHERE id = ?`).get(setHash | 0))
+      const ps = parseRow(stmt(`SELECT json FROM DestinyPlugSetDefinition WHERE id = ?`).get(setHash | 0))
       for (const p of ps?.reusablePlugItems || []) {
         if (p.currentlyCanRoll === false || seen.has(p.plugItemHash)) continue
         seen.add(p.plugItemHash)
